@@ -63,39 +63,39 @@ $approved = $stats['approved'] ?? 0;
     <div class="content fade-in-up">
         <h2 class="mb-2">ภาพรวมคำขอติดตั้งป้ายชั่วคราว</h2>
         <p class="text-muted mb-1 fs-5">
-        ยินดีต้อนรับคุณ <span class="fw-bold text-primary"><?= htmlspecialchars($user_name) ?></span>
-    </p>
-    
-    <p class="text-muted mb-4 small">
-        โปรดตรวจสอบสถานะคำขอของคุณด้านล่างเพื่อดำเนินการต่อไป
-    </p>
+            ยินดีต้อนรับคุณ <span class="fw-bold text-primary"><?= htmlspecialchars($user_name) ?></span>
+        </p>
+
+        <p class="text-muted mb-4 small">
+            โปรดตรวจสอบสถานะคำขอของคุณด้านล่างเพื่อดำเนินการต่อไป
+        </p>
 
         <h3 class="mt-4 mb-3">📈 สรุปสถานะคำขอของฉัน</h3>
         <div class="row">
             <div class="col-md-3">
-                <div class="card dashboard-card bg-light-primary hover-lift">
-                    <h6>📄 คำขอทั้งหมด</h6>
+                <div class="card dashboard-card bg-light-primary hover-lift h-100">
+                    <h6 class="text-nowrap">📄 คำขอทั้งหมด</h6>
                     <div class="count text-primary"><?= $total_requests ?></div>
                 </div>
             </div>
 
             <div class="col-md-3">
-                <div class="card dashboard-card bg-light-warning hover-lift">
-                    <h6>⏳ รอกำลังพิจารณา</h6>
+                <div class="card dashboard-card bg-light-warning hover-lift h-100">
+                    <h6 class="text-nowrap">⏳ รอกำลังพิจารณา</h6>
                     <div class="count text-warning"><?= $pending_review ?></div>
                 </div>
             </div>
 
             <div class="col-md-3">
-                <div class="card dashboard-card bg-light-danger hover-lift">
-                    <h6>⚠️ รอชำระเงิน</h6>
+                <div class="card dashboard-card bg-light-danger hover-lift h-100">
+                    <h6 class="text-nowrap">⚠️ รอชำระเงิน</h6>
                     <div class="count text-danger"><?= $awaiting_payment ?></div>
                 </div>
             </div>
 
             <div class="col-md-3">
-                <div class="card dashboard-card bg-light-success hover-lift">
-                    <h6>✅ อนุมัติแล้ว</h6>
+                <div class="card dashboard-card bg-light-success hover-lift h-100">
+                    <h6 class="text-nowrap">✅ อนุมัติแล้ว</h6>
                     <div class="count text-success"><?= $approved ?></div>
                 </div>
             </div>
@@ -105,7 +105,8 @@ $approved = $stats['approved'] ?? 0;
         <div class="row">
             <div class="col-md-4">
                 <a href="../request_form.php" class="text-decoration-none">
-                    <div class="card p-3 text-center shadow-sm h-100 hover-lift" style="border-top: 4px solid var(--primary);">
+                    <div class="card p-3 text-center shadow-sm h-100 hover-lift"
+                        style="border-top: 4px solid var(--primary);">
                         <h5 class="mt-0 text-primary">📝 ยื่นคำขอใหม่</h5>
                         <p class="text-muted small mb-0">เริ่มกรอกแบบฟอร์มขออนุญาตติดตั้งป้าย</p>
                     </div>
