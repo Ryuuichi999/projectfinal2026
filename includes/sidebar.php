@@ -1,0 +1,53 @@
+<div class="sidebar">
+    <div>
+        <a href="/Project2026/users/index.php" class="logo-link d-block text-center mb-4">
+            <img src="/Project2026/image/logosila.jpg" alt="ทม.ศิลา" class="img-fluid rounded hover-lift"
+                style="max-width: 150px;">
+        </a>
+
+        <?php if (isset($_SESSION['role']) && ($_SESSION['role'] === 'admin' || $_SESSION['role'] === 'employee')): ?>
+            <!-- เมนูสำหรับผู้ดูแลระบบ (Admin) และพนักงาน (Employee) -->
+            <a href="/Project2026/admin/dashboard.php"
+                class="<?= basename($_SERVER['PHP_SELF']) == 'dashboard.php' ? 'active' : '' ?>">
+                📊 ภาพรวมระบบ
+            </a>
+            <?php if ($_SESSION['role'] === 'admin'): ?>
+                <a href="/Project2026/admin/users_list.php"
+                    class="<?= basename($_SERVER['PHP_SELF']) == 'users_list.php' ? 'active' : '' ?>">
+                    👥 จัดการผู้ใช้งาน
+                </a>
+            <?php endif; ?>
+            <a href="/Project2026/admin/request_list.php"
+                class="<?= basename($_SERVER['PHP_SELF']) == 'request_list.php' ? 'active' : '' ?>">
+                📝 รายการคำขอ
+            </a>
+            <a href="/Project2026/map.php" class="<?= basename($_SERVER['PHP_SELF']) == 'map.php' ? 'active' : '' ?>">
+                🗺️ แผนที่
+            </a>
+        <?php else: ?>
+            <!-- เมนูสำหรับผู้ใช้งานทั่วไป (User) -->
+            <a href="/Project2026/users/index.php"
+                class="<?= basename($_SERVER['PHP_SELF']) == 'index.php' ? 'active' : '' ?>">
+                🏠 หน้าแรก
+            </a>
+            <a href="/Project2026/request_form.php"
+                class="<?= basename($_SERVER['PHP_SELF']) == 'request_form.php' ? 'active' : '' ?>">
+                📝 ยื่นคำขอ
+            </a>
+            <a href="/Project2026/my_request.php"
+                class="<?= basename($_SERVER['PHP_SELF']) == 'my_request.php' ? 'active' : '' ?>">
+                📄 สถานะคำขอ
+            </a>
+            <a href="/Project2026/map.php" class="<?= basename($_SERVER['PHP_SELF']) == 'map.php' ? 'active' : '' ?>">
+                🗺️ แผนที่
+            </a>
+        <?php endif; ?>
+    </div>
+
+    <div class="sidebar-bottom">
+        <a href="#"
+            onclick="confirmAction('ยืนยันออกจากระบบ', 'คุณต้องการออกจากระบบใช่หรือไม่?', 'ใช่, ออกจากระบบ', 'ยกเลิก', () => window.location.href='/Project2026/logout.php')">
+            🚪 ออกจากระบบ
+        </a>
+    </div>
+</div>
