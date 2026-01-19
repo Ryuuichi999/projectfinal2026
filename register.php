@@ -30,14 +30,31 @@ if (isset($_POST['submit'])) {
 
 <head>
     <meta charset="UTF-8">
-    <title>สมัครสมาชิก</title>
+    <title>สมัครสมาชิก - Project2026</title>
     <?php include 'includes/header.php'; ?>
+    <link rel="stylesheet" href="assets/css/dynamic-login.css">
 </head>
 
-<body class="d-flex justify-content-center align-items-center" style="height:100vh">
+<body>
 
-    <div class="card p-4 shadow fade-in-up" style="width:500px">
-        <h4 class="text-center mb-3">สมัครสมาชิก</h4>
+    <!-- Floating Background Particles -->
+    <ul class="circles">
+        <li></li>
+        <li></li>
+        <li></li>
+        <li></li>
+        <li></li>
+        <li></li>
+        <li></li>
+        <li></li>
+        <li></li>
+        <li></li>
+    </ul>
+
+    <div class="glass-card fade-in-up" style="max-width: 600px;">
+        <div class="text-center">
+            <h4 class="mb-4">สมัครสมาชิกใหม่</h4>
+        </div>
 
         <?php if (isset($success) && $success): ?>
             <script>
@@ -56,30 +73,52 @@ if (isset($_POST['submit'])) {
         <?php endif; ?>
 
         <form method="post">
-            <div class="row mb-2">
-                <div class="col-4">
-                    <select name="title_name" class="form-select">
+            <div class="row g-2 mb-3">
+                <div class="col-md-3">
+                    <select name="title_name" class="form-select h-100">
                         <option>นาย</option>
                         <option>นาง</option>
                         <option>นางสาว</option>
                     </select>
                 </div>
-                <div class="col"><input class="form-control" name="first_name" placeholder="ชื่อ"></div>
-                <div class="col"><input class="form-control" name="last_name" placeholder="นามสกุล"></div>
+                <div class="col-md-4">
+                    <input class="form-control" name="first_name" placeholder="ชื่อ" required>
+                </div>
+                <div class="col-md-5">
+                    <input class="form-control" name="last_name" placeholder="นามสกุล" required>
+                </div>
             </div>
 
-            <input class="form-control mb-2" name="citizen_id" placeholder="เลขบัตรประชาชน">
-            <input class="form-control mb-2" name="phone" placeholder="เบอร์โทร">
-            <textarea class="form-control mb-2" name="address" placeholder="ที่อยู่"></textarea>
-            <input class="form-control mb-3" type="password" name="password" placeholder="รหัสผ่าน">
+            <div class="mb-3">
+                <input class="form-control" name="citizen_id" placeholder="เลขบัตรประชาชน (ใช้สำหรับเข้าสู่ระบบ)"
+                    required>
+            </div>
 
-            <button class="btn btn-outline-secondary w-100" name="submit">สมัครสมาชิก</button> <br><br>
-            <a href="login.php" class="btn btn-outline-secondary w-100">กลับหน้า Login</a>
+            <div class="mb-3">
+                <input class="form-control" name="phone" placeholder="เบอร์โทรศัพท์" required>
+            </div>
+
+            <div class="mb-3">
+                <textarea class="form-control" name="address" placeholder="ที่อยู่ปัจจุบัน" rows="2"></textarea>
+            </div>
+
+            <div class="mb-4">
+                <input class="form-control" type="password" name="password" placeholder="กำหนดรหัสผ่าน" required>
+            </div>
+
+            <button class="btn btn-primary-gradient w-100 shadow-sm mb-3" name="submit">
+                ยืนยันการสมัคร
+            </button>
+
+            <div class="text-center">
+                <a href="login.php" class="text-decoration-none text-muted small">
+                    <i class="bi bi-arrow-left"></i> กลับหน้าเข้าสู่ระบบ
+                </a>
+            </div>
         </form>
     </div>
-</body>
-</div>
-<?php include 'includes/scripts.php'; ?>
+
+    <?php include 'includes/scripts.php'; ?>
 </body>
 
 </html>

@@ -27,14 +27,33 @@ if (isset($_POST['login'])) {
 
 <head>
     <meta charset="UTF-8">
-    <title>เข้าสู่ระบบ</title>
+    <title>เข้าสู่ระบบ - Project2026</title>
     <?php include 'includes/header.php'; ?>
+    <link rel="stylesheet" href="assets/css/dynamic-login.css">
 </head>
 
-<body class="d-flex justify-content-center align-items-center" style="height:100vh">
+<body>
 
-    <div class="card p-4 shadow fade-in-up" style="width:380px">
-        <h4 class="text-center mb-3">เข้าสู่ระบบ</h4>
+    <!-- Floating Background Particles -->
+    <ul class="circles">
+        <li></li>
+        <li></li>
+        <li></li>
+        <li></li>
+        <li></li>
+        <li></li>
+        <li></li>
+        <li></li>
+        <li></li>
+        <li></li>
+    </ul>
+
+    <div class="glass-card fade-in-up">
+        <div class="text-center">
+            <!-- Logo (Optional) -->
+            <img src="image/logosila.jpg" alt="Logo" class="rounded-circle shadow-sm mb-3" width="80">
+            <h5 class="mb-3">เว็บไซต์ขออนุญาตติดตั้งป้ายชั่วคราว!</h5>
+        </div>
 
         <?php if (isset($success) && $success): ?>
             <script>
@@ -81,27 +100,38 @@ if (isset($_POST['login'])) {
         <?php endif; ?>
 
         <form method="post">
-            <input class="form-control mb-2" name="citizen_id" placeholder="เลขบัตรประชาชน" required>
-            <input class="form-control mb-3" type="password" name="password" placeholder="รหัสผ่าน" required>
+            <div class="mb-2">
+                <input class="form-control" name="citizen_id" placeholder="เลขบัตรประชาชน" required>
+            </div>
+            <div class="mb-3">
+                <input class="form-control" type="password" name="password" placeholder="รหัสผ่าน" required>
+            </div>
 
-            <button name="login" class="btn btn-outline-secondary w-100">เข้าสู่ระบบ</button>
+            <button name="login" class="btn btn-primary-gradient w-100 mb-2 shadow-sm">
+                เข้าสู่ระบบ
+            </button>
         </form>
 
-        <hr>
+        <div class="position-relative mb-3">
+            <hr class="text-muted">
+            <span class="position-absolute top-50 start-50 translate-middle bg-white px-2 text-muted small"
+                style="background: rgba(255,255,255,0.6) !important; border-radius: 4px;">หรือ</span>
+        </div>
 
         <!-- ปุ่ม LINE Login -->
         <?php
         $line_login_url = "https://access.line.me/oauth2/v2.1/authorize?response_type=code&client_id=2008891589&redirect_uri=" . urlencode("http://localhost/Project2026/callback_line.php") . "&state=" . rand() . "&scope=profile%20openid";
         ?>
-        <a href="<?= $line_login_url ?>" class="btn btn-success w-100 mb-2">
-            <i class="bi bi-line"></i> เข้าสู่ระบบด้วย LINE
+        <a href="<?= $line_login_url ?>" class="btn btn-line w-100 mb-2">
+            <i class="bi bi-line fs-5 me-2"></i> เข้าสู่ระบบด้วย LINE
         </a>
 
-        <a href="register.php" class="btn btn-outline-secondary w-100">สมัครสมาชิกทั่วไป</a>
+        <a href="register.php" class="btn btn-outline-custom w-100">
+            สมัครสมาชิกใหม่
+        </a>
     </div>
-</body>
-</div>
-<?php include 'includes/scripts.php'; ?>
+
+    <?php include 'includes/scripts.php'; ?>
 </body>
 
 </html>
