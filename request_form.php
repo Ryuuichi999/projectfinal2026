@@ -1,5 +1,4 @@
 <?php
-// สมมติว่าไฟล์ request_form.php อยู่ในรูทของ Projectป้าย/
 require './includes/db.php';
 
 if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'user') {
@@ -7,44 +6,70 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'user') {
     exit;
 }
 
+// ดึงข้อมูลผู้ใช้เพื่อ Pre-fill (ส่วนข้าพเจ้า)
+$user_id = $_SESSION['user_id'];
+$sql_user = "SELECT * FROM users WHERE id = ?";
+$stmt_user = $conn->prepare($sql_user);
+$stmt_user->bind_param("i", $user_id);
+$stmt_user->execute();
+$me = $stmt_user->get_result()->fetch_assoc();
+
 $message = '';
 $message_type = '';
 
 if (isset($_POST['submit'])) {
-    // 1. รับค่าและทำความสะอาด
-    $user_id = $_SESSION['user_id'];
+    // 1. รับค่า
+    $applicant_name = trim($_POST['applicant_name']);
+    $applicant_address = trim($_POST['applicant_address']);
     $sign_type = trim($_POST['sign_type']);
     $width = (float) $_POST['width'];
     $height = (float) $_POST['height'];
-    // ตรวจสอบ Lat/Lng ต้องถูกส่งมาจากการเลือกบนแผนที่
-    $lat = empty($_POST['lat']) ? NULL : (float) $_POST['lat'];
-    $lng = empty($_POST['lng']) ? NULL : (float) $_POST['lng'];
-    $duration_days = (int) $_POST['duration_days'];
+    $quantity = (int) $_POST['quantity'];
+    $road_name = trim($_POST['road_name']);
     $description = trim($_POST['description']);
 
-    // ตรวจสอบว่ามีการเลือกพิกัดแล้ว
+    // วันที่และระยะเวลา
+    $install_date = $_POST['install_date'];
+    $end_date = $_POST['end_date'];
+    // คำนวณระยะเวลา (วัน)
+    $d1 = new DateTime($install_date);
+    $d2 = new DateTime($end_date);
+    $interval = $d1->diff($d2);
+    $duration_days = $interval->days + 1; // รวมวันแรก
+
+    // พิกัด (Primary)
+    $lat = empty($_POST['lat']) ? NULL : (float) $_POST['lat'];
+    $lng = empty($_POST['lng']) ? NULL : (float) $_POST['lng'];
+
     if (is_null($lat) || is_null($lng)) {
-        $message = "กรุณาเลือกตำแหน่งติดตั้งป้ายบนแผนที่";
+        $message = "กรุณาปักหมุดตำแหน่งหลักบนแผนที่";
         $message_type = 'danger';
     } else {
         // 2. คำนวณค่าธรรมเนียม
-        $area = $width * $height;
-        $fee = ($area >= 50) ? 400 : 200;
+        $area = $width * $height; // ตร.ม. ต่อป้าย
+        $rate = ($area >= 50) ? 400 : 200; // อัตราต่อป้าย
+        $fee = $rate * $quantity; // ราคารวม
 
-        // 3. เตรียมและเรียกใช้ SQL เพื่อ INSERT คำขอหลัก
+        // 3. Insert ลง DB
         $conn->begin_transaction();
         try {
+            // ตรวจสอบคอลัมน์ใหม่ว่ามีหรือยัง (เผื่อ script update schema ยังไม่รัน)
+            // แต่เราสมมติว่ารันแล้วตาม Plan
             $sql = "INSERT INTO sign_requests 
-            (user_id, sign_type, width, height, location_lat, location_lng, fee, status, duration_days, description) 
-            VALUES (?,?,?,?,?,?,?, 'waiting_payment', ?, ?)";
+            (user_id, applicant_name, applicant_address, sign_type, width, height, quantity, road_name, location_lat, location_lng, fee, status, duration_days, description) 
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'waiting_payment', ?, ?)";
 
             $stmt = $conn->prepare($sql);
             $stmt->bind_param(
-                "isddddiis",
+                "isssddisddiis",
                 $user_id,
+                $applicant_name,
+                $applicant_address,
                 $sign_type,
                 $width,
                 $height,
+                $quantity,
+                $road_name,
                 $lat,
                 $lng,
                 $fee,
@@ -54,42 +79,42 @@ if (isset($_POST['submit'])) {
             $stmt->execute();
             $request_id = $conn->insert_id;
 
-            // *** 4. จัดการการอัปโหลดไฟล์ ***
+            // 4. จัดการไฟล์
             $uploaded_files = [
+                'file_sign_plan' => 'แบบป้าย/รูปภาพโฆษณา', // รวมแผนผังและรูป
                 'file_id_card' => 'สำเนาบัตรประชาชน',
-                'file_land_doc' => 'สำเนาเอกสารที่ดิน/ยินยอม',
-                'file_sign_plan' => 'แผนผังบริเวณ/แบบป้าย',
-                'file_engineer_cert' => 'เอกสารรับรองวิศวกร',
+                'file_land_doc' => 'หนังสือยินยอมเจ้าของที่/สัญญาเช่า',
+                'file_other' => 'เอกสารอื่นๆ'
             ];
+
+            // สร้างโฟลเดอร์เก็บไฟล์
+            $real_upload_dir = "./uploads/{$request_id}/";
+            if (!file_exists($real_upload_dir)) {
+                mkdir($real_upload_dir, 0777, true);
+            }
 
             foreach ($uploaded_files as $input_name => $doc_type_name) {
                 if (isset($_FILES[$input_name]) && $_FILES[$input_name]['error'] == UPLOAD_ERR_OK) {
-                    // *** จำลองการบันทึก Path ลงฐานข้อมูล sign_documents ***
-                    $temp_path = "/uploads/{$request_id}/" . basename($_FILES[$input_name]['name']);
+                    $file_name = time() . '_' . basename($_FILES[$input_name]['name']);
+                    $target_path = $real_upload_dir . $file_name;
+                    $db_path = "/uploads/{$request_id}/" . $file_name;
 
-                    // สร้างโฟลเดอร์จริง (ถ้าต้องการให้สมบูรณ์)
-                    $real_upload_dir = "./uploads/{$request_id}/";
-                    if (!file_exists($real_upload_dir)) {
-                        mkdir($real_upload_dir, 0777, true);
+                    if (move_uploaded_file($_FILES[$input_name]['tmp_name'], $target_path)) {
+                        $sql_doc = "INSERT INTO sign_documents (request_id, doc_type, file_path) VALUES (?, ?, ?)";
+                        $stmt_doc = $conn->prepare($sql_doc);
+                        $stmt_doc->bind_param("iss", $request_id, $doc_type_name, $db_path);
+                        $stmt_doc->execute();
                     }
-                    move_uploaded_file($_FILES[$input_name]['tmp_name'], $real_upload_dir . basename($_FILES[$input_name]['name']));
-
-                    $sql_doc = "INSERT INTO sign_documents (request_id, doc_type, file_path) VALUES (?, ?, ?)";
-                    $stmt_doc = $conn->prepare($sql_doc);
-                    $stmt_doc->bind_param("iss", $request_id, $doc_type_name, $temp_path);
-                    $stmt_doc->execute();
                 }
             }
 
             $conn->commit();
-
-            // Redirect ไปหน้าจ่ายเงินทันที
-            header("Location: payment.php?id=" . $request_id);
+            header("Location: payment.php?id=" . $request_id); // ไปหน้าจ่ายเงิน (หรือหน้ารายการ)
             exit;
 
         } catch (Exception $e) {
             $conn->rollback();
-            $message = "เกิดข้อผิดพลาดในการยื่นคำขอและอัปโหลดเอกสาร: " . $e->getMessage();
+            $message = "เกิดข้อผิดพลาด: " . $e->getMessage();
             $message_type = 'danger';
         }
     }
@@ -101,111 +126,132 @@ if (isset($_POST['submit'])) {
 
 <head>
     <meta charset="UTF-8">
-    <title>ยื่นคำขอใหม่</title>
+    <title>ยื่นคำร้องขออนุญาตโฆษณา</title>
     <?php include './includes/header.php'; ?>
-
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-    <link rel="stylesheet" href="/Project2026/assets/css/style.css">
-
     <style>
-        #selectMap {
-            height: 450px;
-            width: 100%;
-            border-radius: 8px;
-            margin-top: 10px;
+        body {
+            background-color: #f5f5f5;
+        }
+
+        .paper-form {
+            background: white;
+            padding: 50px;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+            max-width: 900px;
+            margin: 30px auto;
+            border-radius: 4px;
+            font-family: 'Sarabun', sans-serif;
             position: relative;
         }
 
-        .map-controls {
-            position: absolute;
-            top: 10px;
-            right: 10px;
-            z-index: 1000;
+        .form-header {
+            text-align: center;
+            margin-bottom: 40px;
         }
 
-        .gps-button {
-            background: white;
-            border: 2px solid #0d6efd;
-            border-radius: 8px;
-            padding: 10px 15px;
-            cursor: pointer;
-            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
-            font-size: 14px;
-            font-weight: 600;
-            color: #0d6efd;
+        .form-header h3 {
+            font-weight: bold;
+            color: #000;
+        }
+
+        .writing-place {
+            text-align: right;
+            margin-bottom: 10px;
+        }
+
+        .form-line {
             display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .gps-button:hover {
-            background: #0d6efd;
-            color: white;
-        }
-
-        .gps-button:active {
-            transform: scale(0.95);
-        }
-
-        .coordinates-display {
-            background: #f8f9fa;
-            border: 2px solid #dee2e6;
-            border-radius: 8px;
-            padding: 15px;
-            margin-top: 15px;
-        }
-
-        .coordinates-display .coord-label {
-            font-weight: 600;
-            color: #495057;
-            margin-bottom: 8px;
-        }
-
-        .coordinates-display .coord-values {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 15px;
-        }
-
-        .coordinates-display .coord-item {
-            background: white;
-            padding: 10px;
-            border-radius: 6px;
-            border: 1px solid #dee2e6;
-        }
-
-        .coordinates-display .coord-item label {
-            font-size: 12px;
-            color: #6c757d;
-            margin-bottom: 5px;
-            display: block;
-        }
-
-        .coordinates-display .coord-item .value {
+            align-items: baseline;
+            flex-wrap: wrap;
+            margin-bottom: 15px;
             font-size: 16px;
-            font-weight: 600;
-            color: #0d6efd;
-            font-family: 'Courier New', monospace;
+            line-height: 1.8;
         }
 
-        .btn-back {
-            background: #6c757d;
-            color: white;
+        .form-line label {
+            margin-right: 10px;
+            white-space: nowrap;
+        }
+
+        .form-input-line {
             border: none;
-            padding: 10px 20px;
-            border-radius: 6px;
-            text-decoration: none;
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
+            border-bottom: 1px dotted #000;
+            padding: 0 5px;
+            outline: none;
+            background: transparent;
+            text-align: center;
+            color: #004085;
             font-weight: 600;
+        }
+
+        .form-input-line:focus {
+            border-bottom: 1px solid #0d6efd;
+            background-color: #f0f8ff;
+        }
+
+        .w-50px {
+            width: 50px;
+        }
+
+        .w-100px {
+            width: 100px;
+        }
+
+        .w-150px {
+            width: 150px;
+        }
+
+        .w-200px {
+            width: 200px;
+        }
+
+        .w-300px {
+            width: 300px;
+        }
+
+        .w-full {
+            flex-grow: 1;
+        }
+
+        /* Map Styles */
+        #selectMap {
+            height: 350px;
+            width: 100%;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            margin-top: 10px;
+        }
+
+        .section-title {
+            font-weight: bold;
+            margin-top: 20px;
+            margin-bottom: 10px;
+            text-decoration: underline;
+        }
+
+        .upload-box {
+            border: 2px dashed #ccc;
+            padding: 20px;
+            text-align: center;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            background: #fafafa;
+        }
+
+        .btn-submit {
+            background-color: #000;
+            color: white;
+            padding: 10px 40px;
+            border-radius: 30px;
+            font-size: 18px;
+            border: none;
             transition: all 0.3s;
         }
 
-        .btn-back:hover {
-            background: #5a6268;
-            color: white;
-            text-decoration: none;
+        .btn-submit:hover {
+            background-color: #333;
+            transform: translateY(-2px);
         }
     </style>
 </head>
@@ -215,378 +261,189 @@ if (isset($_POST['submit'])) {
     <?php include './includes/sidebar.php'; ?>
 
     <div class="content">
-        <div class="card p-4 fade-in-up">
-            <div class="d-flex justify-content-between align-items-center mb-3">
-                <h2 class="mb-0">📝 แบบฟอร์มขออนุญาตติดตั้งป้าย</h2>
-            </div>
+        <div class="paper-form fade-in-up">
 
             <?php if ($message): ?>
-                <div class="alert alert-<?= $message_type ?> mb-4"><?= htmlspecialchars($message) ?></div>
+                <div class="alert alert-<?= $message_type ?>"><?= $message ?></div>
             <?php endif; ?>
 
             <form method="post" enctype="multipart/form-data">
 
-                <h4 class="mb-3 text-primary">1. รายละเอียดป้ายและสถานที่ติดตั้ง</h4>
-                <hr>
+                <div class="writing-place">
+                    เขียนที่ <span class="fw-bold">เทศบาลเมืองศิลา</span>
+                </div>
+                <!-- วันที่ปัจจุบัน -->
+                <div class="writing-place">
+                    วันที่ <input type="text" class="form-input-line w-150px" value="<?= date('d/m/Y') ?>" readonly>
+                </div>
 
-                <div class="row">
-                    <div class="col-md-6 mb-3">
-                        <label for="sign_type" class="form-label">ประเภทป้าย *</label>
-                        <input type="text" name="sign_type" id="sign_type" class="form-control"
-                            placeholder="เช่น ป้ายโฆษณา, ป้ายประชาสัมพันธ์" required>
+                <div class="form-header mt-4">
+                    <h3>คำร้องขออนุญาตติดตั้งโฆษณา</h3>
+                </div>
+
+                <div class="form-line">
+                    <label>เรื่อง</label> <span>ขออนุญาตติดตั้งป้ายชั่วคราว</span>
+                </div>
+                <div class="form-line">
+                    <label>เรียน</label> <span>เจ้าพนักงานท้องถิ่น</span>
+                </div>
+
+                <!-- ข้อมูลผู้ขออนุญาต (Entity) -->
+                <div class="form-line mt-4">
+                    <label>1. ผู้ขออนุญาตชื่อ (บุคคล/นิติบุคคล)</label>
+                    <input type="text" name="applicant_name" class="form-input-line w-full"
+                        value="<?= $me['title_name'] . $me['first_name'] . ' ' . $me['last_name'] ?>" required
+                        placeholder="ระบุชื่อบริษัท ห้างหุ้นส่วน หรือบุคคลธรรมดา">
+                </div>
+                <div class="form-line">
+                    <label>อยู่บ้านเลขที่/ที่ตั้งสำนักงาน</label>
+                    <input type="text" name="applicant_address" class="form-input-line w-full"
+                        value="<?= $me['address'] ?>" required placeholder="ระบุที่อยู่ครบถ้วน">
+                </div>
+                <div class="form-line">
+                    <label>เบอร์โทรศัพท์</label>
+                    <input type="text" name="phone" class="form-input-line w-200px" value="<?= $me['phone'] ?>"
+                        required>
+                </div>
+
+                <div class="form-line mt-4">
+                    <span class="ms-4">ขอยื่นคำร้องต่อเจ้าพนักงานท้องถิ่น หรือพนักงานเจ้าหน้าที่ ขออนุญาตทำการโฆษณา
+                        โดยปิดทิ้งหรือโปรยแผ่นประกาศหรือใบปลิว ภายในเขตเทศบาลเมืองศิลา ดังรายละเอียดต่อไปนี้:</span>
+                </div>
+
+                <!-- รายละเอียดป้าย -->
+                <div class="section-title">รายละเอียดการโฆษณา</div>
+
+                <div class="form-line">
+                    <label>ประเภทป้าย/สื่อโฆษณา</label>
+                    <input type="text" name="sign_type" class="form-input-line w-300px"
+                        placeholder="เช่น ป้ายคัทเอาท์, ป้ายผ้าใบ" required>
+                </div>
+
+                <div class="form-line">
+                    <label>ขนาดป้าย กว้าง</label>
+                    <input type="number" step="0.01" name="width" id="width" class="form-input-line w-100px" required>
+                    <label>เมตร x ยาว/สูง</label>
+                    <input type="number" step="0.01" name="height" id="height" class="form-input-line w-100px" required>
+                    <label>เมตร</label>
+                </div>
+
+                <div class="form-line">
+                    <label>จำนวน</label>
+                    <input type="number" name="quantity" id="quantity" class="form-input-line w-100px" required min="1"
+                        value="1">
+                    <label>ป้าย</label>
+                </div>
+
+                <div class="form-line">
+                    <label>ข้อความโฆษณา (โดยสังเขป)</label>
+                    <input type="text" name="description" class="form-input-line w-full" required
+                        placeholder="เช่น โปรโมชั่นยาง 3 แถม 1">
+                </div>
+
+                <!-- สถานที่ติดตั้ง -->
+                <div class="section-title mt-3">ตำแหน่งที่ติดตั้ง</div>
+                <div class="form-line">
+                    <label>จะติดตั้ง ณ ถนน/สถานที่</label>
+                    <input type="text" name="road_name" class="form-input-line w-full" required
+                        placeholder="ระบุชื่อถนน หรือสถานที่ติดตั้งทั้งหมด">
+                </div>
+
+                <!-- Map -->
+                <div class="mb-3">
+                    <label class="form-label small text-muted">ปักหมุดตำแหน่งหลัก (เพื่อการอ้างอิงพิกัด GPS)</label>
+                    <div id="selectMap"></div>
+                    <div class="d-flex justify-content-end mt-2">
+                        <span id="coordDisplay" class="badge bg-secondary">ยังไม่ได้เลือกพิกัด</span>
                     </div>
-                    <div class="col-md-6 mb-3">
-                        <label for="duration_days" class="form-label">ระยะเวลาติดตั้ง (วัน) *</label>
-                        <input type="number" name="duration_days" id="duration_days" class="form-control"
-                            placeholder="ไม่เกิน 60 วันสำหรับการค้า" required min="1">
+                    <input type="hidden" name="lat" id="lat">
+                    <input type="hidden" name="lng" id="lng">
+                </div>
+
+                <!-- ระยะเวลา -->
+                <div class="section-title mt-3">ระยะเวลาที่ขออนุญาต</div>
+                <div class="form-line">
+                    <label>ตั้งแต่วันที่</label>
+                    <input type="date" name="install_date" class="form-input-line" required>
+                    <label>ถึงวันที่</label>
+                    <input type="date" name="end_date" class="form-input-line" required>
+                </div>
+
+                <!-- เอกสารแนบ -->
+                <div class="section-title mt-4">เอกสารหลักฐานแนบ</div>
+
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label class="form-label small">1. แบบป้าย/รูปภาพโฆษณา *</label>
+                        <input type="file" name="file_sign_plan" class="form-control form-control-sm" required>
                     </div>
-
-                    <div class="col-md-6 mb-3">
-                        <label for="width" class="form-label">ความกว้าง (เมตร) *</label>
-                        <input type="number" step="0.01" name="width" id="width" class="form-control"
-                            placeholder="กว้าง" required min="0.01">
+                    <div class="col-md-6">
+                        <label class="form-label small">2. สำเนาบัตรประชาชนผู้ขออนุญาต *</label>
+                        <input type="file" name="file_id_card" class="form-control form-control-sm" required>
                     </div>
-                    <div class="col-md-6 mb-3">
-                        <label for="height" class="form-label">ความยาว/สูง (เมตร) *</label>
-                        <input type="number" step="0.01" name="height" id="height" class="form-control"
-                            placeholder="ยาว/สูง" required min="0.01">
+                    <div class="col-md-6">
+                        <label class="form-label small">3. หนังสือยินยอมเจ้าของที่ (ถ้าตั้งในที่เอกชน)</label>
+                        <input type="file" name="file_land_doc" class="form-control form-control-sm">
                     </div>
-
-                    <div class="col-md-12 mb-3">
-                        <label class="form-label">ตำแหน่งติดตั้ง (เลือกบนแผนที่) *</label>
-                        <div style="position: relative;">
-                            <div id="selectMap"></div>
-                            <div class="map-controls">
-                                <button type="button" class="gps-button" id="useGpsBtn">
-                                    <svg width="20" height="20" fill="currentColor" viewBox="0 0 16 16">
-                                        <path
-                                            d="M8 16s6-5.686 6-10A6 6 0 0 0 2 6c0 4.314 6 10 6 10zm0-7a3 3 0 1 1 0-6 3 3 0 0 1 0 6z" />
-                                    </svg>
-                                    ใช้ตำแหน่ง GPS
-                                </button>
-                            </div>
-                        </div>
-
-                        <!-- แสดงพิกัด Lat/Long -->
-                        <div class="coordinates-display">
-                            <div class="coord-label">📍 พิกัดที่เลือก:</div>
-                            <div class="coord-values">
-                                <div class="coord-item">
-                                    <label>ละติจูด (Latitude)</label>
-                                    <div class="value" id="displayLat">16.48500</div>
-                                </div>
-                                <div class="coord-item">
-                                    <label>ลองจิจูด (Longitude)</label>
-                                    <div class="value" id="displayLng">102.83500</div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <p class="small text-muted mt-2">
-                            💡 คลิกบนแผนที่, ลากหมุด หรือกดปุ่ม "ใช้ตำแหน่ง GPS" เพื่อกำหนดตำแหน่งป้าย
-                        </p>
-                    </div>
-
-                    <input type="hidden" name="lat" id="lat" required>
-                    <input type="hidden" name="lng" id="lng" required>
-
-                    <div class="col-md-12 mb-4">
-                        <label for="description" class="form-label">รายละเอียด/ข้อความโฆษณาโดยสังเขป *</label>
-                        <textarea name="description" id="description" class="form-control" rows="3"
-                            placeholder="ตัวอย่างข้อความหรือรูปภาพที่จะโฆษณา" required></textarea>
+                    <div class="col-md-6">
+                        <label class="form-label small">4. เอกสารอื่นๆ (ถ้ามี)</label>
+                        <input type="file" name="file_other" class="form-control form-control-sm">
                     </div>
                 </div>
 
-                <h4 class="mb-3 mt-4 text-success">2. เอกสารหลักฐานประกอบคำขอ</h4>
-                <hr>
-                <p class="small text-muted">กรุณาอัปโหลดเอกสารที่จำเป็น (.pdf, .jpg, .png)</p>
-
-                <div class="row">
-                    <div class="col-md-6 mb-3">
-                        <label for="file_id_card" class="form-label">สำเนาบัตรประชาชน/ทะเบียนบ้าน *</label>
-                        <input class="form-control" type="file" id="file_id_card" name="file_id_card" required>
-                    </div>
-                    <div class="col-md-6 mb-3">
-                        <label for="file_land_doc" class="form-label">สำเนาโฉนดที่ดิน / หนังสือยินยอมเจ้าของที่
-                            *</label>
-                        <input class="form-control" type="file" id="file_land_doc" name="file_land_doc" required>
-                    </div>
-                    <div class="col-md-6 mb-3">
-                        <label for="file_sign_plan" class="form-label">แผนผังบริเวณที่ติดตั้ง และแบบป้าย *</label>
-                        <input class="form-control" type="file" id="file_sign_plan" name="file_sign_plan" required>
-                    </div>
-                    <div class="col-md-6 mb-3">
-                        <label for="file_engineer_cert" class="form-label">เอกสารรับรองจากวิศวกร
-                            (ถ้ามี/สำหรับป้ายใหญ่)</label>
-                        <input class="form-control" type="file" id="file_engineer_cert" name="file_engineer_cert">
+                <div class="row mt-5">
+                    <div class="col-12 text-center">
+                        <p class="small text-muted mb-4">ข้าพเจ้าขอรับรองว่าข้อความข้างต้นเป็นความจริงทุกประการ</p>
+                        <a href="users/index.php" class="btn btn-outline-secondary px-4 me-2">ยกเลิก</a>
+                        <button type="submit" name="submit" class="btn btn-submit">ยื่นคำร้อง</button>
                     </div>
                 </div>
 
-                <div class="alert alert-warning small mt-4">
-                    <strong>หลักเกณฑ์เบื้องต้น:</strong> ป้ายต้องมั่นคงแข็งแรง, ห้ามบังสัญญาณจราจรหรือทัศนียภาพ
-                    และต้องรื้อถอนเมื่อหมดอายุอนุญาต.
-                </div>
-
-                <div class="col-md-12 mt-4 text-center ">
-                    <a href="users/index.php" class="btn btn-secondary">
-                        <i class="bi bi-arrow-left"></i> กลับหน้ารายการ
-                    </a>
-                    <button type="submit" name="submit" class="btn btn-secondary ms-2"> ยื่นคำขออนุญาต</button>
-
-                </div>
             </form>
         </div>
     </div>
 
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-
     <script>
         document.addEventListener('DOMContentLoaded', function () {
-
-            // 1. กำหนดพิกัดเริ่มต้น (ใจกลางพื้นที่ให้บริการ เช่น ทม.ศิลา)
-            const initialLat = 16.485;
-            const initialLng = 102.835;
-            const initialZoom = 13;
-
-            // 2. สร้างแผนที่
-            var map = L.map('selectMap').setView([initialLat, initialLng], initialZoom);
-
+            var map = L.map('selectMap').setView([16.485, 102.835], 13);
             L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                maxZoom: 18,
-                attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+                attribution: 'OpenStreetMap',
+                maxZoom: 19
             }).addTo(map);
 
-            // 3. สร้างหมุดเริ่มต้นและกำหนดให้ลากได้
-            var marker = L.marker([initialLat, initialLng], {
-                draggable: true
-            }).addTo(map);
+            var marker;
 
-            // ตัวแปรเก็บข้อมูล Polygon
-            var boundaryLayer;
-            var silaPolygons = [];
-
-            // โหลด GeoJSON ขอบเขต
+            // Load Boundary
             fetch('data/sila.geojson')
-                .then(response => response.json())
+                .then(res => res.json())
                 .then(data => {
-                    // แสดงขอบเขตบนแผนที่
-                    boundaryLayer = L.geoJSON(data, {
-                        style: {
-                            color: 'blue',
-                            weight: 2,
-                            opacity: 0.6,
-                            fillOpacity: 0.05
-                        }
+                    L.geoJSON(data, {
+                        style: { color: 'blue', weight: 2, fillOpacity: 0.05 }
                     }).addTo(map);
+                });
 
-                    // แปลง GeoJSON เป็น Array ของ Polygon เพื่อใช้เช็คพิกัด
-                    data.features.forEach(feature => {
-                        if (feature.geometry.type === 'Polygon') {
-                            silaPolygons.push(feature.geometry.coordinates[0]); // [0] เพราะ GeoJSON Polygon ซ้อน Array
-                        } else if (feature.geometry.type === 'MultiPolygon') {
-                            feature.geometry.coordinates.forEach(polygon => {
-                                silaPolygons.push(polygon[0]);
-                            });
-                        }
-                    });
-                })
-                .catch(err => console.error('Error loading GeoJSON:', err));
-
-            // ฟังก์ชันตรวจสอบว่าจุดอยู่ใน Polygon หรือไม่ (Ray-Casting Algorithm)
-            function isPointInPolygon(lat, lng, polygon) {
-                var x = lng, y = lat;
-                var inside = false;
-                for (var i = 0, j = polygon.length - 1; i < polygon.length; j = i++) {
-                    var xi = polygon[i][0], yi = polygon[i][1];
-                    var xj = polygon[j][0], yj = polygon[j][1];
-
-                    var intersect = ((yi > y) != (yj > y)) &&
-                        (x < (xj - xi) * (y - yi) / (yj - yi) + xi);
-                    if (intersect) inside = !inside;
-                }
-                return inside;
-            }
-
-            // ฟังก์ชันตรวจสอบว่าอยู่ในเขตพื้นที่บริการหรือไม่
-            function checkBoundary(lat, lng) {
-                // ถ้ายังโหลด Polygon ไม่เสร็จ ให้ผ่านไปก่อน (หรือจะ Block ก็ได้)
-                if (silaPolygons.length === 0) return true;
-
-                let isInside = false;
-                for (let poly of silaPolygons) {
-                    if (isPointInPolygon(lat, lng, poly)) {
-                        isInside = true;
-                        break;
-                    }
-                }
-                return isInside;
-            }
-
-            // ฟังก์ชันคืนค่าหมุดไปยังตำแหน่งเดิม
-            let lastValidLat = initialLat;
-            let lastValidLng = initialLng;
-
-            // ฟังก์ชันอัปเดตพิกัดทั้งในฟอร์มและการแสดงผล
-            function updateCoordinates(lat, lng, isUserAction = false) {
-                // ตรวจสอบขอบเขตเฉพาะเมื่อเกิดจากการกระทำของผู้ใช้
-                if (isUserAction && silaPolygons.length > 0) {
-                    if (!checkBoundary(lat, lng)) {
-                        Swal.fire({
-                            icon: 'error',
-                            title: 'ไม่อนุญาต',
-                            text: 'ไม่สามารถเลือกตำแหน่งนี้ได้ กรุณาปักหมุดภายในเขตพื้นที่รับผิดชอบ (ทม.ศิลา) เท่านั้น',
-                            confirmButtonColor: '#d33',
-                            confirmButtonText: 'ตกลง'
-                        });
-
-                        // คืนค่าตำแหน่งหมุด
-                        marker.setLatLng([lastValidLat, lastValidLng]);
-
-                        // รีเซ็ตแผนที่กลับไปที่เดิม (ถ้าต้องการ)
-                        // map.panTo([lastValidLat, lastValidLng]); 
-                        return;
-                    }
-                }
-
-                // ถ้าผ่าน หรือไม่ใช่ User Action ให้บันทึกเป็น Last Valid
-                lastValidLat = lat;
-                lastValidLng = lng;
-
-                const latFixed = lat.toFixed(5);
-                const lngFixed = lng.toFixed(5);
-
-                // อัปเดต hidden fields
-                document.getElementById('lat').value = latFixed;
-                document.getElementById('lng').value = lngFixed;
-
-                // อัปเดตการแสดงผล
-                document.getElementById('displayLat').textContent = latFixed;
-                document.getElementById('displayLng').textContent = lngFixed;
-            }
-
-            // ตั้งค่าพิกัดเริ่มต้น
-            updateCoordinates(initialLat, initialLng);
-
-            // 4. ฟังก์ชันอัปเดตพิกัดเมื่อมีการลากหมุด
-            marker.on('dragend', function (e) {
-                var coords = e.target.getLatLng();
-                updateCoordinates(coords.lat, coords.lng, true);
-            });
-
-            // 5. ฟังก์ชันอัปเดตพิกัดเมื่อมีการคลิกบนแผนที่
-            map.on('click', function (e) {
-                marker.setLatLng(e.latlng);
-                updateCoordinates(e.latlng.lat, e.latlng.lng, true);
-            });
-
-            // 6. ฟังก์ชันใช้ GPS
-            document.getElementById('useGpsBtn').addEventListener('click', function () {
-                const button = this;
-                const originalText = button.innerHTML;
-
-                // แสดงสถานะกำลังโหลด
-                button.innerHTML = '<svg width="20" height="20" fill="currentColor" viewBox="0 0 16 16" class="spinner"><circle cx="8" cy="8" r="7" stroke="currentColor" stroke-width="2" fill="none"/></svg> กำลังค้นหา...';
-                button.disabled = true;
-
-                if ("geolocation" in navigator) {
-                    navigator.geolocation.getCurrentPosition(
-                        function (position) {
-                            const lat = position.coords.latitude;
-                            const lng = position.coords.longitude;
-
-                            // เช็คก่อนย้าย
-                            if (silaPolygons.length > 0 && !checkBoundary(lat, lng)) {
-                                Swal.fire({
-                                    icon: 'error',
-                                    title: 'อยู่นอกพื้นที่',
-                                    text: 'ตำแหน่งปัจจุบันของคุณอยู่นอกเขตพื้นที่รับผิดชอบ (ทม.ศิลา)',
-                                    confirmButtonText: 'ตกลง'
-                                });
-                                button.innerHTML = originalText;
-                                button.disabled = false;
-                                return;
-                            }
-
-                            // ย้ายแผนที่และหมุดไปยังตำแหน่ง GPS
-                            map.setView([lat, lng], 16);
-                            marker.setLatLng([lat, lng]);
-                            updateCoordinates(lat, lng, true);
-
-                            // คืนค่าปุ่มเป็นปกติ
-                            button.innerHTML = originalText;
-                            button.disabled = false;
-
-                            // แจ้งเตือนสำเร็จ
-                            Swal.fire({
-                                icon: 'success',
-                                title: 'สำเร็จ',
-                                text: 'ได้พิกัดจาก GPS แล้ว!',
-                                timer: 1500,
-                                showConfirmButton: false
-                            });
-                        },
-                        function (error) {
-                            console.error('GPS Error:', error);
-                            let errorMsg = 'ไม่สามารถใช้ GPS ได้';
-
-                            switch (error.code) {
-                                case error.PERMISSION_DENIED:
-                                    errorMsg = 'กรุณาอนุญาตให้เข้าถึงตำแหน่งในเบราว์เซอร์';
-                                    break;
-                                case error.POSITION_UNAVAILABLE:
-                                    errorMsg = 'ไม่สามารถหาตำแหน่งได้ในขณะนี้';
-                                    break;
-                                case error.TIMEOUT:
-                                    errorMsg = 'หมดเวลาในการค้นหาตำแหน่ง';
-                                    break;
-                            }
-
-                            Swal.fire({
-                                icon: 'error',
-                                title: 'เกิดข้อผิดพลาด',
-                                text: errorMsg,
-                                confirmButtonText: 'ตกลง'
-                            });
-                            button.innerHTML = originalText;
-                            button.disabled = false;
-                        },
-                        {
-                            enableHighAccuracy: true,
-                            timeout: 10000,
-                            maximumAge: 0
-                        }
-                    );
+            function onMapClick(e) {
+                if (marker) {
+                    marker.setLatLng(e.latlng);
                 } else {
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'ไม่รองรับ',
-                        text: 'เบราว์เซอร์ของคุณไม่รองรับ GPS',
-                        confirmButtonText: 'ตกลง'
+                    marker = L.marker(e.latlng, { draggable: true }).addTo(map);
+                    marker.on('dragend', function (event) {
+                        updateInput(event.target.getLatLng());
                     });
-                    button.innerHTML = originalText;
-                    button.disabled = false;
                 }
-            });
+                updateInput(e.latlng);
+            }
 
-            // แก้ปัญหาแผนที่ไม่โหลดเต็มที่
-            setTimeout(function () {
-                map.invalidateSize();
-            }, 400);
+            function updateInput(latlng) {
+                document.getElementById('lat').value = latlng.lat;
+                document.getElementById('lng').value = latlng.lng;
+                document.getElementById('coordDisplay').textContent = "Lat: " + latlng.lat.toFixed(5) + ", Lng: " + latlng.lng.toFixed(5);
+                document.getElementById('coordDisplay').className = "badge bg-success";
+            }
 
+            map.on('click', onMapClick);
         });
-
-        // เพิ่ม CSS สำหรับ spinner animation
-        const style = document.createElement('style');
-        style.textContent = `
-    @keyframes spin {
-        0% { transform: rotate(0deg); }
-        100% { transform: rotate(360deg); }
-    }
-    .spinner {
-        animation: spin 1s linear infinite;
-    }
-`;
-        document.head.appendChild(style);
     </script>
     <?php include './includes/scripts.php'; ?>
 </body>
