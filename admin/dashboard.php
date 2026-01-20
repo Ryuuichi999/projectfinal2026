@@ -108,15 +108,17 @@ $approved_requests = $result_approved->fetch_assoc()['total'];
 
         <h3 class="mt-5 mb-3">⚙️ จัดการระบบ</h3>
         <div class="row">
-            <div class="col-md-4">
-                <a href="request_list.php" class="text-decoration-none">
-                    <div class="card p-3 text-center shadow-sm h-100 hover-lift"
-                        style="border-top: 4px solid var(--primary);">
-                        <h5 class="mt-0 text-primary">📝 จัดการคำขอ</h5>
-                        <p class="text-muted small mb-0">ตรวจสอบและอนุมัติคำขอติดตั้งป้าย</p>
-                    </div>
-                </a>
-            </div>
+            <?php if ($_SESSION['role'] === 'employee'): ?>
+                <div class="col-md-4">
+                    <a href="request_list.php" class="text-decoration-none">
+                        <div class="card p-3 text-center shadow-sm h-100 hover-lift"
+                            style="border-top: 4px solid var(--primary);">
+                            <h5 class="mt-0 text-primary">📝 จัดการคำขอ</h5>
+                            <p class="text-muted small mb-0">ตรวจสอบและอนุมัติคำขอติดตั้งป้าย</p>
+                        </div>
+                    </a>
+                </div>
+            <?php endif; ?>
 
             <div class="col-md-4">
                 <a href="users_list.php" class="text-decoration-none">
@@ -127,14 +129,16 @@ $approved_requests = $result_approved->fetch_assoc()['total'];
                 </a>
             </div>
 
-            <div class="col-md-4">
-                <a href="../map.php" class="text-decoration-none">
-                    <div class="card p-3 text-center shadow-sm h-100 hover-lift" style="border-top: 4px solid #f59e0b;">
-                        <h5 class="mt-0 text-warning">🗺️ แผนที่ภาพรวม</h5>
-                        <p class="text-muted small mb-0">ดูตำแหน่งป้ายทั้งหมดบนแผนที่</p>
-                    </div>
-                </a>
-            </div>
+            <?php if ($_SESSION['role'] === 'employee'): ?>
+                <div class="col-md-4">
+                    <a href="../map.php" class="text-decoration-none">
+                        <div class="card p-3 text-center shadow-sm h-100 hover-lift" style="border-top: 4px solid #f59e0b;">
+                            <h5 class="mt-0 text-warning">🗺️ แผนที่ภาพรวม</h5>
+                            <p class="text-muted small mb-0">ดูตำแหน่งป้ายทั้งหมดบนแผนที่</p>
+                        </div>
+                    </a>
+                </div>
+            <?php endif; ?>
         </div>
 
     </div>

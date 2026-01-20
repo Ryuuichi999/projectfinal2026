@@ -45,7 +45,12 @@ $result = $conn->query($sql);
     <?php include '../includes/sidebar.php'; ?>
 
     <div class="content fade-in-up">
-        <h2 class="mb-4">👥 จัดการผู้ใช้งาน</h2>
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2 class="mb-0">👥 จัดการผู้ใช้งาน</h2>
+            <a href="add_user.php" class="btn btn-success">
+                <i class="bi bi-person-plus-fill"></i> เพิ่มผู้ใช้
+            </a>
+        </div>
 
         <?php if (isset($success_msg)): ?>
             <script>

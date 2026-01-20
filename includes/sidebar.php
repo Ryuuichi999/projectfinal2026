@@ -17,13 +17,15 @@
                     👥 จัดการผู้ใช้งาน
                 </a>
             <?php endif; ?>
-            <a href="/Project2026/admin/request_list.php"
-                class="<?= basename($_SERVER['PHP_SELF']) == 'request_list.php' ? 'active' : '' ?>">
-                📝 รายการคำขอ
-            </a>
-            <a href="/Project2026/map.php" class="<?= basename($_SERVER['PHP_SELF']) == 'map.php' ? 'active' : '' ?>">
-                🗺️ แผนที่
-            </a>
+            <?php if ($_SESSION['role'] === 'employee'): ?>
+                <a href="/Project2026/admin/request_list.php"
+                    class="<?= basename($_SERVER['PHP_SELF']) == 'request_list.php' ? 'active' : '' ?>">
+                    📝 รายการคำขอ
+                </a>
+                <a href="/Project2026/map.php" class="<?= basename($_SERVER['PHP_SELF']) == 'map.php' ? 'active' : '' ?>">
+                    🗺️ แผนที่
+                </a>
+            <?php endif; ?>
         <?php else: ?>
             <!-- เมนูสำหรับผู้ใช้งานทั่วไป (User) -->
             <a href="/Project2026/users/index.php"
