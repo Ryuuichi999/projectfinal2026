@@ -1,12 +1,12 @@
 <?php
-require './includes/db.php';
+require '../includes/db.php';
 
 if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'user') {
     header("Location: login.php");
     exit;
 }
 
-// ดึงข้อมูลผู้ใช้เพื่อ Pre-fill (ส่วนข้าพเจ้า)
+// ดึงข้อมูลผู้ใช้เพื่อ Pre-fill 
 $user_id = $_SESSION['user_id'];
 $sql_user = "SELECT * FROM users WHERE id = ?";
 $stmt_user = $conn->prepare($sql_user);
@@ -109,7 +109,7 @@ if (isset($_POST['submit'])) {
             }
 
             $conn->commit();
-            header("Location: payment.php?id=" . $request_id); // ไปหน้าจ่ายเงิน (หรือหน้ารายการ)
+            header("Location: ../payment.php?id=" . $request_id); // ไปหน้าจ่ายเงิน (หรือหน้ารายการ)
             exit;
 
         } catch (Exception $e) {
@@ -127,7 +127,7 @@ if (isset($_POST['submit'])) {
 <head>
     <meta charset="UTF-8">
     <title>ยื่นคำร้องขออนุญาตโฆษณา</title>
-    <?php include './includes/header.php'; ?>
+    <?php include '../includes/header.php'; ?>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <style>
         body {
@@ -258,7 +258,7 @@ if (isset($_POST['submit'])) {
 
 <body>
 
-    <?php include './includes/sidebar.php'; ?>
+    <?php include '../includes/sidebar.php'; ?>
 
     <div class="content">
         <div class="paper-form fade-in-up">
@@ -394,7 +394,7 @@ if (isset($_POST['submit'])) {
                 <div class="row mt-5">
                     <div class="col-12 text-center">
                         <p class="small text-muted mb-4">ข้าพเจ้าขอรับรองว่าข้อความข้างต้นเป็นความจริงทุกประการ</p>
-                        <a href="users/index.php" class="btn btn-outline-secondary px-4 me-2">ยกเลิก</a>
+                        <a href="index.php" class="btn btn-outline-secondary px-4 me-2">ยกเลิก</a>
                         <button type="submit" name="submit" class="btn btn-submit">ยื่นคำร้อง</button>
                     </div>
                 </div>
@@ -415,7 +415,7 @@ if (isset($_POST['submit'])) {
             var marker;
 
             // Load Boundary
-            fetch('data/sila.geojson')
+            fetch('../data/sila.geojson')
                 .then(res => res.json())
                 .then(data => {
                     L.geoJSON(data, {
@@ -445,7 +445,7 @@ if (isset($_POST['submit'])) {
             map.on('click', onMapClick);
         });
     </script>
-    <?php include './includes/scripts.php'; ?>
+    <?php include '../includes/scripts.php'; ?>
 </body>
 
 </html>

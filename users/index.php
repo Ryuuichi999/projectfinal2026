@@ -104,7 +104,7 @@ $approved = $stats['approved'] ?? 0;
         <h3 class="mt-5 mb-3">🚀 ทางลัดการดำเนินการ</h3>
         <div class="row">
             <div class="col-md-4">
-                <a href="../request_form.php" class="text-decoration-none">
+                <a href="request_form.php" class="text-decoration-none">
                     <div class="card p-3 text-center shadow-sm h-100 hover-lift"
                         style="border-top: 4px solid var(--primary);">
                         <h5 class="mt-0 text-primary">📝 ยื่นคำขอใหม่</h5>
@@ -114,7 +114,7 @@ $approved = $stats['approved'] ?? 0;
             </div>
 
             <div class="col-md-4">
-                <a href="../my_request.php" class="text-decoration-none">
+                <a href="my_request.php" class="text-decoration-none">
                     <div class="card p-3 text-center shadow-sm h-100 hover-lift" style="border-top: 4px solid #10b981;">
                         <h5 class="mt-0 text-success">📄 ตรวจสอบสถานะ</h5>
                         <p class="text-muted small mb-0">ดูรายละเอียดและความคืบหน้าของคำขอทั้งหมด</p>

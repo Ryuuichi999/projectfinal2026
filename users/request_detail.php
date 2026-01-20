@@ -1,9 +1,9 @@
 <?php
-require './includes/db.php';
+require '../includes/db.php';
 
 // อนุญาตให้เข้าถึงได้ถ้ามี Login
 if (!isset($_SESSION['user_id'])) {
-    header("Location: login.php");
+    header("Location: ../login.php");
     exit;
 }
 
@@ -77,9 +77,9 @@ function get_status_badge($status)
 <head>
     <meta charset="UTF-8">
     <title>รายละเอียดคำขอ #<?= $request['id'] ?></title>
-    <?php include './includes/header.php'; ?>
+    <?php include '../includes/header.php'; ?>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-    <link rel="stylesheet" href="./assets/css/style.css">
+    <link rel="stylesheet" href="../assets/css/style.css">
     <style>
         .detail-label {
             font-weight: bold;
@@ -110,7 +110,7 @@ function get_status_badge($status)
 
 <body>
 
-    <?php include './includes/sidebar.php'; ?>
+    <?php include '../includes/sidebar.php'; ?>
 
     <div class="content">
         <div class="container-fluid">
@@ -119,7 +119,7 @@ function get_status_badge($status)
                 <?php
                 $back_link = 'my_request.php';
                 if (isset($_SESSION['role']) && ($_SESSION['role'] === 'admin' || $_SESSION['role'] === 'employee')) {
-                    $back_link = 'admin/request_list.php';
+                    $back_link = '../admin/request_list.php';
                 }
                 ?>
                 <a href="<?= $back_link ?>" class="btn btn-secondary">
@@ -226,6 +226,6 @@ function get_status_badge($status)
     </script>
 
 </body>
-<?php include './includes/scripts.php'; ?>
+<?php include '../includes/scripts.php'; ?>
 
 </html>

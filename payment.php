@@ -7,7 +7,7 @@ if (!isset($_SESSION['user_id'])) {
 }
 
 if (!isset($_GET['id'])) {
-    header("Location: my_request.php");
+    header("Location: users/my_request.php");
     exit;
 }
 
@@ -40,7 +40,7 @@ if ($request['status'] !== 'waiting_payment') {
     //             text: '$alert_message',
     //             confirmButtonText: 'ตกลง'
     //         }).then(() => {
-    //             window.location.href='my_request.php';
+    //             window.location.href='users/my_request.php';
     //         });
     //     });
     // </script>";
@@ -90,7 +90,7 @@ if (isset($_POST['upload_slip'])) {
                                 text: 'แจ้งชำระเงินเรียบร้อยแล้ว! เจ้าหน้าที่จะตรวจสอบสลิปของท่าน',
                                 confirmButtonText: 'ตกลง'
                             }).then(() => {
-                                window.location.href = 'my_request.php';
+                                window.location.href = 'users/my_request.php';
                             });
                         });
                     </script>";
@@ -166,7 +166,7 @@ $qr_url = "https://promptpay.io/{$promptpay_id}/{$amount}.png";
                                 <button type="submit" name="upload_slip" class="btn btn-success btn-lg">
                                     ✅ ยืนยันการชำระเงิน
                                 </button>
-                                <a href="my_request.php" class="btn btn-outline-secondary">กลับไปหน้ารายการ</a>
+                                <a href="users/my_request.php" class="btn btn-outline-secondary">กลับไปหน้ารายการ</a>
                             </div>
                         </form>
                     </div>

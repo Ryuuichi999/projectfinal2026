@@ -30,11 +30,11 @@
                 class="<?= basename($_SERVER['PHP_SELF']) == 'index.php' ? 'active' : '' ?>">
                 🏠 หน้าแรก
             </a>
-            <a href="/Project2026/request_form.php"
+            <a href="/Project2026/users/request_form.php"
                 class="<?= basename($_SERVER['PHP_SELF']) == 'request_form.php' ? 'active' : '' ?>">
                 📝 ยื่นคำขอ
             </a>
-            <a href="/Project2026/my_request.php"
+            <a href="/Project2026/users/my_request.php"
                 class="<?= basename($_SERVER['PHP_SELF']) == 'my_request.php' ? 'active' : '' ?>">
                 📄 สถานะคำขอ
             </a>

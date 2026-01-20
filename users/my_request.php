@@ -1,8 +1,8 @@
 <?php
-require './includes/db.php'; // ใช้ Path ที่คุณแก้ไขแล้ว
+require '../includes/db.php'; 
 
 if (!isset($_SESSION['user_id'])) {
-    header("Location: login.php");
+    header("Location: ../login.php");
     exit;
 }
 
@@ -40,8 +40,8 @@ function get_status_badge($status)
 <head>
     <meta charset="UTF-8">
     <title>สถานะคำขอ</title>
-    <?php include './includes/header.php'; // สำหรับเรียกใช้ Bootstrap ?>
-    <link rel="stylesheet" href="./assets/css/style.css">
+    <?php include '../includes/header.php';  ?>
+    <link rel="stylesheet" href="../assets/css/style.css">
     <style>
         /* CSS สำหรับป้ายสถานะเพื่อให้สวยงาม */
         .badge {
@@ -52,7 +52,7 @@ function get_status_badge($status)
 
 <body>
 
-    <?php include './includes/sidebar.php'; ?>
+    <?php include '../includes/sidebar.php'; ?>
 
     <div class="content">
         <div class="card p-4 fade-in-up">
@@ -95,7 +95,7 @@ function get_status_badge($status)
                                 echo "<td>";
                                 echo "<a href='request_detail.php?id={$row['id']}' class='btn btn-sm btn-info'>ดู</a>";
                                 if ($row['status'] == 'waiting_payment') {
-                                    echo " <a href='payment.php?id={$row['id']}' class='btn btn-sm btn-success'>ชำระเงิน</a>";
+                                    echo " <a href='../payment.php?id={$row['id']}' class='btn btn-sm btn-success'>ชำระเงิน</a>";
                                 }
                                 echo "</td>";
                                 echo "</tr>";
@@ -111,6 +111,6 @@ function get_status_badge($status)
     </div>
 
 </body>
-<?php include './includes/scripts.php'; ?>
+<?php include '../includes/scripts.php'; ?>
 
 </html>

@@ -127,7 +127,7 @@ function get_status_badge($status)
                                 <td><?= get_status_badge($row['status']) ?></td>
                                 <td>
                                     <div class="btn-group">
-                                        <a href="../request_detail.php?id=<?= $row['id'] ?>"
+                                        <a href="../users/request_detail.php?id=<?= $row['id'] ?>"
                                             class="btn btn-sm btn-outline-primary">
                                             🔍 รายละเอียด
                                         </a>
