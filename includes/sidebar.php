@@ -18,8 +18,8 @@
                 </a>
             <?php endif; ?>
             <?php if ($_SESSION['role'] === 'employee'): ?>
-                <a href="/Project2026/admin/request_list.php"
-                    class="<?= basename($_SERVER['PHP_SELF']) == 'request_list.php' ? 'active' : '' ?>">
+                <a href="/Project2026/employee/request_list.php"
+                    class="<?= (strpos($_SERVER['PHP_SELF'], 'employee') !== false) ? 'active' : '' ?>">
                     📝 รายการคำขอ
                 </a>
                 <a href="/Project2026/map.php" class="<?= basename($_SERVER['PHP_SELF']) == 'map.php' ? 'active' : '' ?>">

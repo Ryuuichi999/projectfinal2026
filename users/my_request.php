@@ -1,5 +1,5 @@
 <?php
-require '../includes/db.php'; 
+require '../includes/db.php';
 
 if (!isset($_SESSION['user_id'])) {
     header("Location: ../login.php");
@@ -40,7 +40,7 @@ function get_status_badge($status)
 <head>
     <meta charset="UTF-8">
     <title>สถานะคำขอ</title>
-    <?php include '../includes/header.php';  ?>
+    <?php include '../includes/header.php'; ?>
     <link rel="stylesheet" href="../assets/css/style.css">
     <style>
         /* CSS สำหรับป้ายสถานะเพื่อให้สวยงาม */

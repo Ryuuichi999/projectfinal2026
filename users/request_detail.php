@@ -119,7 +119,7 @@ function get_status_badge($status)
                 <?php
                 $back_link = 'my_request.php';
                 if (isset($_SESSION['role']) && ($_SESSION['role'] === 'admin' || $_SESSION['role'] === 'employee')) {
-                    $back_link = '../admin/request_list.php';
+                    $back_link = '../employee/request_list.php';
                 }
                 ?>
                 <a href="<?= $back_link ?>" class="btn btn-secondary">
