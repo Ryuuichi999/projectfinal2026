@@ -57,7 +57,7 @@ if (isset($_POST['submit'])) {
             // แต่เราสมมติว่ารันแล้วตาม Plan
             $sql = "INSERT INTO sign_requests 
             (user_id, applicant_name, applicant_address, sign_type, width, height, quantity, road_name, location_lat, location_lng, fee, status, duration_days, description) 
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'waiting_payment', ?, ?)";
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'pending', ?, ?)";
 
             $stmt = $conn->prepare($sql);
             $stmt->bind_param(
@@ -109,7 +109,30 @@ if (isset($_POST['submit'])) {
             }
 
             $conn->commit();
-            header("Location: ../payment.php?id=" . $request_id); // ไปหน้าจ่ายเงิน (หรือหน้ารายการ)
+            
+            // แสดง SweetAlert และ Redirect
+            echo '<!DOCTYPE html>
+            <html lang="th">
+            <head>
+                <meta charset="UTF-8">
+                <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+            </head>
+            <body>
+                <script>
+                    document.addEventListener("DOMContentLoaded", function() {
+                        Swal.fire({
+                            icon: "success",
+                            title: "ยื่นคำร้องสำเร็จ",
+                            text: "เจ้าหน้าที่จะดำเนินการตรวจสอบข้อมูลของท่าน",
+                            showConfirmButton: false,
+                            timer: 1500
+                        }).then(() => {
+                            window.location.href = "my_request.php";
+                        });
+                    });
+                </script>
+            </body>
+            </html>';
             exit;
 
         } catch (Exception $e) {

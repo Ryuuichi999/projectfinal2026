@@ -47,6 +47,25 @@ function get_status_badge($status)
         .badge {
             padding: 0.5em 0.8em;
         }
+        /* ปรับ layout ตารางให้กระชับ ไม่ตัดบรรทัด */
+        .table {
+            font-size: 0.92rem;
+        }
+        .table th,
+        .table td {
+            vertical-align: middle;
+        }
+        /* คอลัมน์รายละเอียดไม่ให้ตัดบรรทัด + ปุ่มอยู่บรรทัดเดียว */
+        td.action-cell {
+            white-space: nowrap;
+        }
+        td.action-cell .btn-group {
+            flex-wrap: nowrap;
+        }
+        td.action-cell .btn {
+            font-size: 0.85rem;
+            padding: 0.25rem 0.5rem;
+        }
     </style>
 </head>
 
@@ -92,11 +111,17 @@ function get_status_badge($status)
                                 echo "<td>" . number_format($row['fee']) . "</td>";
                                 echo "<td>" . get_status_badge($row['status']) . "</td>";
                                 echo "<td>" . date('Y-m-d', strtotime($row['created_at'])) . "</td>";
-                                echo "<td>";
-                                echo "<a href='request_detail.php?id={$row['id']}' class='btn btn-sm btn-info'>ดู</a>";
+                                echo "<td class='action-cell'>";
+                                echo "<div class='btn-group' role='group' aria-label='การทำรายการ'>";
+                                echo "<a href='request_detail.php?id={$row['id']}' class='btn btn-sm btn-info' title='ดูรายละเอียด'>ดู</a>";
                                 if ($row['status'] == 'waiting_payment') {
-                                    echo " <a href='../payment.php?id={$row['id']}' class='btn btn-sm btn-success'>ชำระเงิน</a>";
+                                    echo "<a href='../payment.php?id={$row['id']}' class='btn btn-sm btn-success' title='ชำระเงิน'>ชำระเงิน</a>";
                                 }
+                                if ($row['status'] == 'approved') {
+                                    echo "<a href='view_receipt.php?id={$row['id']}' target='_blank' class='btn btn-sm btn-primary' title='พิมพ์ใบเสร็จ'>ใบเสร็จ</a>";
+                                    echo "<a href='view_permission.php?id={$row['id']}' target='_blank' class='btn btn-sm btn-outline-primary' title='พิมพ์ใบอนุญาต'>ใบอนุญาต</a>";
+                                }
+                                echo "</div>";
                                 echo "</td>";
                                 echo "</tr>";
                             }

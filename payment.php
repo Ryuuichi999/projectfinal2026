@@ -66,36 +66,54 @@ if (isset($_POST['upload_slip'])) {
             $dest_path = $upload_dir . $new_filename;
 
             if (move_uploaded_file($_FILES['slip_file']['tmp_name'], $dest_path)) {
-                // อัปเดตสถานะเป็น 'pending' (รอตรวจสอบ) และบันทึก path
-                // ต้องเพิ่ม column slip_file ใน db ถ้ายังไม่มี (ในที่นี้ข้ามการแก้ Schema ไปก่อน หรือจะใช้ sign_documents ก็ได้)
-                // ตกลงใช้ sign_documents เก็บสลิปด้วย doc_type='Payment Slip'
-
+                // บันทึกสลิปใน sign_documents
                 $doc_type = 'Payment Slip';
                 $sql_doc = "INSERT INTO sign_documents (request_id, doc_type, file_path) VALUES (?, ?, ?)";
                 $stmt_doc = $conn->prepare($sql_doc);
                 $stmt_doc->bind_param("iss", $request_id, $doc_type, $dest_path);
 
                 if ($stmt_doc->execute()) {
-                    // อัปเดตสถานะคำขอ
-                    $update_sql = "UPDATE sign_requests SET status = 'pending' WHERE id = ?";
+                    // อัปเดตสถานะคำขอเป็น 'waiting_receipt' (รอออกใบเสร็จ)
+                    $update_sql = "UPDATE sign_requests SET status = 'waiting_receipt' WHERE id = ?";
                     $stmt_update = $conn->prepare($update_sql);
                     $stmt_update->bind_param("i", $request_id);
-                    $stmt_update->execute();
-
-                    echo "<script>
-                        document.addEventListener('DOMContentLoaded', function() {
-                            Swal.fire({
-                                icon: 'success',
-                                title: 'สำเร็จ',
-                                text: 'แจ้งชำระเงินเรียบร้อยแล้ว! เจ้าหน้าที่จะตรวจสอบสลิปของท่าน',
-                                confirmButtonText: 'ตกลง'
-                            }).then(() => {
-                                window.location.href = 'users/my_request.php';
-                            });
-                        });
-                    </script>";
-                    exit;
+                    
+                    if ($stmt_update->execute()) {
+                        // ใช้ HTML structure ที่สมบูรณ์พร้อม SweetAlert
+                        ?>
+                        <!DOCTYPE html>
+                        <html lang="th">
+                        <head>
+                            <meta charset="UTF-8">
+                            <title>สำเร็จ</title>
+                            <?php include './includes/header.php'; ?>
+                        </head>
+                        <body>
+                            <script>
+                                document.addEventListener('DOMContentLoaded', function() {
+                                    Swal.fire({
+                                        icon: 'success',
+                                        title: 'สำเร็จ',
+                                        text: 'แจ้งชำระเงินเรียบร้อยแล้ว! เจ้าหน้าที่จะตรวจสอบสลิปของท่าน',
+                                        confirmButtonText: 'ตกลง'
+                                    }).then(() => {
+                                        window.location.href = 'users/my_request.php';
+                                    });
+                                });
+                            </script>
+                            <?php include './includes/scripts.php'; ?>
+                        </body>
+                        </html>
+                        <?php
+                        exit;
+                    } else {
+                        $error = "เกิดข้อผิดพลาดในการอัปเดตสถานะ: " . $conn->error;
+                    }
+                } else {
+                    $error = "เกิดข้อผิดพลาดในการบันทึกสลิป: " . $conn->error;
                 }
+            } else {
+                $error = "เกิดข้อผิดพลาดในการอัปโหลดไฟล์ กรุณาลองใหม่อีกครั้ง";
             }
         } else {
             $error = "ไฟล์ไม่ถูกต้อง อนุญาตเฉพาะ JPG, PNG, PDF";

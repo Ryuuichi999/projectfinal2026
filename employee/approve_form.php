@@ -20,14 +20,16 @@ $sql = "SELECT r.*, u.citizen_id, u.title_name, u.first_name, u.last_name, u.add
 $stmt = $conn->prepare($sql);
 $stmt->bind_param("i", $request_id);
 $stmt->execute();
-$request = $stmt->get_result()->fetch_assoc();
+$result = $stmt->get_result();
 
-if (!$request) {
+if ($result->num_rows === 0) {
     echo "ไม่พบข้อมูลคำขอ";
     exit;
 }
 
-// Auto-generate Permission Number (Example: 39/2568)
+$request = $result->fetch_assoc();
+
+// Auto-generate Permission Number (Example: Wait/2569)
 $current_year_th = date('Y') + 543;
 $permit_number = "Wait/" . $current_year_th;
 
@@ -35,13 +37,13 @@ if (isset($_POST['approve_confirm'])) {
     $permit_no = $_POST['permit_no'];
     $permit_date = $_POST['permit_date']; // วันที่ออกหนังสือ
 
-    // Update DB
+    // Update DB: status -> waiting_payment
     $sql_update = "UPDATE sign_requests SET status = 'waiting_payment', permit_no = ?, permit_date = ? WHERE id = ?";
     $stmt_up = $conn->prepare($sql_update);
     $stmt_up->bind_param("ssi", $permit_no, $permit_date, $request_id);
 
     if ($stmt_up->execute()) {
-        echo "<script>alert('ออกหนังสืออนุญาตเรียบร้อยแล้ว'); window.location.href='request_list.php';</script>";
+        echo "<script>alert('อนุมัติเรียบร้อย ส่งคำร้องให้ผู้ใช้ชำระเงินแล้ว'); window.location.href='request_list.php';</script>";
         exit;
     } else {
         $error = "เกิดข้อผิดพลาด: " . $conn->error;
@@ -56,197 +58,86 @@ if (isset($_POST['approve_confirm'])) {
     <meta charset="UTF-8">
     <title>ออกหนังสืออนุญาต</title>
     <?php include '../includes/header.php'; ?>
-    <style>
-        .paper-a4 {
-            width: 210mm;
-            min-height: 297mm;
-            padding: 20mm;
-            margin: 10mm auto;
-            background: white;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-            position: relative;
-            font-family: 'Sarabun', sans-serif;
-            font-size: 16pt;
-            line-height: 1.6;
-        }
-
-        .garuda {
-            width: 30mm;
-            display: block;
-            margin: 0 auto 10mm;
-        }
-
-        .header {
-            text-align: center;
-            font-weight: bold;
-            margin-bottom: 5mm;
-        }
-
-        .doc-num {
-            position: absolute;
-            top: 40mm;
-            right: 20mm;
-        }
-
-        .content-para {
-            text-align: justify;
-            text-indent: 15mm;
-            margin-bottom: 2mm;
-        }
-
-        .signature-section {
-            margin-top: 20mm;
-            text-align: right;
-            margin-right: 10mm;
-        }
-
-        @media print {
-            body * {
-                visibility: hidden;
-            }
-
-            .paper-a4,
-            .paper-a4 * {
-                visibility: visible;
-            }
-
-            .paper-a4 {
-                position: absolute;
-                left: 0;
-                top: 0;
-                margin: 0;
-                padding: 20mm;
-                box-shadow: none;
-            }
-
-            .no-print {
-                display: none;
-            }
-        }
-    </style>
 </head>
 
 <body class="bg-light">
-    <div class="container py-4 no-print">
-        <a href="request_list.php" class="btn btn-secondary mb-3"><i class="bi bi-arrow-left"></i> กลับ</a>
-        <div class="card mb-3">
-            <div class="card-body">
-                <h5>จัดการคำขอ #
-                    <?= $request['id'] ?>
-                </h5>
-                <form method="post">
-                    <div class="row g-3 align-items-end">
-                        <div class="col-md-3">
-                            <label>เลขที่หนังสือ</label>
-                            <input type="text" name="permit_no" class="form-control"
-                                value="<?= htmlspecialchars($permit_number) ?>" required>
+    <?php include '../includes/sidebar.php'; ?>
+
+    <div class="content fade-in-up">
+        <div class="container py-4">
+            <a href="request_list.php" class="btn btn-secondary mb-3"><i class="bi bi-arrow-left"></i> กลับ</a>
+
+            <?php if (isset($error)): ?>
+                <div class="alert alert-danger">
+                    <?= $error ?>
+                </div>
+            <?php endif; ?>
+
+            <div class="card shadow-sm">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0"><i class="bi bi-check-circle"></i> ขั้นตอนการอนุมัติคำขอ #
+                        <?= $request['id'] ?>
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-warning">
+                        <i class="bi bi-info-circle-fill"></i> <strong>คำชี้แจง:</strong>
+                        ในขั้นตอนนี้ ท่านจะต้องระบุ <strong>"เลขที่หนังสืออนุญาต"</strong> และ
+                        <strong>"วันที่ออกหนังสือ"</strong>
+                        เพื่อระบบจะนำข้อมูลนี้ไปสร้างหนังสืออนุญาต (แบบ ร.ส. ๒) ให้กับประชาชน
+                        <br>เมื่อกดปุ่ม "บันทึกและอนุมัติ" สถานะจะเปลี่ยนเป็น <strong>"รอชำระเงิน"</strong>
+                        เพื่อให้ประชาชนดำเนินการชำระค่าธรรมเนียมต่อไป
+                    </div>
+
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <strong>ผู้ยื่นคำขอ:</strong>
+                            <?= $request['title_name'] . $request['first_name'] . ' ' . $request['last_name'] ?><br>
+                            <strong>ประเภทป้าย:</strong>
+                            <?= $request['sign_type'] ?><br>
+                            <strong>ขนาด:</strong>
+                            <?= $request['width'] ?> x
+                            <?= $request['height'] ?> เมตร<br>
+                            <strong>จำนวน:</strong>
+                            <?= $request['quantity'] ?> ป้าย
                         </div>
-                        <div class="col-md-3">
-                            <label>วันที่ออกหนังสือ</label>
-                            <input type="date" name="permit_date" class="form-control" value="<?= date('Y-m-d') ?>"
-                                required>
-                        </div>
-                        <div class="col-md-3">
-                            <button type="button" class="btn btn-primary" onclick="window.print()">
-                                <i class="bi bi-printer"></i> พิมพ์ตัวอย่าง
-                            </button>
-                            <button type="submit" name="approve_confirm" class="btn btn-success"
-                                onclick="return confirm('ยืนยันการออกหนังสืออนุญาต?');">
-                                <i class="bi bi-check-circle"></i> ยืนยันออกหนังสือ
-                            </button>
+                        <div class="col-md-6">
+                            <strong>ค่าธรรมเนียม:</strong> <span class="text-success h5">
+                                <?= number_format($request['fee'], 2) ?>
+                            </span> บาท<br>
+                            <strong>สถานที่:</strong>
+                            <?= $request['road_name'] ?><br>
+                            <strong>ข้อความ:</strong>
+                            <?= $request['description'] ?>
                         </div>
                     </div>
-                </form>
+
+                    <form method="post">
+                        <div class="row g-3 align-items-end">
+                            <div class="col-md-4">
+                                <label class="form-label">เลขที่หนังสืออนุญาต</label>
+                                <input type="text" name="permit_no" class="form-control"
+                                    value="<?= htmlspecialchars($permit_number) ?>" required>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">วันที่ออกหนังสือ</label>
+                                <input type="date" name="permit_date" class="form-control" value="<?= date('Y-m-d') ?>"
+                                    required>
+                            </div>
+                            <div class="col-md-4">
+                                <button type="submit" name="approve_confirm" class="btn btn-success w-100"
+                                    onclick="return confirm('ยืนยันการอนุมัติ?');">
+                                    <i class="bi bi-save"></i> บันทึกและอนุมัติ
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
             </div>
         </div>
     </div>
 
-    <!-- Permission Letter Preview -->
-    <div class="paper-a4">
-        <!-- Garuda Placeholder (User can replace with upload) -->
-        <div style="text-align: center;">
-            <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/f/fa/Garuda_Emblem_of_Thailand.svg/1200px-Garuda_Emblem_of_Thailand.svg.png"
-                class="garuda" alt="Garuda">
-        </div>
-
-        <div class="header">
-            <h3>หนังสืออนุญาต</h3>
-        </div>
-
-        <div class="doc-num">
-            เลขที่ <span class="fw-bold">
-                <?= htmlspecialchars($permit_number) ?>
-            </span>
-        </div>
-
-        <div class="text-center mb-4">
-            <strong>องค์การบริหารส่วนตำบลบ้านเหล่า</strong>
-        </div>
-
-        <div class="content-para">
-            (๑) อนุญาตให้ <strong>
-                <?= htmlspecialchars($request['title_name'] . $request['first_name'] . ' ' . $request['last_name']) ?>
-            </strong>
-            เลขประจำตัวประชาชน <strong>
-                <?= htmlspecialchars($request['citizen_id']) ?>
-            </strong>
-        </div>
-        <div class="content-para">
-            อยู่บ้านเลขที่
-            <?= htmlspecialchars($request['applicant_address']) ?>
-        </div>
-
-        <div class="content-para mt-3">
-            (๒) โฆษณา ติดตั้งป้ายโฆษณาได้ ณ ที่ <strong>
-                <?= htmlspecialchars($request['road_name']) ?>
-            </strong>
-        </div>
-        <div class="content-para">
-            ข้อความ <strong>
-                <?= htmlspecialchars($request['description']) ?>
-            </strong>
-            จำนวน <strong>
-                <?= htmlspecialchars($request['quantity']) ?>
-            </strong> ป้าย
-        </div>
-
-        <div class="content-para mt-3">
-            (๓) ตั้งแต่วันที่ <strong>
-                <?= date('d/m/Y', strtotime($request['created_at'])) ?>
-            </strong>
-            ถึงวันที่ <strong>
-                <?= date('d/m/Y', strtotime($request['created_at'] . ' + ' . $request['duration_days'] . ' days')) ?>
-            </strong>
-        </div>
-        <div class="content-para">
-            รวมกำหนดเวลาอนุญาต <strong>
-                <?= $request['duration_days'] ?>
-            </strong> วัน
-        </div>
-
-        <div class="content-para mt-3">
-            (๔) ได้รับเงินค่าธรรมเนียม จำนวน <strong>
-                <?= number_format($request['fee'], 2) ?>
-            </strong> บาท
-        </div>
-
-        <div class="content-para mt-3">
-            (๕) หนังสืออนุญาตให้ไว้ ณ วันที่ <strong>
-                <?= date('d/m/Y') ?>
-            </strong>
-        </div>
-
-        <div class="signature-section">
-            <br><br>
-            ลงชื่อ................................................................<br>
-            (................................................................)<br>
-            ตำแหน่ง..........................................................<br>
-            เจ้าพนักงานท้องถิ่น
-        </div>
-
-        <div class="d-none">แบบ ร.ส. ๒</div>
-    </div>
-
+    <?php include '../includes/scripts.php'; ?>
 </body>
 
 </html>

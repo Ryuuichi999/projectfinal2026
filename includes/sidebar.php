@@ -1,7 +1,7 @@
 <div class="sidebar">
     <div>
         <a href="/Project2026/users/index.php" class="logo-link d-block text-center mb-4">
-            <img src="/Project2026/image/logosila.jpg" alt="ทม.ศิลา" class="img-fluid rounded hover-lift"
+            <img src="/Project2026/image/logosila.png" alt="ทม.ศิลา" class="img-fluid rounded hover-lift"
                 style="max-width: 150px;">
         </a>
 

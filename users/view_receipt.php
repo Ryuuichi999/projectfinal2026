@@ -1,229 +1,283 @@
 <?php
-session_start();
+require '../includes/auth.php'; // Session check
 require '../includes/db.php';
-
-if (!isset($_SESSION['user_id'])) {
-    header("Location: ../login.php");
-    exit;
-}
+require '../includes/thaibaht.php';
 
 if (!isset($_GET['id'])) {
-    echo "ไม่พบคำขอ";
-    exit;
+    die("Invalid Request ID");
 }
 
 $request_id = $_GET['id'];
-$user_id = $_SESSION['user_id'];
-
-// ดึงข้อมูลคำขอ 
-$sql = "SELECT r.*, u.citizen_id, u.title_name, u.first_name, u.last_name, u.address as user_address, u.phone 
+$sql = "SELECT r.*, u.citizen_id 
         FROM sign_requests r 
         JOIN users u ON r.user_id = u.id 
         WHERE r.id = ?";
-
-// Allow Owner AND Admin/Employee
-if ($_SESSION['role'] !== 'admin' && $_SESSION['role'] !== 'employee') {
-    $sql .= " AND r.user_id = $user_id";
-}
-
 $stmt = $conn->prepare($sql);
 $stmt->bind_param("i", $request_id);
 $stmt->execute();
 $request = $stmt->get_result()->fetch_assoc();
 
-if (!$request || $request['status'] !== 'approved') {
-    echo "ยังไม่ได้รับอนุมัติ (ใบเสร็จจะออกเมื่อเจ้าหน้าที่ตรวจสอบการชำระเงินแล้ว)";
-    exit;
+if (!$request || $request['status'] != 'approved') {
+    die("ใบเสร็จยังไม่พร้อมใช้งาน");
 }
 
-function bahtText($amount_number)
+function getThaiDate($date)
 {
-    return "(" . number_format($amount_number, 2) . " บาท)";
+    if (!$date)
+        return "....................";
+    $months = [
+        1 => 'มกราคม',
+        2 => 'กุมภาพันธ์',
+        3 => 'มีนาคม',
+        4 => 'เมษายน',
+        5 => 'พฤษภาคม',
+        6 => 'มิถุนายน',
+        7 => 'กรกฎาคม',
+        8 => 'สิงหาคม',
+        9 => 'กันยายน',
+        10 => 'ตุลาคม',
+        11 => 'พฤศจิกายน',
+        12 => 'ธันวาคม'
+    ];
+    $timestamp = strtotime($date);
+    $d = date('j', $timestamp);
+    $m = $months[(int) date('n', $timestamp)];
+    $y = date('Y', $timestamp) + 543;
+    return "$d $m $y";
 }
 ?>
-
 <!DOCTYPE html>
 <html lang="th">
 
 <head>
     <meta charset="UTF-8">
-    <title>ใบเสร็จรับเงิน -
-        <?= htmlspecialchars($request['receipt_no']) ?>
-    </title>
-    <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <title>ใบเสร็จรับเงิน</title>
+    <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;700&display=swap" rel="stylesheet">
     <style>
         body {
-            background: #eee;
-            margin: 0;
-            padding: 20px;
-        }
-
-        .paper-receipt {
-            width: 210mm;
-            min-height: 148mm;
-            padding: 20mm;
-            margin: 0 auto;
-            background: white;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-            position: relative;
             font-family: 'Sarabun', sans-serif;
-            color: #000;
+            font-size: 14pt;
+            background: #eee;
         }
 
-        .header-logo {
+        .page {
+            width: 210mm;
+            padding: 20mm;
+            margin: 10mm auto;
+            background: white;
+            min-height: 297mm;
+            position: relative;
+        }
+
+        @media print {
+            body {
+                margin: 0;
+                background: white;
+            }
+
+            .page {
+                width: 100%;
+                margin: 0;
+                padding: 10mm;
+                box-shadow: none;
+                border: none;
+            }
+
+            .no-print {
+                display: none !important;
+            }
+        }
+
+        .header {
             text-align: center;
-        }
-
-        .header-logo img {
-            width: 20mm;
-        }
-
-        .receipt-title {
-            text-align: center;
-            font-size: 20pt;
-            font-weight: bold;
-            margin-top: 10px;
-        }
-
-        .receipt-info {
-            display: flex;
-            justify-content: space-between;
+            margin-bottom: 30px;
             margin-top: 20px;
         }
 
-        .receipt-table {
+        .logo {
+            width: 80px;
+            position: absolute;
+            top: 20mm;
+            left: 50%;
+            transform: translateX(-50%);
+            opacity: 0.1;
+        }
+
+        .logo-top {
+            width: 120px;
+            display: block;
+            margin: 0 auto 15px;
+        }
+
+        .receipt-no {
+            position: absolute;
+            top: 20mm;
+            right: 1mm;
+            text-align: right;
+        }
+
+        .receipt-no div {
+            margin-bottom: 5px;
+        }
+
+        .title {
+            font-size: 20pt;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .subtitle {
+            font-size: 16pt;
+        }
+
+        .info-row {
+            margin: 10px 0;
+        }
+
+        table {
             width: 100%;
             border-collapse: collapse;
             margin-top: 20px;
         }
 
-        .receipt-table th,
-        .receipt-table td {
-            border: 1px solid #000;
+        th,
+        td {
+            border: 1px solid black;
             padding: 8px;
+            vertical-align: top;
         }
 
-        .receipt-table th {
+        th {
             text-align: center;
-            background: #f0f0f0;
+            background-color: #f0f0f0;
         }
 
-        .total-text {
-            text-align: center;
+        .total-row td {
             font-weight: bold;
         }
 
-        .signatures {
+        .footer {
             margin-top: 50px;
             display: flex;
             justify-content: space-between;
         }
 
-        .signature-block {
+        .signature {
             text-align: center;
+            width: 40%;
         }
 
-        @media print {
-            body {
-                background: white;
-                margin: 0;
-                padding: 0;
-            }
+        /* Watermark */
+        .watermark {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 520px;
+            opacity: 0.10;
+            z-index: 0;
+            pointer-events: none;
+        }
 
-            .paper-receipt {
-                box-shadow: none;
-                margin: 0;
-                width: 100%;
-            }
-
-            .no-print {
-                display: none;
-            }
+        .content-layer {
+            position: relative;
+            z-index: 1;
         }
     </style>
 </head>
 
 <body>
-
-    <div class="no-print" style="text-align: center; margin-bottom: 20px;">
-        <button onclick="window.print()" style="padding: 10px 20px; font-size: 16px; cursor: pointer;">🖨️
-            พิมพ์ใบเสร็จ</button>
+    <div class="no-print" style="text-align: center; padding: 10px;">
+        <button onclick="window.print()" style="padding: 10px 20px;">พิมพ์ใบเสร็จ</button>
     </div>
 
-    <div class="paper-receipt">
-        <div class="header-logo">
-            <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/f/fa/Garuda_Emblem_of_Thailand.svg/1200px-Garuda_Emblem_of_Thailand.svg.png"
-                alt="Logo">
-            <div><strong>เทศบาลเมืองศิลา</strong></div>
-        </div>
+    <div class="page">
+        <!-- Watermark -->
+        <img src="../image/logoใบเสร็จ.png" class="watermark" alt="watermark">
 
-        <div class="receipt-title">ใบเสร็จรับเงิน</div>
-
-        <div class="receipt-info">
-            <div>
-                ได้รับเงินจาก <strong>
-                    <?= htmlspecialchars($request['title_name'] . $request['first_name'] . ' ' . $request['last_name']) ?>
-                </strong><br>
-                ที่อยู่
-                <?= htmlspecialchars($request['applicant_address']) ?>
+        <div class="content-layer">
+            <!-- Logo Top -->
+            <div style="text-align: center;">
+                <img src="../image/logoใบเสร็จ.png" class="logo-top" alt="Logo">
             </div>
-            <div style="text-align: right;">
-                เลขที่ <strong>
-                    <?= htmlspecialchars($request['receipt_no']) ?>
-                </strong><br>
-                วันที่ <strong>
-                    <?= date('d/m/Y', strtotime($request['receipt_date'])) ?>
+
+            <div class="receipt-no">
+                <div>เลขที่
+                    <?= htmlspecialchars($request['receipt_no'] ?? 'Wait') ?>
+                </div>
+                <div>วันที่
+                    <?= getThaiDate($request['receipt_date'] ?? date('Y-m-d')) ?>
+                </div>
+            </div>
+
+            <div class="header">
+                <div class="title">ใบเสร็จรับเงิน</div>
+                <div class="subtitle" style="margin-top: 20px;">เทศบาลเมืองศิลา อำเภอเมืองขอนแก่น จังหวัดขอนแก่น</div>
+            </div>
+
+            <div class="info-row">
+                ได้รับเงินจาก: <strong>
+                    <?= htmlspecialchars($request['applicant_name']) ?>
                 </strong>
             </div>
         </div>
 
-        <table class="receipt-table">
+        <table>
             <thead>
                 <tr>
-                    <th style="width: 50px;">ลำดับ</th>
-                    <th>รายการ</th>
-                    <th style="width: 150px;">จำนวนเงิน (บาท)</th>
-                    <th style="width: 100px;">หมายเหตุ</th>
+                    <th style="width: 10%;">ลำดับ</th>
+                    <th style="width: 60%;">รายการ</th>
+                    <th style="width: 15%;">จำนวนเงิน (บาท)</th>
+                    <th style="width: 15%;">หมายเหตุ</th>
                 </tr>
             </thead>
             <tbody>
                 <tr>
                     <td style="text-align: center;">1</td>
                     <td>
-                        ค่าธรรมเนียมปิด โปรย ติดตั้งแผ่นประกาศหรือแผ่นปลิวเพื่อการโฆษณา<br>
-                        (
-                        <?= htmlspecialchars($request['description']) ?> จำนวน
-                        <?= $request['quantity'] ?> ป้าย)
+                        ค่าธรรมเนียมปิด โปรย ติดตั้งแผ่นประกาศหรือแผ่นปลิว เพื่อการโฆษณา
                     </td>
                     <td style="text-align: right;">
                         <?= number_format($request['fee'], 2) ?>
                     </td>
                     <td></td>
                 </tr>
-                <tr>
-                    <td colspan="2" class="total-text">
-                        ตัวอักษร
-                        <?= bahtText($request['fee']) ?>
-                    </td>
-                    <td style="text-align: right;"><strong>
-                            <?= number_format($request['fee'], 2) ?>
-                        </strong></td>
-                    <td>รวมเงิน</td>
+                <!-- Padding rows to fill space -->
+                <tr style="height: 100px;">
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
                 </tr>
             </tbody>
+            <tfoot>
+                <tr class="total-row">
+                    <td colspan="2" style="text-align: center;">
+                        ตัวอักษร (
+                        <?= ThaiBahtConversion($request['fee']) ?>)
+                    </td>
+                    <td style="text-align: right;">
+                        <?= number_format($request['fee'], 2) ?>
+                    </td>
+                    <td></td>
+                </tr>
+            </tfoot>
         </table>
 
-        <div class="signatures">
-            <div class="signature-block">
-                <br><br>
-                ลงชื่อ...................................................... ผู้รับเงิน<br>
-                (......................................................)<br>
-                เจ้าพนักงานธุรการ
+            <div class="footer">
+                <div style="width: 50%;">
+                    <br>
+                    ไว้เป็นการถูกต้องแล้ว
+                </div>
+                <div class="signature">
+                    <div style="height: 70px;"></div>
+                    (ลงชื่อ)........................................................ ผู้รับเงิน<br>
+                    (<?= htmlspecialchars($request['receipt_issued_by'] ?? '........................................................') ?>)<br>
+                    ตำแหน่ง........................................................
+                </div>
             </div>
         </div>
-
     </div>
-
 </body>
 
 </html>
