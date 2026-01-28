@@ -51,7 +51,7 @@ if (isset($_POST['login'])) {
     <div class="glass-card fade-in-up">
         <div class="text-center">
             <!-- Logo (Optional) -->
-            <img src="image/logosila.jpg" alt="Logo" class="rounded-circle shadow-sm mb-3" width="80">
+            <img src="image/logosila.png" alt="Logo" class="rounded-circle shadow-sm mb-3" width="80">
             <h5 class="mb-3">เว็บไซต์ขออนุญาตติดตั้งป้ายชั่วคราว</h5>
         </div>
 

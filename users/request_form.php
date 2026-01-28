@@ -266,8 +266,8 @@ if (isset($_POST['submit'])) {
             background-color: #000;
             color: white;
             padding: 10px 40px;
-            border-radius: 30px;
-            font-size: 18px;
+            border-radius: 17px;
+            font-size: 16px;
             border: none;
             transition: all 0.3s;
         }
@@ -431,7 +431,7 @@ if (isset($_POST['submit'])) {
                             </p>
                         </div>
                         <a href="index.php" class="btn btn-outline-secondary px-4 me-2">ยกเลิก</a>
-                        <button type="submit" name="submit" class="btn btn-submit">ยื่นคำร้อง</button>
+                        <button type="submit" name="submit" class="btn btn-submit px-4 me-2">ยื่นคำร้อง</button>
                     </div>
                 </div>
 

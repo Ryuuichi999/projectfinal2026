@@ -211,4 +211,3 @@ if (isset($_POST['issue_receipt_confirm'])) {
 </body>
 
 </html>
-
