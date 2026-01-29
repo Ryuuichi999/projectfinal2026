@@ -56,12 +56,18 @@ function get_status_badge($status)
 
         /* ปรับ layout ตารางให้กระชับ ไม่ตัดบรรทัด */
         .table {
-            font-size: 0.92rem;
+            font-size: 0.8rem;
         }
 
-        .table th,
+        .table th {
+            white-space: nowrap;
+            vertical-align: middle;
+            background-color: #f8f9fa;
+        }
+
         .table td {
             vertical-align: middle;
+            padding: 0.4rem 0.5rem;
         }
 
         /* คอลัมน์รายละเอียดไม่ให้ตัดบรรทัด + ปุ่มอยู่บรรทัดเดียว */
