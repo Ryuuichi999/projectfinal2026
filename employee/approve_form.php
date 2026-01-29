@@ -43,7 +43,28 @@ if (isset($_POST['approve_confirm'])) {
     $stmt_up->bind_param("ssi", $permit_no, $permit_date, $request_id);
 
     if ($stmt_up->execute()) {
-        echo "<script>alert('อนุมัติเรียบร้อย ส่งคำร้องให้ผู้ใช้ชำระเงินแล้ว'); window.location.href='request_list.php';</script>";
+
+        echo '<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+</head>
+<body>
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            Swal.fire({
+                icon: "success",
+                title: "อนุมัติเรียบร้อย",
+                text: "ส่งคำร้องให้ผู้ใช้ชำระเงินแล้ว",
+                confirmButtonText: "ตกลง"
+            }).then(() => {
+                window.location.href = "request_list.php";
+            });
+        });
+    </script>
+</body>
+</html>';
         exit;
     } else {
         $error = "เกิดข้อผิดพลาด: " . $conn->error;
@@ -65,7 +86,10 @@ if (isset($_POST['approve_confirm'])) {
 
     <div class="content fade-in-up">
         <div class="container py-4">
-            <a href="request_list.php" class="btn btn-secondary mb-3"><i class="bi bi-arrow-left"></i> กลับ</a>
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h4 class="mb-0"></h4> <!-- Spacer or Title if needed -->
+                <a href="request_list.php" class="btn btn-secondary"><i class="bi bi-arrow-left"></i> กลับ</a>
+            </div>
 
             <?php if (isset($error)): ?>
                 <div class="alert alert-danger">
@@ -112,7 +136,7 @@ if (isset($_POST['approve_confirm'])) {
                         </div>
                     </div>
 
-                    <form method="post">
+                    <form method="post" id="approveForm">
                         <div class="row g-3 align-items-end">
                             <div class="col-md-4">
                                 <label class="form-label">เลขที่หนังสืออนุญาต</label>
@@ -125,10 +149,10 @@ if (isset($_POST['approve_confirm'])) {
                                     required>
                             </div>
                             <div class="col-md-4">
-                                <button type="submit" name="approve_confirm" class="btn btn-success w-100"
-                                    onclick="return confirm('ยืนยันการอนุมัติ?');">
+                                <button type="button" class="btn btn-success w-100" onclick="confirmApprove()">
                                     <i class="bi bi-save"></i> บันทึกและอนุมัติ
                                 </button>
+                                <input type="hidden" name="approve_confirm" value="1">
                             </div>
                         </div>
                     </form>
@@ -138,6 +162,24 @@ if (isset($_POST['approve_confirm'])) {
     </div>
 
     <?php include '../includes/scripts.php'; ?>
+    <script>
+        function confirmApprove() {
+            Swal.fire({
+                title: 'ยืนยันการอนุมัติ?',
+                text: "สถานะจะเปลี่ยนเป็น 'รอชำระเงิน'",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#198754',
+                cancelButtonColor: '#d33',
+                confirmButtonText: 'ยืนยัน, อนุมัติเลย!',
+                cancelButtonText: 'ยกเลิก'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    document.getElementById('approveForm').submit();
+                }
+            })
+        }
+    </script>
 </body>
 
 </html>

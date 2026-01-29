@@ -155,11 +155,11 @@ function get_status_badge($status)
                                                 <i class="bi bi-check-circle"></i> อนุมัติ
                                             </a>
                                             <!-- Reject Button -->
-                                            <form method="post" onsubmit="return confirm('ยืนยันปฏิเสธคำขอนี้?');"
+                                            <form method="post" onsubmit="return confirmReject(event, this);"
                                                 style="display:inline;">
                                                 <input type="hidden" name="request_id" value="<?= $row['id'] ?>">
                                                 <input type="hidden" name="action" value="reject">
-                                                <button class="btn btn-sm btn-danger" title="ปฏิเสธ">
+                                                <button class="btn btn-sm btn-danger" type="submit" title="ปฏิเสธ">
                                                     <i class="bi bi-x-circle"></i> ปฏิเสธ
                                                 </button>
                                             </form>
@@ -195,6 +195,24 @@ function get_status_badge($status)
     <!-- jQuery UI for Autocomplete -->
     <script src="https://code.jquery.com/ui/1.13.2/jquery-ui.min.js"></script>
     <script>
+        function confirmReject(event, form) {
+            event.preventDefault(); // Stop default submission
+            Swal.fire({
+                title: 'ยืนยันการปฏิเสธ?',
+                text: "คุณแน่ใจหรือไม่ที่จะปฏิเสธคำขอนี้? เมื่อปฏิเสธแล้วจะไม่สามารถแก้ไขได้",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#d33',
+                cancelButtonColor: '#6c757d',
+                confirmButtonText: 'ยืนยัน, ปฏิเสธ!',
+                cancelButtonText: 'ยกเลิก'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    form.submit(); // Submit the form
+                }
+            });
+        }
+
         $(document).ready(function () {
             var table = $('#requestsTable').DataTable({
                 "language": {
