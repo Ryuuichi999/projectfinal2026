@@ -63,6 +63,8 @@ function get_status_badge($status)
             return '<span class="badge bg-warning text-dark">⏳ รอพิจารณา</span>';
         case 'waiting_payment':
             return '<span class="badge bg-danger">💰 รอชำระเงิน</span>';
+        case 'waiting_receipt':
+            return '<span class="badge bg-info">📄 รอออกใบเสร็จ</span>';
         case 'approved':
             return '<span class="badge bg-success">✅ อนุมัติ</span>';
         case 'rejected':
@@ -171,11 +173,6 @@ function get_status_badge($status)
                                             <a href="issue_receipt.php?id=<?= $row['id'] ?>"
                                                 class="btn btn-sm btn-warning text-dark" title="ออกใบเสร็จรับเงิน">
                                                 <i class="bi bi-receipt"></i> ออกใบเสร็จ
-                                            </a>
-                                        <?php elseif ($row['status'] == 'approved'): ?>
-                                            <a href="../users/view_receipt.php?id=<?= $row['id'] ?>" target="_blank"
-                                                class="btn btn-sm btn-primary" title="พิมพ์ใบเสร็จ">
-                                                <i class="bi bi-printer"></i> พิมพ์ใบเสร็จ
                                             </a>
                                         <?php endif; ?>
                                     </div>
