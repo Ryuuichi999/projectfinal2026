@@ -42,26 +42,33 @@ function get_status_badge($status)
     <title>สถานะคำขอ</title>
     <?php include '../includes/header.php'; ?>
     <link rel="stylesheet" href="../assets/css/style.css">
+    <!-- DataTables CSS -->
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.7/css/dataTables.bootstrap5.min.css">
     <style>
         /* CSS สำหรับป้ายสถานะเพื่อให้สวยงาม */
         .badge {
             padding: 0.5em 0.8em;
         }
+
         /* ปรับ layout ตารางให้กระชับ ไม่ตัดบรรทัด */
         .table {
             font-size: 0.92rem;
         }
+
         .table th,
         .table td {
             vertical-align: middle;
         }
+
         /* คอลัมน์รายละเอียดไม่ให้ตัดบรรทัด + ปุ่มอยู่บรรทัดเดียว */
         td.action-cell {
             white-space: nowrap;
         }
+
         td.action-cell .btn-group {
             flex-wrap: nowrap;
         }
+
         td.action-cell .btn {
             font-size: 0.85rem;
             padding: 0.25rem 0.5rem;
@@ -137,5 +144,25 @@ function get_status_badge($status)
 
 </body>
 <?php include '../includes/scripts.php'; ?>
+    <!-- jQuery -->
+    <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
+    <!-- DataTables -->
+    <script src="https://cdn.datatables.net/1.13.7/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.7/js/dataTables.bootstrap5.min.js"></script>
+    
+    <script>
+        $(document).ready(function() {
+            $('.table').DataTable({
+                "language": {
+                    "url": "//cdn.datatables.net/plug-ins/1.13.7/i18n/th.json"
+                },
+                "order": [], // Disable initial sort
+                "dom": "<'row'<'col-sm-12'f>>" +
+                       "<'row'<'col-sm-12'tr>>" +
+                       "<'row align-items-center'<'col-md-6'l><'col-md-6 d-flex justify-content-end'p>>",
+                "pageLength": 10
+            });
+        });
+    </script>
 
 </html>

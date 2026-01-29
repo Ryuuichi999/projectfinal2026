@@ -203,7 +203,7 @@ function get_status_badge($status)
                 "order": [], // ปิด default sort ให้ใช้ตาม SQL
                 "dom": "<'row'<'col-sm-12'f>>" +
                     "<'row'<'col-sm-12'tr>>" +
-                    "<'row'<'col-sm-12 col-md-5'i><'col-sm-12 col-md-7'<'d-flex justify-content-end'<'l'><'p'>>>>",
+                    "<'row align-items-center'<'col-md-6'l><'col-md-6 d-flex justify-content-end'p>>",
                 "pageLength": 10,
                 "drawCallback": function (settings) {
                     // Initialize Bootstrap dropdowns หลังจาก DataTables draw
