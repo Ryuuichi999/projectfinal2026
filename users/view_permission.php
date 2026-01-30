@@ -74,6 +74,7 @@ function toThaiNum($number)
         body {
             font-family: 'Sarabun', sans-serif;
             background: #eee;
+            color: #000;
         }
 
         .page {
@@ -84,7 +85,7 @@ function toThaiNum($number)
             background: white;
             box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
             position: relative;
-            line-height: 1.6;
+            line-height: 1.8;
             font-size: 16pt;
         }
 
@@ -114,53 +115,69 @@ function toThaiNum($number)
             text-align: center;
         }
 
-        .text-justify {
-            text-align: justify;
-        }
-
         .bold {
             font-weight: bold;
         }
 
         .header-garuda {
             text-align: center;
-            margin-bottom: 20px;
+            margin-top: 20px;
+            margin-bottom: 0px;
         }
 
         .garuda-img {
             width: 3cm;
+            height: auto;
         }
 
         .doc-title {
-            font-size: 24pt;
+            font-size: 20pt;
             font-weight: bold;
             margin-top: 10px;
+            margin-bottom: 10px;
         }
 
-        .doc-no {
-            position: absolute;
-            top: 20mm;
-            right: 25mm;
-        }
-
-        .form-code {
-            position: absolute;
-            top: 20mm;
-            left: 25mm;
+        .doc-number {
+            text-align: right;
+            margin-top: 10px;
+            margin-bottom: 40px;
+            /* Increased spacing below Doc No */
         }
 
         .content {
-            margin-top: 30px;
+            margin-top: 0px;
         }
 
         .indent {
-            text-indent: 2.5cm;
+            text-indent: 2.0cm;
         }
 
-        .signature-block {
-            margin-top: 50px;
-            margin-left: 50%;
+        .indent-2 {
+            padding-left: 2.0cm;
+        }
+
+        /* Justify content like official docs */
+        p {
+            margin-bottom: 0px;
+            text-align: justify;
+        }
+
+        /* Spacing between numbered items */
+        .item-block {
+            margin-bottom: 20px;
+        }
+
+        .signature-section {
+            margin-top: 60px;
+            float: right;
             text-align: center;
+            width: 350px;
+        }
+
+        .clearfix::after {
+            content: "";
+            clear: both;
+            display: table;
         }
     </style>
 </head>
@@ -173,86 +190,112 @@ function toThaiNum($number)
     </div>
 
     <div class="page">
-        <!-- รหัสแบบฟอร์ม -->
-        <div class="field text-right" style="position: absolute; top: 15mm; right: 20mm;">
+        <!-- รหัสแบบฟอร์ม (ขวาบน) -->
+        <div class="text-right" style="position: absolute; top: 15mm; right: 20mm; font-size: 14pt;">
             แบบ ร.ส. ๒
         </div>
 
         <div class="header-garuda">
-            <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/f/fa/Garuda_Emblem_of_Thailand.svg/1200px-Garuda_Emblem_of_Thailand.svg.png"
-                class="garuda-img" alt="Garuda">
+            <img src="../image/ตราครุฑ.png" class="garuda-img" alt="Garuda">
             <div class="doc-title">หนังสืออนุญาต</div>
         </div>
 
-        <div class="doc-no">
-            เลขที่
-            <?= toThaiNum(htmlspecialchars($request['permit_no'])) ?>
+        <div class="doc-number">
+            เลขที่ <?= toThaiNum(htmlspecialchars($request['permit_no'])) ?>
         </div>
 
         <div class="content">
-            <div class="indent">
-                ๑. อนุญาตให้ <span class="bold">
-                    <?= htmlspecialchars($request['applicant_name']) ?>
-                </span>
-                อยู่บ้านเลขที่ <span class="bold">
-                    <?= htmlspecialchars($request['applicant_address']) ?>
-                </span>
+            <!-- ข้อ 1 -->
+            <div class="item-block">
+                <p class="indent">
+                    ๑. อนุญาตให้ <span class="bold"><?= htmlspecialchars($request['applicant_name']) ?></span>
+                    อยู่บ้านเลขที่ <span class="bold"><?= toThaiNum($request['applicant_address']) ?></span>
+                </p>
             </div>
 
-            <div class="indent" style="margin-top: 10px;">
-                ๒. โฆษณาด้วยการปิด โปรย ติดตั้งแผ่นประกาศหรือแผ่นปลิว เพื่อการโฆษณา ได้ ณ ที่
-                <br>
-                <div style="padding-left: 2.5cm;">
-                    <span class="bold">
-                        <?= htmlspecialchars($request['road_name']) ?>
-                    </span>
+            <!-- ข้อ 2 -->
+            <div class="item-block">
+                <p class="indent">
+                    ๒. โฆษณาด้วยการปิด โปรย ติดตั้งแผ่นประกาศหรือแผ่นปลิว เพื่อการโฆษณา ได้ ณ ที่
+                </p>
+                <div class="indent-2">
+                    ตำบล ศิลา อำเภอ เมืองขอนแก่น จังหวัด ขอนแก่น
                 </div>
-                <div style="padding-left: 2.5cm;">
-                    ข้อความ <span class="bold">
-                        <?= htmlspecialchars($request['description']) ?>
-                    </span>
-                    จำนวน <span class="bold">
-                        <?= toThaiNum($request['quantity']) ?>
-                    </span> ป้าย
+                <div class="indent-2">
+                    ข้อความ <span class="bold"><?= htmlspecialchars($request['description']) ?></span>
+                    (<span class="bold"><?= htmlspecialchars($request['road_name']) ?></span>)
+                    จำนวน <span class="bold"><?= toThaiNum($request['quantity']) ?></span> ป้าย
                 </div>
             </div>
 
-            <div class="indent" style="margin-top: 10px;">
-                ๓. ตั้งแต่วันที่ <span class="bold">
-                    <?= getThaiDate($request['created_at']) ?>
-                </span>
-                ถึง วันที่ <span class="bold">
-                    <?= getThaiDate(date('Y-m-d', strtotime($request['created_at'] . ' + ' . $request['duration_days'] . ' days'))) ?>
-                </span>
-            </div>
-            <div style="padding-left: 2.5cm;">
-                รวมกำหนดเวลาอนุญาต <span class="bold">
-                    <?= toThaiNum($request['duration_days']) ?>
-                </span> วัน
+            <!-- ข้อ 3 -->
+            <div class="item-block">
+                <p class="indent">
+                    ๓. ตั้งแต่วันที่ <span class="bold"><?= getThaiDate($request['created_at']) ?></span>
+                    ถึง วันที่ <span
+                        class="bold"><?= getThaiDate(date('Y-m-d', strtotime($request['created_at'] . ' + ' . $request['duration_days'] . ' days'))) ?></span>
+                </p>
+                <div class="indent-2">
+                    รวมกำหนดเวลาอนุญาต <span class="bold"><?= toThaiNum($request['duration_days']) ?></span> วัน
+                </div>
             </div>
 
-            <div class="indent" style="margin-top: 10px;">
-                ๔. ได้รับค่าธรรมเนียม จำนวน <span class="bold">
-                    <?= toThaiNum(number_format($request['fee'], 0)) ?>
-                </span> บาท
-                (
-                <?= ThaiBahtConversion($request['fee']) ?>)
+            <!-- ข้อ 4 -->
+            <div class="item-block">
+                <p class="indent">
+                    ๔. ได้รับค่าธรรมเนียม จำนวน <span
+                        class="bold"><?= toThaiNum(number_format($request['fee'], 0)) ?></span> บาท
+                    (<?= ThaiBahtConversion($request['fee']) ?>)
+                </p>
             </div>
 
-            <div class="indent" style="margin-top: 10px;">
-                ๕. หนังสืออนุญาตให้ไว้ ณ วันที่ <span class="bold">
-                    <?= getThaiDate($request['permit_date']) ?>
-                </span>
+            <!-- ข้อ 5 -->
+            <div class="item-block">
+                <p class="indent">
+                    ๕. หนังสืออนุญาตนี้ให้ไว้ ณ วันที่ <span
+                        class="bold"><?= getThaiDate($request['permit_date']) ?></span>
+                </p>
             </div>
         </div>
 
-        <div class="signature-block">
+        <div class="clearfix"></div>
+
+        <div class="signature-section">
             <br><br>
-            ................................................................<br>
-            (................................................................)<br>
-            ตำแหน่ง..........................................................<br>
-            เจ้าพนักงานท้องถิ่น<br>
-            หรือพนักงานเจ้าหน้าที่ผู้ออกหนังสืออนุญาต
+            <?php
+            // Fetch Approver Name
+            $sql_approver = "SELECT title_name, first_name, last_name FROM users WHERE id = ?";
+            $stmt_app = $conn->prepare($sql_approver);
+            if ($request['approved_by']) {
+                $stmt_app->bind_param("i", $request['approved_by']);
+                $stmt_app->execute();
+                $res_app = $stmt_app->get_result();
+                $approver = $res_app->fetch_assoc();
+                $approver_name = $approver['title_name'] . $approver['first_name'] . ' ' . $approver['last_name'];
+            } else {
+                $approver_name = "(................................................................)";
+            }
+
+            // Signature Image (Check if exists)
+            $sig_path = "../image/signatures/" . $request['approved_by'] . ".png";
+
+            // Specific mapping for Employee (ID 2)
+            if ($request['approved_by'] == 2) {
+                $sig_path = "../image/ลายเซ็น.png";
+            }
+
+            if ($request['approved_by'] && file_exists($sig_path)) {
+                echo "<img src='$sig_path' style='height: 40px; display: block; margin: 0 auto -20px auto;'>";
+            }
+            ?>
+
+            <div style="margin-bottom: 10px;">................................................................</div>
+            <div>(
+                <?= $approver_name ?>)
+            </div>
+
+            <div style="margin-top: 20px;">เจ้าพนักงานท้องถิ่น</div>
+            <div>หรือพนักงานเจ้าหน้าที่ผู้ออกหนังสืออนุญาต</div>
         </div>
 
     </div>

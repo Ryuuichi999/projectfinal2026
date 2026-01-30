@@ -109,7 +109,7 @@ if (isset($_POST['submit'])) {
             }
 
             $conn->commit();
-            
+
             // แสดง SweetAlert และ Redirect
             echo '<!DOCTYPE html>
             <html lang="th">
@@ -262,20 +262,41 @@ if (isset($_POST['submit'])) {
             background: #fafafa;
         }
 
-        .btn-submit {
-            background-color: #000;
-            color: white;
-            padding: 10px 40px;
-            border-radius: 17px;
-            font-size: 16px;
-            border: none;
-            transition: all 0.3s;
-        }
+        .btn-action {
+    padding: 10px 42px;
+    border-radius: 20px;
+    font-size: 16px;
+    font-weight: 500;
+    transition: all 0.25s ease;
+    min-width: 160px;
+}
 
-        .btn-submit:hover {
-            background-color: #333;
-            transform: translateY(-2px);
-        }
+/* ปุ่มยกเลิก */
+.btn-cancel {
+    background: transparent;
+    color: #6c757d;
+    border: 2px solid #6c757d;
+}
+
+.btn-cancel:hover {
+    background: #6c757d;
+    color: #fff;
+    transform: translateY(-2px);
+}
+
+/* ปุ่มยื่นคำร้อง */
+.btn-submit-main {
+    background: #000;
+    color: #fff;
+    border: 2px solid #000;
+}
+
+.btn-submit-main:hover {
+    background: #222;
+    border-color: #222;
+    transform: translateY(-2px);
+}
+
     </style>
 </head>
 
@@ -430,8 +451,14 @@ if (isset($_POST['submit'])) {
                                 โดยข้าพเจ้าขอบันทึกข้อตกลงเพื่อยืนยันแนวทางปฏิบัติของข้าพเจ้า
                             </p>
                         </div>
-                        <a href="index.php" class="btn btn-outline-secondary px-4 me-2">ยกเลิก</a>
-                        <button type="submit" name="submit" class="btn btn-submit px-4 me-2">ยื่นคำร้อง</button>
+                        <a href="index.php" class="btn btn-action btn-cancel me-3">
+                            ยกเลิก
+                        </a>
+
+                        <button type="submit" name="submit" class="btn btn-action btn-submit-main">
+                            ยื่นคำร้อง
+                        </button>
+
                     </div>
                 </div>
 

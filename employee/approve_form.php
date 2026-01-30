@@ -37,10 +37,11 @@ if (isset($_POST['approve_confirm'])) {
     $permit_no = $_POST['permit_no'];
     $permit_date = $_POST['permit_date']; // วันที่ออกหนังสือ
 
-    // Update DB: status -> waiting_payment
-    $sql_update = "UPDATE sign_requests SET status = 'waiting_payment', permit_no = ?, permit_date = ? WHERE id = ?";
+    // Update DB: status -> waiting_payment, save approver
+    $sql_update = "UPDATE sign_requests SET status = 'waiting_payment', permit_no = ?, permit_date = ?, approved_by = ? WHERE id = ?";
     $stmt_up = $conn->prepare($sql_update);
-    $stmt_up->bind_param("ssi", $permit_no, $permit_date, $request_id);
+    $approver_id = $_SESSION['user_id'];
+    $stmt_up->bind_param("ssii", $permit_no, $permit_date, $approver_id, $request_id);
 
     if ($stmt_up->execute()) {
 
