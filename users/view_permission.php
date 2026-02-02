@@ -285,11 +285,11 @@ function toThaiNum($number)
             }
 
             if ($request['approved_by'] && file_exists($sig_path)) {
-                echo "<img src='$sig_path' style='height: 40px; display: block; margin: 0 auto -20px auto;'>";
+                echo "<img src='$sig_path' style='height: 80px; display: block; margin: 0 auto 0 auto;'>";
             }
             ?>
 
-            <div style="margin-bottom: 10px;">................................................................</div>
+
             <div>(
                 <?= $approver_name ?>)
             </div>

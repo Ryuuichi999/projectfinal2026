@@ -265,19 +265,23 @@ function getThaiDate($date)
             </tfoot>
         </table>
 
-            <div class="footer">
-                <div style="width: 50%;">
-                    <br>
-                    ไว้เป็นการถูกต้องแล้ว
+        <div class="footer">
+            <div style="width: 50%;">
+                <br>
+                ไว้เป็นการถูกต้องแล้ว
+            </div>
+            <div class="signature">
+                <div
+                    style="display: flex; align-items: flex-end; justify-content: center; gap: 15px; margin-bottom: 5px;">
+                    <span>(ลงชื่อ)</span>
+                    <img src="../image/ลายเซ็น2.png" style="height: 70px;">
+                    <span>ผู้รับเงิน</span>
                 </div>
-                <div class="signature">
-                    <div style="height: 70px;"></div>
-                    (ลงชื่อ)......................................... ผู้รับเงิน<br>
-                    (<?= htmlspecialchars($request['receipt_issued_by'] ?? '........................................................') ?>)<br>
-                    ตำแหน่ง เจ้าพนักงานธุรการ
-                </div>
+                (<?= htmlspecialchars($request['receipt_issued_by'] ?? '........................................................') ?>)<br>
+                ตำแหน่ง เจ้าพนักงานธุรการ
             </div>
         </div>
+    </div>
     </div>
 </body>
 
