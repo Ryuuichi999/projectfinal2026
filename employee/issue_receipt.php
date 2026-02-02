@@ -175,8 +175,67 @@ if (isset($_POST['issue_receipt_confirm'])) {
                                 class="btn btn-sm btn-outline-primary mt-2">
                                 <i class="bi bi-file-earmark-image"></i> ดูสลิปการชำระเงิน
                             </a>
+                            <button type="button" onclick="checkSlipDetails(<?= $slip['id'] ?>)"
+                                class="btn btn-sm btn-info mt-2 text-white">
+                                <i class="bi bi-shield-check"></i> ตรวจสอบข้อมูลสลิป
+                            </button>
                         </div>
                     <?php endif; ?>
+
+                    <!-- Slip Check Script -->
+                    <script>
+                        function checkSlipDetails(docId) {
+                            Swal.fire({
+                                title: 'กำลังตรวจสอบ...',
+                                text: 'กำลังเชื่อมต่อกับธนาคารเพื่อตรวจสอบข้อมูลสลิป',
+                                allowOutsideClick: false,
+                                didOpen: () => {
+                                    Swal.showLoading();
+                                }
+                            });
+
+                            $.ajax({
+                                url: 'check_slip_ajax.php',
+                                type: 'POST',
+                                data: { doc_id: docId },
+                                dataType: 'json',
+                                success: function (response) {
+                                    if (response.status === 'success') {
+                                        Swal.fire({
+                                            icon: 'success',
+                                            title: 'ข้อมูลสลิปถูกต้อง',
+                                            html: `
+                                                <div class="text-start">
+                                                    <table class="table table-bordered table-sm">
+                                                        <tr><th width="35%">รหัสธุรกรรม</th><td class="text-primary font-monospace">${response.transRef}</td></tr>
+                                                        <tr><th>ผู้โอน</th><td>${response.sender}</td></tr>
+                                                        <tr><th>ธนาคาร</th><td>${response.bank}</td></tr>
+                                                        <tr><th>จำนวนเงิน</th><td class="text-success fw-bold">${parseFloat(response.amount).toFixed(2)} บาท</td></tr>
+                                                        <tr><th>ผู้รับ</th><td>${response.receiver}</td></tr>
+                                                        <tr><th>วันที่โอน</th><td>${response.date}</td></tr>
+                                                    </table>
+                                                </div>
+                                            `,
+                                            confirmButtonText: 'ปิด'
+                                        });
+                                    } else {
+                                        Swal.fire({
+                                            icon: 'error',
+                                            title: 'ตรวจสอบล้มเหลว',
+                                            text: response.message
+                                        });
+                                    }
+                                },
+                                error: function () {
+                                    Swal.fire({
+                                        icon: 'error',
+                                        title: 'เกิดข้อผิดพลาด',
+                                        text: 'ไม่สามารถเชื่อมต่อกับ Server ได้'
+                                    });
+                                }
+                            });
+                        }
+                    </script>
 
                     <form method="post">
                         <div class="row g-3 align-items-end">
