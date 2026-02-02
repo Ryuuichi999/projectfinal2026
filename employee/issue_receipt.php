@@ -47,7 +47,7 @@ function ensureColumnExists($conn, $table, $column, $definition)
     $stmt = $conn->prepare($sql);
     $stmt->bind_param("sss", $dbName, $table, $column);
     $stmt->execute();
-    $cnt = (int)($stmt->get_result()->fetch_assoc()['cnt'] ?? 0);
+    $cnt = (int) ($stmt->get_result()->fetch_assoc()['cnt'] ?? 0);
     if ($cnt === 0) {
         $conn->query("ALTER TABLE `$table` ADD COLUMN `$column` $definition");
     }
@@ -168,10 +168,11 @@ if (isset($_POST['issue_receipt_confirm'])) {
                     $slip_result = $stmt_slip->get_result();
                     if ($slip_result->num_rows > 0):
                         $slip = $slip_result->fetch_assoc();
-                    ?>
+                        ?>
                         <div class="alert alert-success">
                             <strong>หลักฐานการชำระเงิน:</strong><br>
-                            <a href="<?= htmlspecialchars($slip['file_path']) ?>" target="_blank" class="btn btn-sm btn-outline-primary mt-2">
+                            <a href="../<?= htmlspecialchars($slip['file_path']) ?>" target="_blank"
+                                class="btn btn-sm btn-outline-primary mt-2">
                                 <i class="bi bi-file-earmark-image"></i> ดูสลิปการชำระเงิน
                             </a>
                         </div>
@@ -192,7 +193,8 @@ if (isset($_POST['issue_receipt_confirm'])) {
                             <div class="col-md-4">
                                 <label class="form-label">ชื่อผู้รับเงิน/ผู้ออกใบเสร็จ</label>
                                 <input type="text" name="receipt_issued_by" class="form-control"
-                                    value="<?= htmlspecialchars($issuer_name_default ?: '................................') ?>" required>
+                                    value="<?= htmlspecialchars($issuer_name_default ?: '................................') ?>"
+                                    required>
                             </div>
                             <div class="col-md-12">
                                 <button type="submit" name="issue_receipt_confirm" class="btn btn-warning w-100 mt-2"
