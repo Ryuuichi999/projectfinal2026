@@ -165,6 +165,7 @@ function getThaiDate($date)
         .signature {
             text-align: center;
             width: 40%;
+            line-height: 1.9;
         }
 
         /* Watermark */
@@ -271,9 +272,9 @@ function getThaiDate($date)
                 </div>
                 <div class="signature">
                     <div style="height: 70px;"></div>
-                    (ลงชื่อ)........................................................ ผู้รับเงิน<br>
+                    (ลงชื่อ)......................................... ผู้รับเงิน<br>
                     (<?= htmlspecialchars($request['receipt_issued_by'] ?? '........................................................') ?>)<br>
-                    ตำแหน่ง........................................................
+                    ตำแหน่ง เจ้าพนักงานธุรการ
                 </div>
             </div>
         </div>
