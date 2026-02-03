@@ -99,7 +99,13 @@ function get_status_badge($status)
         <?php if (isset($success)): ?>
             <script>
                 document.addEventListener('DOMContentLoaded', () => {
-                    Swal.fire('สำเร็จ', '<?= $success ?>', 'success');
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'สำเร็จ',
+                        text: '<?= $success ?>',
+                        timer: 2000,
+                        showConfirmButton: false
+                    });
                 });
             </script>
         <?php endif; ?>
@@ -107,7 +113,13 @@ function get_status_badge($status)
         <?php if (isset($error)): ?>
             <script>
                 document.addEventListener('DOMContentLoaded', () => {
-                    Swal.fire('ผิดพลาด', '<?= $error ?>', 'error');
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'ผิดพลาด',
+                        text: '<?= $error ?>',
+                        confirmButtonColor: '#3085d6',
+                        confirmButtonText: 'ตกลง'
+                    });
                 });
             </script>
         <?php endif; ?>
@@ -202,8 +214,8 @@ function get_status_badge($status)
                 text: "คุณแน่ใจหรือไม่ที่จะปฏิเสธคำขอนี้? เมื่อปฏิเสธแล้วจะไม่สามารถแก้ไขได้",
                 icon: 'warning',
                 showCancelButton: true,
-                confirmButtonColor: '#d33',
-                cancelButtonColor: '#6c757d',
+                confirmButtonColor: '#3085d6',
+                cancelButtonColor: '#d33',
                 confirmButtonText: 'ยืนยัน, ปฏิเสธ!',
                 cancelButtonText: 'ยกเลิก'
             }).then((result) => {

@@ -125,7 +125,7 @@ if (isset($_POST['submit'])) {
                             title: "ยื่นคำร้องสำเร็จ",
                             text: "เจ้าหน้าที่จะดำเนินการตรวจสอบข้อมูลของท่าน",
                             showConfirmButton: false,
-                            timer: 1500
+                            timer: 2000
                         }).then(() => {
                             window.location.href = "my_request.php";
                         });
@@ -263,40 +263,39 @@ if (isset($_POST['submit'])) {
         }
 
         .btn-action {
-    padding: 10px 42px;
-    border-radius: 20px;
-    font-size: 16px;
-    font-weight: 500;
-    transition: all 0.25s ease;
-    min-width: 160px;
-}
+            padding: 10px 42px;
+            border-radius: 20px;
+            font-size: 16px;
+            font-weight: 500;
+            transition: all 0.25s ease;
+            min-width: 160px;
+        }
 
-/* ปุ่มยกเลิก */
-.btn-cancel {
-    background: transparent;
-    color: #6c757d;
-    border: 2px solid #6c757d;
-}
+        /* ปุ่มยกเลิก */
+        .btn-cancel {
+            background: transparent;
+            color: #6c757d;
+            border: 2px solid #6c757d;
+        }
 
-.btn-cancel:hover {
-    background: #6c757d;
-    color: #fff;
-    transform: translateY(-2px);
-}
+        .btn-cancel:hover {
+            background: #6c757d;
+            color: #fff;
+            transform: translateY(-2px);
+        }
 
-/* ปุ่มยื่นคำร้อง */
-.btn-submit-main {
-    background: #000;
-    color: #fff;
-    border: 2px solid #000;
-}
+        /* ปุ่มยื่นคำร้อง */
+        .btn-submit-main {
+            background: #000;
+            color: #fff;
+            border: 2px solid #000;
+        }
 
-.btn-submit-main:hover {
-    background: #222;
-    border-color: #222;
-    transform: translateY(-2px);
-}
-
+        .btn-submit-main:hover {
+            background: #222;
+            border-color: #222;
+            transform: translateY(-2px);
+        }
     </style>
 </head>
 

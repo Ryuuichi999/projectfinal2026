@@ -111,7 +111,7 @@ if (isset($_POST['action'])) {
                                         icon: 'success',
                                         title: 'สำเร็จ!',
                                         text: 'เข้าสู่ระบบเรียบร้อยแล้ว',
-                                        timer: 1500,
+                                        timer: 2000,
                                         showConfirmButton: false
                                     }).then(() => {
                                         window.location.href = '<?= $redirect_to ?>';

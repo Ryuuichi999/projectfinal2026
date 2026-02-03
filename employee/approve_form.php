@@ -58,7 +58,8 @@ if (isset($_POST['approve_confirm'])) {
                 icon: "success",
                 title: "อนุมัติเรียบร้อย",
                 text: "ส่งคำร้องให้ผู้ใช้ชำระเงินแล้ว",
-                confirmButtonText: "ตกลง"
+                showConfirmButton: false,
+                timer: 2000
             }).then(() => {
                 window.location.href = "request_list.php";
             });
@@ -170,7 +171,7 @@ if (isset($_POST['approve_confirm'])) {
                 text: "สถานะจะเปลี่ยนเป็น 'รอชำระเงิน'",
                 icon: 'warning',
                 showCancelButton: true,
-                confirmButtonColor: '#198754',
+                confirmButtonColor: '#3085d6',
                 cancelButtonColor: '#d33',
                 confirmButtonText: 'ยืนยัน, อนุมัติเลย!',
                 cancelButtonText: 'ยกเลิก'

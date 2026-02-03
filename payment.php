@@ -112,7 +112,8 @@ if (isset($_POST['upload_slip'])) {
                                                 icon: 'success',
                                                 title: 'ตรวจสอบสลิปสำเร็จ',
                                                 html: 'ยอดเงิน: <?= number_format($apiResult['amount'], 2) ?> บาท<br>ผู้โอน: <?= $apiResult['sender_name'] ?>',
-                                                confirmButtonText: 'ตกลง'
+                                                showConfirmButton: false,
+                                                timer: 2000
                                             }).then(() => {
                                                 window.location.href = 'users/my_request.php';
                                             });

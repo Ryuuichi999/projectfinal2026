@@ -43,7 +43,8 @@ if (isset($_POST['submit'])) {
                         icon: 'success',
                         title: 'สำเร็จ',
                         text: 'เพิ่มผู้ใช้งานเรียบร้อยแล้ว',
-                        confirmButtonText: 'ตกลง'
+                        showConfirmButton: false,
+                        timer: 2000
                     }).then(() => {
                         window.location.href = 'users_list.php';
                     });

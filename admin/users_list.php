@@ -55,7 +55,13 @@ $result = $conn->query($sql);
         <?php if (isset($success_msg)): ?>
             <script>
                 document.addEventListener('DOMContentLoaded', () => {
-                    Swal.fire('สำเร็จ', '<?= $success_msg ?>', 'success').then(() => {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'สำเร็จ',
+                        text: '<?= $success_msg ?>',
+                        timer: 2000,
+                        showConfirmButton: false
+                    }).then(() => {
                         window.location.href = 'users_list.php';
                     });
                 });
@@ -65,7 +71,13 @@ $result = $conn->query($sql);
         <?php if (isset($error_msg)): ?>
             <script>
                 document.addEventListener('DOMContentLoaded', () => {
-                    Swal.fire('ผิดพลาด', '<?= $error_msg ?>', 'error');
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'ผิดพลาด',
+                        text: '<?= $error_msg ?>',
+                        confirmButtonColor: '#3085d6',
+                        confirmButtonText: 'ตกลง'
+                    });
                 });
             </script>
         <?php endif; ?>
@@ -138,8 +150,8 @@ $result = $conn->query($sql);
                 text: "การกระทำนี้ไม่สามารถเรียกคืนได้",
                 icon: 'warning',
                 showCancelButton: true,
-                confirmButtonColor: '#d33',
-                cancelButtonColor: '#3085d6',
+                confirmButtonColor: '#3085d6',
+                cancelButtonColor: '#d33',
                 confirmButtonText: 'ลบผู้ใช้',
                 cancelButtonText: 'ยกเลิก'
             }).then((result) => {

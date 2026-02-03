@@ -21,7 +21,19 @@ if (isset($_POST['submit'])) {
     if ($stmt->execute()) {
         $success = true;
     } else {
-        echo "<script>alert('เกิดข้อผิดพลาด: " . $conn->error . "');</script>";
+        echo "
+        <script src='https://cdn.jsdelivr.net/npm/sweetalert2@11'></script>
+        <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'เกิดข้อผิดพลาด',
+                    text: '" . addslashes($conn->error) . "',
+                    confirmButtonColor: '#3085d6',
+                    confirmButtonText: 'ตกลง'
+                });
+            });
+        </script>";
     }
 }
 ?>

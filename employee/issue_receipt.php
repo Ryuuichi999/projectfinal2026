@@ -89,7 +89,36 @@ if (isset($_POST['issue_receipt_confirm'])) {
     $stmt_up->bind_param("sssi", $receipt_no, $receipt_date, $receipt_issued_by, $request_id);
 
     if ($stmt_up->execute()) {
-        echo "<script>alert('ออกใบเสร็จเรียบร้อยแล้ว! ผู้ใช้สามารถดาวน์โหลดใบเสร็จและหนังสืออนุญาตได้แล้ว'); window.location.href='request_list.php';</script>";
+
+        ?>
+        <!DOCTYPE html>
+        <html lang="th">
+
+        <head>
+            <meta charset="UTF-8">
+            <title>ออกใบเสร็จสำเร็จ</title>
+            <?php include '../includes/header.php'; ?>
+        </head>
+
+        <body>
+            <?php include '../includes/scripts.php'; ?>
+            <script>
+                document.addEventListener('DOMContentLoaded', function () {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'สำเร็จ',
+                        text: 'ออกใบเสร็จเรียบร้อยแล้ว! ผู้ใช้สามารถดาวน์โหลดใบเสร็จและหนังสืออนุญาตได้แล้ว',
+                        showConfirmButton: false,
+                        timer: 2000
+                    }).then(() => {
+                        window.location.href = 'request_list.php';
+                    });
+                });
+            </script>
+        </body>
+
+        </html>
+        <?php
         exit;
     } else {
         $error = "เกิดข้อผิดพลาด: " . $conn->error;
@@ -237,7 +266,7 @@ if (isset($_POST['issue_receipt_confirm'])) {
                         }
                     </script>
 
-                    <form method="post">
+                    <form method="post" id="issueReceiptForm">
                         <div class="row g-3 align-items-end">
                             <div class="col-md-4">
                                 <label class="form-label">เลขที่ใบเสร็จ</label>
@@ -256,13 +285,34 @@ if (isset($_POST['issue_receipt_confirm'])) {
                                     required>
                             </div>
                             <div class="col-md-12">
-                                <button type="submit" name="issue_receipt_confirm" class="btn btn-warning w-100 mt-2"
-                                    onclick="return confirm('ยืนยันการออกใบเสร็จ?');">
+                                <button type="button" class="btn btn-warning w-100 mt-2"
+                                    onclick="confirmIssueReceipt()">
                                     <i class="bi bi-save"></i> บันทึกและออกใบเสร็จ
                                 </button>
+                                <!-- Hidden input to simulate button click for PHP check -->
+                                <input type="hidden" name="issue_receipt_confirm" value="1">
                             </div>
                         </div>
                     </form>
+
+                    <script>
+                        function confirmIssueReceipt() {
+                            Swal.fire({
+                                title: 'ยืนยันการออกใบเสร็จ?',
+                                text: "กรุณาตรวจสอบความถูกต้องก่อนบันทึก",
+                                icon: 'warning',
+                                showCancelButton: true,
+                                confirmButtonColor: '#3085d6',
+                                cancelButtonColor: '#d33',
+                                confirmButtonText: 'ยืนยัน',
+                                cancelButtonText: 'ยกเลิก'
+                            }).then((result) => {
+                                if (result.isConfirmed) {
+                                    document.getElementById('issueReceiptForm').submit();
+                                }
+                            });
+                        }
+                    </script>
                 </div>
             </div>
         </div>

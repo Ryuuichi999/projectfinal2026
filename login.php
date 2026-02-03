@@ -62,7 +62,7 @@ if (isset($_POST['login'])) {
                         icon: 'success',
                         title: 'เข้าสู่ระบบสำเร็จ',
                         text: 'กำลังพาท่านเข้าสู่ระบบ...',
-                        timer: 1500,
+                        timer: 2000,
                         showConfirmButton: false
                     }).then(() => {
                         window.location.href = '<?= $redirect_to ?>';
@@ -78,7 +78,7 @@ if (isset($_POST['login'])) {
                         icon: 'success',
                         title: 'ออกจากระบบสำเร็จ',
                         text: 'ไว้พบกันใหม่!',
-                        timer: 1300,
+                        timer: 2000,
                         showConfirmButton: false
                     });
                     window.history.replaceState(null, null, window.location.pathname);
