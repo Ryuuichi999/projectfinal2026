@@ -56,7 +56,7 @@ function get_status_badge($status)
 
         /* ปรับ layout ตารางให้กระชับ ไม่ตัดบรรทัด */
         .table {
-            font-size: 0.8rem;
+            /* font-size: 0.8rem; REMOVED for consistency */
         }
 
         .table th {
@@ -80,7 +80,7 @@ function get_status_badge($status)
         }
 
         td.action-cell .btn {
-            font-size: 0.85rem;
+            /* font-size: 0.85rem; REMOVED */
             padding: 0.25rem 0.5rem;
         }
     </style>

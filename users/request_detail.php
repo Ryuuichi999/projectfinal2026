@@ -87,7 +87,7 @@ function get_status_badge($status)
         }
 
         .detail-value {
-            font-size: 1.1em;
+            /* font-size: 1.1em; REMOVED */
             color: #000;
         }
 
