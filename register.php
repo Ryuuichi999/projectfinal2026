@@ -69,19 +69,19 @@ if (isset($_POST['submit'])) {
         </div>
 
         <?php if (isset($success) && $success): ?>
-            <script>
-                document.addEventListener('DOMContentLoaded', function () {
-                    Swal.fire({
-                        icon: 'success',
-                        title: 'สมัครสมาชิกสำเร็จ',
-                        text: 'กรุณาเข้าสู่ระบบเพื่อใช้งาน',
-                        timer: 2000,
-                        showConfirmButton: false
-                    }).then(() => {
-                        window.location.href = 'login.php';
+                <script>
+                    document.addEventListener('DOMContentLoaded', function () {
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'สมัครสมาชิกสำเร็จ',
+                            text: 'กรุณาเข้าสู่ระบบเพื่อใช้งาน',
+                            timer: 2000,
+                            showConfirmButton: false
+                        }).then(() => {
+                            window.location.href = 'login.php';
+                        });
                     });
-                });
-            </script>
+                </script>
         <?php endif; ?>
 
         <form method="post">
