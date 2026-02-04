@@ -13,6 +13,7 @@ body {
     margin: 0;
     /* ในรูปภาพใช้ฟอนต์ไทย, 'Sarabun' เหมาะสม */
     font-family: 'Sarabun', sans-serif; 
+    font-size: 16px; /* Standardize global font size */
     background-color: var(--bg-main);
     color: var(--text-main);
     /* **สำคัญ:** ตั้งค่าให้ใช้ box-sizing แบบ border-box สำหรับทุกองค์ประกอบ */
@@ -22,6 +23,20 @@ body {
 /* ตั้งค่า box-sizing ทั่วโลก */
 *, *::before, *::after {
     box-sizing: inherit;
+}
+
+/* Standardize Table Styles */
+.table {
+    font-size: 1rem !important; /* Force standard size */
+}
+.table th {
+    font-weight: 600;
+    background-color: #f8f9fa;
+    vertical-align: middle;
+}
+.table td {
+    vertical-align: middle;
+    padding: 12px 16px; /* Comfortable padding */
 }
 
 /* ===== SIDEBAR (ปรับให้ตรงกับรูปภาพ) ===== */
