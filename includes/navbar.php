@@ -19,11 +19,12 @@ if (session_status() === PHP_SESSION_NONE) {
                 <li class="nav-item"><a class="nav-link" href="#services">บริการ</a></li>
                 <li class="nav-item"><a class="nav-link" href="#contact">ติดต่อเรา</a></li>
             </ul>
-            <div class="d-flex align-items-center gap-2">
+            <div class="d-flex align-items-center gap-3">
                 <?php if (isset($_SESSION['user_id'])): ?>
-                    <a href="users/dashboard.php" class="btn btn-primary-custom text-white px-4">เข้าสู่ระบบจัดการ</a>
+                    <a href="users/index.php" class="nav-link fw-bold">หน้าจัดการ</a>
+                    <a href="logout.php" class="btn btn-outline-danger px-4 rounded-pill">ออกจากระบบ</a>
                 <?php else: ?>
-                    <a href="login.php" class="btn btn-primary-custom text-white px-4">เข้าสู่ระบบ</a>
+                    <a href="login.php" class="nav-link fw-bold">เข้าสู่ระบบ</a>
                     <a href="register.php" class="btn btn-primary-custom text-white px-4">ลงทะเบียน</a>
                 <?php endif; ?>
             </div>
