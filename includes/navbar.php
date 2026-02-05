@@ -1,0 +1,32 @@
+<?php
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
+?>
+<nav class="navbar navbar-expand-lg fixed-top">
+    <div class="container">
+        <a class="navbar-brand d-flex align-items-center gap-2" href="index.php">
+            <img src="image/logosila.png" alt="Logo" style="height: 40px; width: auto;">
+            <span class="fw-bold fs-5 text-dark">เทศบาลเมืองศิลา</span>
+        </a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav me-auto align-items-center gap-3 ms-lg-4">
+                <li class="nav-item"><a class="nav-link active" href="index.php">หน้าหลัก</a></li>
+                <li class="nav-item"><a class="nav-link" href="#steps">ขั้นตอน</a></li>
+                <li class="nav-item"><a class="nav-link" href="#services">บริการ</a></li>
+                <li class="nav-item"><a class="nav-link" href="#contact">ติดต่อเรา</a></li>
+            </ul>
+            <div class="d-flex align-items-center gap-2">
+                <?php if (isset($_SESSION['user_id'])): ?>
+                    <a href="users/dashboard.php" class="btn btn-primary-custom text-white px-4">เข้าสู่ระบบจัดการ</a>
+                <?php else: ?>
+                    <a href="login.php" class="btn btn-primary-custom text-white px-4">เข้าสู่ระบบ</a>
+                    <a href="register.php" class="btn btn-primary-custom text-white px-4">ลงทะเบียน</a>
+                <?php endif; ?>
+            </div>
+        </div>
+    </div>
+</nav>
