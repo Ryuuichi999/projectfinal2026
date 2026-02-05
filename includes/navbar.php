@@ -5,9 +5,9 @@ if (session_status() === PHP_SESSION_NONE) {
 ?>
 <nav class="navbar navbar-expand-lg fixed-top">
     <div class="container">
-        <a class="navbar-brand d-flex align-items-center gap-2" href="index.php">
-            <img src="image/logosila.png" alt="Logo" style="height: 40px; width: auto;">
-            <span class="fw-bold fs-5 text-dark">เทศบาลเมืองศิลา</span>
+        <a class="navbar-brand d-flex align-items-center" href="index.php">
+            <img src="image/logosila.png" alt="Logo" style="height: 70px; width: auto; margin-top: -15px; margin-bottom: -15px; transition: 0.3s;" class="logo-pop">
+            <span class="fw-bold fs-5 text-dark ms-2">เทศบาลเมืองศิลา</span>
         </a>
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
             <span class="navbar-toggler-icon"></span>
