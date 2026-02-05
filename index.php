@@ -14,6 +14,8 @@ if (session_status() === PHP_SESSION_NONE) {
     <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700&display=swap"
         rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <!-- AOS CSS -->
+    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
     <style>
         body {
             font-family: 'Sarabun', sans-serif;
@@ -190,7 +192,7 @@ if (session_status() === PHP_SESSION_NONE) {
     <section class="hero-section" id="home">
         <div class="container">
             <div class="row align-items-center">
-                <div class="col-lg-6 mb-5 mb-lg-0">
+                <div class="col-lg-6 mb-5 mb-lg-0" data-aos="fade-right">
                     <h1 class="hero-title">
                         ระบบยื่นคำร้อง<br>
                         <span>ขออนุญาตติดตั้งป้าย</span>
@@ -221,7 +223,7 @@ if (session_status() === PHP_SESSION_NONE) {
                         </div>
                     </div>
                 </div>
-                <div class="col-lg-6 text-center">
+                <div class="col-lg-6 text-center" data-aos="fade-left">
                     <img src="https://img.freepik.com/free-vector/city-skyline-concept-illustration_114360-8923.jpg"
                         class="img-fluid rounded-4 shadow-lg" alt="Municipality Service"
                         style="max-height: 500px; border: 8px solid white;">
@@ -233,7 +235,7 @@ if (session_status() === PHP_SESSION_NONE) {
     <!-- Steps Section -->
     <section class="steps-section" id="steps">
         <div class="container">
-            <div class="text-center mb-5 pb-3">
+            <div class="text-center mb-5 pb-3" data-aos="fade-up">
                 <span class="badge bg-primary bg-opacity-10 text-primary px-3 py-2 rounded-pill mb-3">สะดวก
                     รวดเร็ว</span>
                 <h2 class="fw-bold fs-1">ขั้นตอนการยื่นคำร้อง</h2>
@@ -241,35 +243,35 @@ if (session_status() === PHP_SESSION_NONE) {
             </div>
 
             <div class="row g-4">
-                <div class="col-lg col-md-6">
+                <div class="col-lg col-md-6" data-aos="fade-up" data-aos-delay="100">
                     <div class="step-item">
                         <div class="step-number">01</div>
                         <h5 class="step-title">ลงทะเบียน</h5>
                         <p class="step-desc">สร้างบัญชีผู้ใช้งานเพื่อเข้าสู่ระบบยื่นคำร้อง</p>
                     </div>
                 </div>
-                <div class="col-lg col-md-6">
+                <div class="col-lg col-md-6" data-aos="fade-up" data-aos-delay="200">
                     <div class="step-item">
                         <div class="step-number">02</div>
                         <h5 class="step-title">กรอกข้อมูล</h5>
                         <p class="step-desc">ระบุรายละเอียดป้ายและพิกัดที่ต้องการติดตั้ง</p>
                     </div>
                 </div>
-                <div class="col-lg col-md-6">
+                <div class="col-lg col-md-6" data-aos="fade-up" data-aos-delay="300">
                     <div class="step-item">
                         <div class="step-number">03</div>
                         <h5 class="step-title">อัปโหลดเอกสาร</h5>
                         <p class="step-desc">แนบภาพถ่ายป้ายและเอกสารประกอบ</p>
                     </div>
                 </div>
-                <div class="col-lg col-md-6">
+                <div class="col-lg col-md-6" data-aos="fade-up" data-aos-delay="400">
                     <div class="step-item">
                         <div class="step-number">04</div>
                         <h5 class="step-title">รอการตรวจสอบ</h5>
                         <p class="step-desc">เจ้าหน้าที่ตรวจสอบความถูกต้องและอนุมัติ</p>
                     </div>
                 </div>
-                <div class="col-lg col-md-6">
+                <div class="col-lg col-md-6" data-aos="fade-up" data-aos-delay="500">
                     <div class="step-item">
                         <div class="step-number">05</div>
                         <h5 class="step-title">รับใบอนุญาต</h5>
@@ -283,28 +285,28 @@ if (session_status() === PHP_SESSION_NONE) {
     <!-- Services Section -->
     <section class="py-5" id="services" style="background-color: #f8fafc;">
         <div class="container py-5">
-            <div class="row text-center mb-5">
+            <div class="row text-center mb-5" data-aos="fade-up">
                 <div class="col-lg-8 mx-auto">
                     <h2 class="fw-bold fs-2">บริการของเรา</h2>
                     <p class="text-muted">ระบบที่ช่วยให้การขออนุญาตเป็นเรื่องง่ายสำหรับคุณ</p>
                 </div>
             </div>
             <div class="row g-4">
-                <div class="col-md-4">
+                <div class="col-md-4" data-aos="zoom-in" data-aos-delay="100">
                     <div class="feature-card">
                         <div class="icon-box"><i class="bi bi-file-earmark-richtext"></i></div>
                         <h4 class="fw-bold">ยื่นคำร้องออนไลน์</h4>
                         <p class="text-muted">กรอกข้อมูลและส่งเอกสารผ่านระบบได้ทันที ประหยัดเวลาไม่ต้องเดินทาง</p>
                     </div>
                 </div>
-                <div class="col-md-4">
+                <div class="col-md-4" data-aos="zoom-in" data-aos-delay="200">
                     <div class="feature-card">
                         <div class="icon-box"><i class="bi bi-search"></i></div>
                         <h4 class="fw-bold">ติดตามสถานะ</h4>
                         <p class="text-muted">ตรวจสอบความคืบหน้าของคำร้องได้แบบ Real-time ทุกขั้นตอน</p>
                     </div>
                 </div>
-                <div class="col-md-4">
+                <div class="col-md-4" data-aos="zoom-in" data-aos-delay="300">
                     <div class="feature-card">
                         <div class="icon-box"><i class="bi bi-bell"></i></div>
                         <h4 class="fw-bold">แจ้งเตือนรวดเร็ว</h4>
@@ -318,6 +320,15 @@ if (session_status() === PHP_SESSION_NONE) {
     <?php include 'includes/footer.php'; ?>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- AOS JS -->
+    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+    <script>
+        AOS.init({
+            duration: 1000,
+            once: true,
+            offset: 100
+        });
+    </script>
 </body>
 
 </html>

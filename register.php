@@ -51,6 +51,22 @@ if (isset($_POST['submit'])) {
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
 
     <style>
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .fade-in-up {
+            animation: fadeInUp 0.8s ease-out forwards;
+        }
+
         body {
             font-family: 'Sarabun', sans-serif;
             background-color: #f0f2f5;
@@ -142,9 +158,9 @@ if (isset($_POST['submit'])) {
         }
 
         .btn-cancel {
-            background-color: transparent;
-            color: #dc3545;
-            border: 1px solid #dc3545;
+            background-color: #f8fafc;
+            color: #475569;
+            border: 1px solid #e2e8f0;
             padding: 10px;
             border-radius: 6px;
             width: 100%;
@@ -153,8 +169,9 @@ if (isset($_POST['submit'])) {
         }
 
         .btn-cancel:hover {
-            background-color: #dc3545;
-            color: white;
+            background-color: #e2e8f0;
+            color: #1e293b;
+            border-color: #cbd5e1;
         }
     </style>
 </head>
@@ -263,7 +280,7 @@ if (isset($_POST['submit'])) {
                     </button>
                 </div>
                 <div class="col-6">
-                    <a href="login.php" class="btn btn-cancel text-center text-decoration-none">
+                    <a href="index.php" class="btn btn-cancel text-center text-decoration-none">
                         ย้อนกลับ
                     </a>
                 </div>
