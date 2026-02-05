@@ -287,7 +287,7 @@ if (session_status() === PHP_SESSION_NONE) {
         <div class="container py-5">
             <div class="row text-center mb-5" data-aos="fade-up">
                 <div class="col-lg-8 mx-auto">
-                    <h2 class="fw-bold fs-2">บริการของเรา</h2>
+                    <h2 class="fw-bold fs-2">บริการ</h2>
                     <p class="text-muted">ระบบที่ช่วยให้การขออนุญาตเป็นเรื่องง่ายสำหรับคุณ</p>
                 </div>
             </div>
