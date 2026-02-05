@@ -17,13 +17,25 @@
                     <li><a href="login.php" class="footer-link">เข้าสู่ระบบ</a></li>
                 </ul>
             </div>
-            <div class="col-lg-3 col-6">
+            <div class="col-lg-6 col-12 ms-lg-auto">
                 <h6 class="fw-bold mb-3">ติดต่อสอบถาม</h6>
-                <ul class="list-unstyled d-flex flex-column gap-2 small opacity-75">
-                    <li><i class="bi bi-telephone me-2"></i> 043-xxx-xxx</li>
-                    <li><i class="bi bi-envelope me-2"></i> contact@sila.go.th</li>
-                    <li><i class="bi bi-clock me-2"></i> จันทร์-ศุกร์ 08:30 - 16:30 น.</li>
-                </ul>
+                <div class="row g-3">
+                    <div class="col-md-12">
+                        <ul class="list-unstyled d-flex flex-column gap-2 small opacity-75">
+                            <li><i class="bi bi-geo-alt-fill me-2 text-primary"></i> <strong>ที่อยู่:</strong> 722 หมู่
+                                14 ตำบลศิลา อำเภอเมืองขอนแก่น จังหวัดขอนแก่น 40000</li>
+                            <li><i class="bi bi-telephone-fill me-2 text-primary"></i> <strong>โทรศัพท์:</strong>
+                                043-246-505-6</li>
+                            <li><i class="bi bi-clock-fill me-2 text-primary"></i> <strong>เวลาทำการ:</strong>
+                                จันทร์-ศุกร์ 08:30 - 16:30 น.</li>
+                            <li>
+                                <i class="bi bi-envelope-at-fill me-2 text-primary"></i> <strong>Email:</strong>
+                                <span class="ms-1">saraban@sila-kk.go.th (สารบรรณกลาง)</span>,
+                                <span class="ms-1">contact@sila-kk.go.th (ติดต่อทั่วไป)</span>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
             </div>
         </div>
         <div class="border-top border-secondary mt-5 pt-4 text-center small opacity-50">

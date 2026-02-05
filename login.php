@@ -313,7 +313,6 @@ if (isset($_POST['login'])) {
         <div class="login-info-side">
             <div class="municipality-header">
                 <div class="d-flex align-items-center gap-3 mb-2">
-                    <div class="municipality-badge">ศ</div>
                     <div>
                         <h5 class="mb-0 fw-bold">เทศบาลเมืองศิลา</h5>
                         <small class="opacity-75">ระบบขออนุญาตติดตั้งป้าย</small>
@@ -333,7 +332,7 @@ if (isset($_POST['login'])) {
                 <div class="feature-icon-box"><i class="bi bi-bell-fill"></i></div>
                 <div class="feature-text">
                     <h5>แจ้งเตือนอัตโนมัติ</h5>
-                    <p>รับการแจ้งเตือนผ่าน Line และ Email เมื่อมีการอัปเดตสถานะ</p>
+                    <p>รับการแจ้งเตือนผ่าน Line เมื่อมีการอัปเดตสถานะ</p>
                 </div>
             </div>
 
@@ -351,7 +350,7 @@ if (isset($_POST['login'])) {
                     <div>
                         <strong class="d-block">เทศบาลเมืองศิลา</strong>
                         <small class="opacity-75">ตำบลศิลา จังหวัดขอนแก่น</small>
-                        <div class="mt-1 opacity-75 small">ให้บริการตลอด 24 ชั่วโมง สอบถามเพิ่มเติม โทร. 043-xxx-xxx
+                        <div class="mt-1 opacity-75 small">ให้บริการตลอด 24 ชั่วโมง สอบถามเพิ่มเติม โทร. 043-246-505-6
                         </div>
                     </div>
                 </div>
