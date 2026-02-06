@@ -57,10 +57,30 @@ if (session_status() === PHP_SESSION_NONE) {
             color: white;
         }
 
-        /* Hero Section */
+        @keyframes floatImage {
+            0% {
+                transform: translateY(0px) rotate(0deg);
+            }
+
+            50% {
+                transform: translateY(-15px) rotate(1deg);
+            }
+
+            100% {
+                transform: translateY(0px) rotate(0deg);
+            }
+        }
+
+        .floating-hero-img {
+            animation: floatImage 6s ease-in-out infinite;
+        }
+
+        /* Hero Section Refined */
         .hero-section {
             padding: 160px 0 100px;
-            background: linear-gradient(135deg, #f0f4f8 0%, #e2e8f0 100%);
+            background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+            background-image: radial-gradient(#1a56db15 1px, transparent 1px);
+            background-size: 30px 30px;
             min-height: 85vh;
             display: flex;
             align-items: center;
@@ -68,28 +88,36 @@ if (session_status() === PHP_SESSION_NONE) {
         }
 
         .hero-title {
-            font-weight: 700;
-            color: #1a1a1a;
+            font-weight: 800;
+            color: #0f172a;
             font-size: 3.5rem;
             line-height: 1.4;
-            margin-bottom: 30px;
+            /* Increased to fix clipping */
+            margin-bottom: 25px;
+            letter-spacing: -0.5px;
         }
 
         .hero-title span {
             color: #1a56db;
             display: block;
             margin-top: 10px;
+            /* Increased margin */
+            padding-bottom: 5px;
+            /* Added padding to prevent bottom clipping */
+            background: linear-gradient(90deg, #1a56db, #3b82f6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
         }
 
         .hero-text {
-            color: #64748b;
+            color: #475569;
             font-size: 1.15rem;
             margin-bottom: 40px;
             line-height: 1.8;
-            max-width: 600px;
+            max-width: 580px;
         }
 
-        /* Steps Section Redesign (Matching Reference Image) */
+        /* Steps Section Reverted to Gold Border Design */
         .steps-section {
             padding: 100px 0;
             background-color: #f8fafc;
@@ -103,7 +131,7 @@ if (session_status() === PHP_SESSION_NONE) {
             box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
             position: relative;
             border-top: 5px solid #d4af37;
-            /* Gold/Yellow Border */
+            /* Gold Border */
             transition: 0.3s;
             height: 100%;
         }
@@ -167,139 +195,132 @@ if (session_status() === PHP_SESSION_NONE) {
             margin-bottom: 10px;
         }
 
-        /* Requirements & Regulations Styling */
-        .info-section {
-            padding-bottom: 100px;
-            background-color: #f8fafc;
-        }
-
+        /* Requirements Section Expanded */
         .info-card {
             background: #fff;
-            border-radius: 20px;
-            padding: 40px;
-            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.04);
-            border: 1px solid rgba(0, 0, 0, 0.05);
+            border-radius: 24px;
+            padding: 45px;
+            box-shadow: 0 20px 50px rgba(15, 23, 42, 0.05);
+            border: 1px solid #f1f5f9;
             height: 100%;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .info-card::after {
+            content: '';
+            position: absolute;
+            bottom: -50px;
+            right: -50px;
+            width: 200px;
+            height: 200px;
+            background: radial-gradient(circle, #1a56db08 0%, transparent 70%);
+            border-radius: 50%;
         }
 
         .info-title {
             font-weight: 800;
+            font-size: 1.6rem;
+            color: #0f172a;
+            margin-bottom: 30px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .doc-grid {
+            display: grid;
+            grid-template-columns: repeat(1, 1fr);
+            gap: 20px;
+        }
+
+        .doc-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 20px;
+            padding: 20px;
+            background: #f8fafc;
+            border-radius: 16px;
+            transition: 0.3s;
+            border: 1px solid transparent;
+        }
+
+        .doc-item:hover {
+            background: #fff;
+            border-color: #1a56db;
+            box-shadow: 0 10px 20px rgba(26, 86, 219, 0.05);
+        }
+
+        .doc-icon-box {
+            width: 45px;
+            height: 45px;
+            background: #fff;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #1a56db;
             font-size: 1.4rem;
+            box-shadow: 0 5px 10px rgba(0, 0, 0, 0.03);
+            flex-shrink: 0;
+        }
+
+        .doc-content h6 {
+            font-weight: 700;
+            margin-bottom: 5px;
+            font-size: 1rem;
             color: #1e293b;
-            margin-bottom: 25px;
+        }
+
+        .doc-content p {
+            font-size: 0.85rem;
+            color: #64748b;
+            margin-bottom: 0;
+            line-height: 1.5;
+        }
+
+        .doc-footer-note {
+            margin-top: 30px;
+            padding: 15px 20px;
+            background: #f0f7ff;
+            border-radius: 12px;
+            color: #0369a1;
+            font-size: 0.85rem;
             display: flex;
             align-items: center;
             gap: 12px;
         }
 
-        .doc-list {
-            list-style: none;
-            padding: 0;
-            margin: 0;
-        }
-
-        .doc-list li {
-            position: relative;
-            padding-left: 35px;
-            margin-bottom: 18px;
-            color: #475569;
-            font-size: 1.05rem;
-            font-weight: 500;
-        }
-
-        .doc-list li i {
-            position: absolute;
-            left: 0;
-            top: 2px;
-            color: #10b981;
-            font-size: 1.2rem;
-        }
-
-        .reg-box {
-            border-radius: 12px;
-            padding: 20px 25px;
-            margin-bottom: 15px;
-            border: 1px solid rgba(0, 0, 0, 0.03);
-        }
-
-        .reg-box-title {
-            font-weight: 800;
-            font-size: 1.1rem;
-            margin-bottom: 8px;
-        }
-
-        .reg-box-desc {
-            font-size: 0.95rem;
-            margin-bottom: 0;
-            line-height: 1.6;
-        }
-
-        .reg-yellow {
-            background-color: #fffbeb;
-            border-left: 5px solid #fbbf24;
-        }
-
-        .reg-yellow .reg-box-title {
-            color: #92400e;
-        }
-
-        .reg-yellow .reg-box-desc {
-            color: #b45309;
-        }
-
-        .reg-blue {
-            background-color: #f0f7ff;
-            border-left: 5px solid #3b82f6;
-        }
-
-        .reg-blue .reg-box-title {
-            color: #1e40af;
-        }
-
-        .reg-blue .reg-box-desc {
-            color: #2563eb;
-        }
-
-        .reg-green {
-            background-color: #f0fdf4;
-            border-left: 5px solid #22c55e;
-        }
-
-        .reg-green .reg-box-title {
-            color: #166534;
-        }
-
-        .reg-green .reg-box-desc {
-            color: #15803d;
-        }
-
-        /* Feature Styling */
+        /* feature cards are kept as polished from Phase 17 */
         .feature-card {
-            background: white;
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(10px);
             padding: 40px;
-            border-radius: 20px;
-            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.05);
-            transition: 0.3s;
+            border-radius: 24px;
+            box-shadow: 0 10px 30px rgba(15, 23, 42, 0.04);
+            transition: 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
             height: 100%;
-            border: 1px solid rgba(0, 0, 0, 0.02);
+            border: 1px solid rgba(255, 255, 255, 0.5);
         }
 
         .feature-card:hover {
-            transform: translateY(-10px);
-            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.1);
+            transform: translateY(-8px);
+            box-shadow: 0 20px 40px rgba(15, 23, 42, 0.08);
+            background: #fff;
         }
 
         .icon-box {
             width: 70px;
             height: 70px;
-            background: rgba(26, 86, 219, 0.08);
-            color: #1a56db;
-            border-radius: 15px;
+            background: linear-gradient(135deg, #1a56db, #3b82f6);
+            color: #fff;
+            border-radius: 18px;
             display: flex;
             align-items: center;
             justify-content: center;
             font-size: 2rem;
             margin-bottom: 30px;
+            box-shadow: 0 10px 20px rgba(26, 86, 219, 0.2);
         }
 
         /* Footer */
@@ -368,7 +389,7 @@ if (session_status() === PHP_SESSION_NONE) {
                 </div>
                 <div class="col-lg-6 text-center" data-aos="fade-left">
                     <img src="https://img.freepik.com/free-vector/city-skyline-concept-illustration_114360-8923.jpg"
-                        class="img-fluid rounded-4 shadow-lg" alt="Municipality Service"
+                        class="img-fluid rounded-4 shadow-lg floating-hero-img" alt="Municipality Service"
                         style="max-height: 500px; border: 8px solid white;">
                 </div>
             </div>
@@ -428,63 +449,13 @@ if (session_status() === PHP_SESSION_NONE) {
         </div>
     </section>
 
-    <!-- Requirements & Regulations Section -->
-    <section class="info-section">
-        <div class="container">
-            <div class="row g-4">
-                <!-- Documents Box -->
-                <div class="col-lg-6" data-aos="fade-right">
-                    <div class="info-card">
-                        <div class="info-title">
-                            <i class="bi bi-journal-bookmark text-warning"></i>
-                            เอกสารที่ต้องเตรียม
-                        </div>
-                        <ul class="doc-list">
-                            <li><i class="bi bi-check-circle-fill"></i> สำเนาบัตรประจำตัวประชาชน</li>
-                            <li><i class="bi bi-check-circle-fill"></i> สำเนาทะเบียนบ้าน</li>
-                            <li><i class="bi bi-check-circle-fill"></i> แบบป้ายหรือภาพตัวอย่างป้าย</li>
-                            <li><i class="bi bi-check-circle-fill"></i> หนังสือยินยอมจากเจ้าของพื้นที่
-                                (กรณีติดตั้งในที่ดินผู้อื่น)</li>
-                        </ul>
-                    </div>
-                </div>
-
-                <!-- Regulations Box -->
-                <div class="col-lg-6" data-aos="fade-left">
-                    <div class="info-card">
-                        <div class="info-title">
-                            <i class="bi bi-exclamation-circle text-warning"></i>
-                            ข้อกำหนดสำคัญ
-                        </div>
-
-                        <div class="reg-box reg-yellow">
-                            <h5 class="reg-box-title">ขนาดป้าย</h5>
-                            <p class="reg-box-desc">ป้ายชั่วคราวต้องมีขนาดไม่เกิน 2 x 3 เมตร หรือตามที่กำหนดในเทศบัญญัติ
-                            </p>
-                        </div>
-
-                        <div class="reg-box reg-blue">
-                            <h5 class="reg-box-title">ระยะเวลา</h5>
-                            <p class="reg-box-desc">ติดตั้งได้ไม่เกิน 30 วัน และสามารถต่ออายุได้ตามระเบียบ</p>
-                        </div>
-
-                        <div class="reg-box reg-green">
-                            <h5 class="reg-box-title">ค่าธรรมเนียม</h5>
-                            <p class="reg-box-desc">ตามประเภทและขนาดป้าย เริ่มต้น 100-500 บาท</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- Services Section -->
-    <section class="py-5" id="services" style="background-color: #f8fafc;">
+    <!-- Services Section (Moved Up) -->
+    <section class="py-5" id="services" style="background-color: #f0f4f8;">
         <div class="container py-5">
             <div class="row text-center mb-5" data-aos="fade-up">
                 <div class="col-lg-8 mx-auto">
-                    <h2 class="fw-bold fs-2">บริการ</h2>
-                    <p class="text-muted">ระบบที่ช่วยให้การขออนุญาตเป็นเรื่องง่ายสำหรับคุณ</p>
+                    <h2 class="fw-bold fs-2">บริการของเรา</h2>
+                    <p class="text-muted">ระบบที่ช่วยให้การขออนุญาตเป็นเรื่องง่ายและทันสมัย</p>
                 </div>
             </div>
             <div class="row g-4">
@@ -506,12 +477,115 @@ if (session_status() === PHP_SESSION_NONE) {
                     <div class="feature-card">
                         <div class="icon-box"><i class="bi bi-bell"></i></div>
                         <h4 class="fw-bold">แจ้งเตือนรวดเร็ว</h4>
-                        <p class="text-muted">รับการแจ้งเตือนผลการอนุมัติผ่านระบบ Line แจ้งเตือนทันใจ</p>
+                        <p class="text-muted">รับการแจ้งเตือนผลการอนุมัติผ่านระบบ แจ้งเตือนทันใจ</p>
                     </div>
                 </div>
             </div>
         </div>
     </section>
+
+    <!-- Documents & Legal Section -->
+    <section class="legal-section" id="legal">
+        <div class="container">
+            <div class="row g-5">
+                <!-- Left Column: Required Documents -->
+                <div class="col-lg-6" data-aos="fade-right">
+                    <div class="info-card">
+                        <div class="info-title">
+                            <i class="bi bi-journal-bookmark-fill text-primary"></i>
+                            เอกสารที่ต้องเตรียม
+                        </div>
+                        <div class="doc-grid">
+                            <div class="doc-item">
+                                <div class="doc-icon-box">
+                                    <i class="bi bi-person-badge"></i>
+                                </div>
+                                <div class="doc-content">
+                                    <h6>บัตรประจำตัวประชาชน</h6>
+                                    <p>สำเนาบัตรของผู้ยื่นคำร้อง พร้อมลงนามรับรองสำเนาถูกต้อง</p>
+                                </div>
+                            </div>
+                            <div class="doc-item">
+                                <div class="doc-icon-box">
+                                    <i class="bi bi-house-door"></i>
+                                </div>
+                                <div class="doc-content">
+                                    <h6>ทะเบียนบ้าน</h6>
+                                    <p>สำเนาทะเบียนบ้านหน้าปัจจุบันที่มีชื่อผู้ยื่นคำร้อง</p>
+                                </div>
+                            </div>
+                            <div class="doc-item">
+                                <div class="doc-icon-box">
+                                    <i class="bi bi-image"></i>
+                                </div>
+                                <div class="doc-content">
+                                    <h6>แบบป้ายหรือภาพถ่าย</h6>
+                                    <p>ภาพจำลองป้ายที่จะติดตั้ง </p>
+                                </div>
+                            </div>
+                            <div class="doc-item">
+                                <div class="doc-icon-box">
+                                    <i class="bi bi-pencil-square"></i>
+                                </div>
+                                <div class="doc-content">
+                                    <h6>หนังสือยินยอมเจ้าของพื้นที่</h6>
+                                    <p>กรณีติดตั้งในที่ดินผู้อื่น ต้องมีเอกสารอนุญาตจากเจ้าของที่ดิน</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="mt-4 p-3 bg-light rounded-3 border-start border-4 border-primary">
+                            <p class="mb-0 small text-muted"> <i class="bi bi-shield-lock-fill me-2 text-primary"></i>
+                                ข้อมูลและเอกสารทั้งหมดจะถูกเก็บรักษาเป็นความลับตามนโยบายคุ้มครองข้อมูลส่วนบุคคล</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right Column: Legal Criteria (Harmonized) -->
+                <div class="col-lg-6" data-aos="fade-left">
+                    <div class="info-card">
+                        <div class="info-title">
+                            <i class="bi bi-shield-check text-primary"></i>
+                            เกณฑ์การพิจารณา
+                        </div>
+                        <div class="doc-grid">
+                            <div class="doc-item">
+                                <div class="doc-icon-box">
+                                    <i class="bi bi-clock-history"></i>
+                                </div>
+                                <div class="doc-content">
+                                    <h6>ระยะเวลาอนุญาต</h6>
+                                    <p>ป้ายการค้าอนุญาตไม่เกิน 60 วัน และป้ายประชาสัมพันธ์ไม่เกิน 30 วัน</p>
+                                </div>
+                            </div>
+                            <div class="doc-item">
+                                <div class="doc-icon-box">
+                                    <i class="bi bi-fullscreen"></i>
+                                </div>
+                                <div class="doc-content">
+                                    <h6>ขนาดป้ายมาตรฐาน</h6>
+                                    <p>ป้ายรูปแบบ Banner ขนาดไม่เกิน 1.20 x 2.40 เมตร ตามที่กำหนด</p>
+                                </div>
+                            </div>
+                            <div class="doc-item">
+                                <div class="doc-icon-box text-danger">
+                                    <i class="bi bi-exclamation-triangle"></i>
+                                </div>
+                                <div class="doc-content">
+                                    <h6>ข้อห้ามการติดตั้ง</h6>
+                                    <p>ห้ามบดบังทัศนียภาพ การจราจร หรือติดตั้งในบริเวณที่เทศบาลสั่งห้าม</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="mt-4 p-3 bg-light rounded-3 border-start border-4 border-warning">
+                            <p class="mb-0 small text-muted"> <i class="bi bi-info-circle-fill me-2 text-warning"></i>
+                                เจ้าหน้าที่จะเข้าตรวจสอบพิกัดจริงก่อนการอนุมัติคำร้องทุกกรณี</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
 
     <?php include 'includes/footer.php'; ?>
 

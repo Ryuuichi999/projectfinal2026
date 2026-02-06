@@ -332,7 +332,7 @@ if (isset($_POST['login'])) {
                 <div class="feature-icon-box"><i class="bi bi-bell-fill"></i></div>
                 <div class="feature-text">
                     <h5>แจ้งเตือนอัตโนมัติ</h5>
-                    <p>รับการแจ้งเตือนผ่าน Line เมื่อมีการอัปเดตสถานะ</p>
+                    <p>รับการแจ้งเตือน เมื่อมีการอัปเดตสถานะ</p>
                 </div>
             </div>
 
