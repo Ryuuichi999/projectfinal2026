@@ -77,11 +77,13 @@ if (session_status() === PHP_SESSION_NONE) {
 
         /* Hero Section Refined */
         .hero-section {
-            padding: 160px 0 100px;
+            padding: 110px 0 80px;
+            /* Reduced top padding to move closer to navbar */
             background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
             background-image: radial-gradient(#1a56db15 1px, transparent 1px);
             background-size: 30px 30px;
-            min-height: 85vh;
+            min-height: 75vh;
+            /* Slightly reduced height */
             display: flex;
             align-items: center;
             position: relative;
@@ -90,20 +92,23 @@ if (session_status() === PHP_SESSION_NONE) {
         .hero-title {
             font-weight: 800;
             color: #0f172a;
-            font-size: 3.5rem;
-            line-height: 1.4;
-            /* Increased to fix clipping */
-            margin-bottom: 25px;
+            font-size: 2.8rem;
+            /* Scaled down from 3.5rem */
+            line-height: 1.5;
+            /* Increased safety for Thai characters */
+            margin-bottom: 20px;
             letter-spacing: -0.5px;
+            padding-top: 10px;
+            /* Top safety padding */
         }
 
         .hero-title span {
             color: #1a56db;
-            display: block;
-            margin-top: 10px;
-            /* Increased margin */
-            padding-bottom: 5px;
-            /* Added padding to prevent bottom clipping */
+            display: inline-block;
+            /* Changed to inline-block for better control */
+            margin-top: 5px;
+            padding: 5px 0;
+            /* Vertical safety padding */
             background: linear-gradient(90deg, #1a56db, #3b82f6);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
@@ -111,10 +116,12 @@ if (session_status() === PHP_SESSION_NONE) {
 
         .hero-text {
             color: #475569;
-            font-size: 1.15rem;
-            margin-bottom: 40px;
+            font-size: 1.05rem;
+            /* Scaled down from 1.15rem */
+            margin-bottom: 35px;
             line-height: 1.8;
-            max-width: 580px;
+            max-width: 520px;
+            /* Slightly narrower */
         }
 
         /* Steps Section Reverted to Gold Border Design */
@@ -359,7 +366,7 @@ if (session_status() === PHP_SESSION_NONE) {
                 <div class="col-lg-6 mb-5 mb-lg-0" data-aos="fade-right">
                     <h1 class="hero-title">
                         ระบบยื่นคำร้อง<br>
-                        <span>ขออนุญาตติดตั้งป้าย</span>
+                        <span>ขออนุญาตติดตั้งป้าย</span> <br>
                         ออนไลน์
                     </h1>
                     <p class="hero-text">
@@ -390,7 +397,7 @@ if (session_status() === PHP_SESSION_NONE) {
                 <div class="col-lg-6 text-center" data-aos="fade-left">
                     <img src="https://img.freepik.com/free-vector/city-skyline-concept-illustration_114360-8923.jpg"
                         class="img-fluid rounded-4 shadow-lg floating-hero-img" alt="Municipality Service"
-                        style="max-height: 500px; border: 8px solid white;">
+                        style="max-height: 420px; border: 8px solid white;"> <!-- Reduced max-height -->
                 </div>
             </div>
         </div>
@@ -400,7 +407,7 @@ if (session_status() === PHP_SESSION_NONE) {
     <section class="steps-section" id="steps">
         <div class="container">
             <div class="text-center mb-5 pb-3 steps-heading" data-aos="fade-up">
-                <h2 class="fs-1">ขั้นตอนการขออนุญาต</h2>
+                <h2 class="fs-2">ขั้นตอนการขออนุญาต</h2>
                 <p class="text-muted fs-5"> ดำเนินการง่ายๆ เพียง 4 ขั้นตอน</p>
             </div>
 
@@ -455,7 +462,7 @@ if (session_status() === PHP_SESSION_NONE) {
             <div class="row text-center mb-5" data-aos="fade-up">
                 <div class="col-lg-8 mx-auto">
                     <h2 class="fw-bold fs-2">บริการของเรา</h2>
-                    <p class="text-muted">ระบบที่ช่วยให้การขออนุญาตเป็นเรื่องง่ายและทันสมัย</p>
+                    <p class="text-muted fs-5">ระบบที่ช่วยให้การขออนุญาตเป็นเรื่องง่าย</p>
                 </div>
             </div>
             <div class="row g-4">
@@ -533,10 +540,6 @@ if (session_status() === PHP_SESSION_NONE) {
                                 </div>
                             </div>
                         </div>
-                        <div class="mt-4 p-3 bg-light rounded-3 border-start border-4 border-primary">
-                            <p class="mb-0 small text-muted"> <i class="bi bi-shield-lock-fill me-2 text-primary"></i>
-                                ข้อมูลและเอกสารทั้งหมดจะถูกเก็บรักษาเป็นความลับตามนโยบายคุ้มครองข้อมูลส่วนบุคคล</p>
-                        </div>
                     </div>
                 </div>
 
@@ -575,10 +578,6 @@ if (session_status() === PHP_SESSION_NONE) {
                                     <p>ห้ามบดบังทัศนียภาพ การจราจร หรือติดตั้งในบริเวณที่เทศบาลสั่งห้าม</p>
                                 </div>
                             </div>
-                        </div>
-                        <div class="mt-4 p-3 bg-light rounded-3 border-start border-4 border-warning">
-                            <p class="mb-0 small text-muted"> <i class="bi bi-info-circle-fill me-2 text-warning"></i>
-                                เจ้าหน้าที่จะเข้าตรวจสอบพิกัดจริงก่อนการอนุมัติคำร้องทุกกรณี</p>
                         </div>
                     </div>
                 </div>
