@@ -89,45 +89,188 @@ if (session_status() === PHP_SESSION_NONE) {
             max-width: 600px;
         }
 
-        /* Steps Section */
+        /* Steps Section Redesign (Matching Reference Image) */
         .steps-section {
             padding: 100px 0;
+            background-color: #f8fafc;
+        }
+
+        .step-card {
             background: #fff;
-        }
-
-        .step-item {
+            border-radius: 12px;
+            padding: 40px 24px 30px;
             text-align: center;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
             position: relative;
-            padding: 20px;
+            border-top: 5px solid #d4af37;
+            /* Gold/Yellow Border */
+            transition: 0.3s;
+            height: 100%;
         }
 
-        .step-number {
-            width: 80px;
-            height: 80px;
-            background: #eff6ff;
-            color: #1a56db;
+        .step-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.1);
+        }
+
+        .step-number-badge {
+            position: absolute;
+            top: -15px;
+            left: -15px;
+            width: 34px;
+            height: 34px;
+            background: #d4af37;
+            color: #1e293b;
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 2rem;
-            font-weight: 700;
+            font-weight: 800;
+            font-size: 1rem;
+            box-shadow: 0 4px 10px rgba(212, 175, 55, 0.3);
+            z-index: 5;
+        }
+
+        .step-icon-circle {
+            width: 85px;
+            height: 85px;
+            background: #1e293b;
+            /* Deep Dark Blue */
+            color: #d4af37;
+            /* Gold Icon Color */
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2.2rem;
             margin: 0 auto 25px;
-            position: relative;
-            z-index: 2;
-            box-shadow: 0 10px 20px rgba(26, 86, 219, 0.1);
+            box-shadow: 0 8px 15px rgba(30, 41, 59, 0.2);
         }
 
         .step-title {
-            font-weight: 700;
+            font-weight: 800;
             margin-bottom: 12px;
             color: #1e293b;
+            font-size: 1.25rem;
         }
 
         .step-desc {
             color: #64748b;
             font-size: 0.95rem;
             line-height: 1.6;
+            margin-bottom: 0;
+        }
+
+        .steps-heading h2 {
+            color: #1e293b;
+            font-weight: 800;
+            margin-bottom: 10px;
+        }
+
+        /* Requirements & Regulations Styling */
+        .info-section {
+            padding-bottom: 100px;
+            background-color: #f8fafc;
+        }
+
+        .info-card {
+            background: #fff;
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.04);
+            border: 1px solid rgba(0, 0, 0, 0.05);
+            height: 100%;
+        }
+
+        .info-title {
+            font-weight: 800;
+            font-size: 1.4rem;
+            color: #1e293b;
+            margin-bottom: 25px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .doc-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .doc-list li {
+            position: relative;
+            padding-left: 35px;
+            margin-bottom: 18px;
+            color: #475569;
+            font-size: 1.05rem;
+            font-weight: 500;
+        }
+
+        .doc-list li i {
+            position: absolute;
+            left: 0;
+            top: 2px;
+            color: #10b981;
+            font-size: 1.2rem;
+        }
+
+        .reg-box {
+            border-radius: 12px;
+            padding: 20px 25px;
+            margin-bottom: 15px;
+            border: 1px solid rgba(0, 0, 0, 0.03);
+        }
+
+        .reg-box-title {
+            font-weight: 800;
+            font-size: 1.1rem;
+            margin-bottom: 8px;
+        }
+
+        .reg-box-desc {
+            font-size: 0.95rem;
+            margin-bottom: 0;
+            line-height: 1.6;
+        }
+
+        .reg-yellow {
+            background-color: #fffbeb;
+            border-left: 5px solid #fbbf24;
+        }
+
+        .reg-yellow .reg-box-title {
+            color: #92400e;
+        }
+
+        .reg-yellow .reg-box-desc {
+            color: #b45309;
+        }
+
+        .reg-blue {
+            background-color: #f0f7ff;
+            border-left: 5px solid #3b82f6;
+        }
+
+        .reg-blue .reg-box-title {
+            color: #1e40af;
+        }
+
+        .reg-blue .reg-box-desc {
+            color: #2563eb;
+        }
+
+        .reg-green {
+            background-color: #f0fdf4;
+            border-left: 5px solid #22c55e;
+        }
+
+        .reg-green .reg-box-title {
+            color: #166534;
+        }
+
+        .reg-green .reg-box-desc {
+            color: #15803d;
         }
 
         /* Feature Styling */
@@ -235,47 +378,100 @@ if (session_status() === PHP_SESSION_NONE) {
     <!-- Steps Section -->
     <section class="steps-section" id="steps">
         <div class="container">
-            <div class="text-center mb-5 pb-3" data-aos="fade-up">
-                <span class="badge bg-primary bg-opacity-10 text-primary px-3 py-2 rounded-pill mb-3">สะดวก
-                    รวดเร็ว</span>
-                <h2 class="fw-bold fs-1">ขั้นตอนการยื่นคำร้อง</h2>
-                <p class="text-muted">ยื่นคำร้องได้ง่ายๆ เพียง 5 ขั้นตอน</p>
+            <div class="text-center mb-5 pb-3 steps-heading" data-aos="fade-up">
+                <h2 class="fs-1">ขั้นตอนการขออนุญาต</h2>
+                <p class="text-muted fs-5"> ดำเนินการง่ายๆ เพียง 4 ขั้นตอน</p>
             </div>
 
+            <div class="row g-4 justify-content-center">
+                <div class="col-xl-3 col-lg-3 col-md-6" data-aos="fade-up" data-aos-delay="100">
+                    <div class="step-card">
+                        <div class="step-number-badge">1</div>
+                        <div class="step-icon-circle">
+                            <i class="bi bi-file-earmark-text-fill"></i>
+                        </div>
+                        <h4 class="step-title">ยื่นคำร้อง</h4>
+                        <p class="step-desc">กรอกข้อมูลและแนบเอกสารประกอบการขออนุญาต</p>
+                    </div>
+                </div>
+                <div class="col-xl-3 col-lg-3 col-md-6" data-aos="fade-up" data-aos-delay="200">
+                    <div class="step-card">
+                        <div class="step-number-badge">2</div>
+                        <div class="step-icon-circle">
+                            <i class="bi bi-clipboard2-check-fill"></i>
+                        </div>
+                        <h4 class="step-title">ตรวจสอบเอกสาร</h4>
+                        <p class="step-desc">เจ้าหน้าที่ตรวจสอบความถูกต้องของเอกสาร</p>
+                    </div>
+                </div>
+                <div class="col-xl-3 col-lg-3 col-md-6" data-aos="fade-up" data-aos-delay="300">
+                    <div class="step-card">
+                        <div class="step-number-badge">3</div>
+                        <div class="step-icon-circle">
+                            <i class="bi bi-clock-fill"></i>
+                        </div>
+                        <h4 class="step-title">รอพิจารณา</h4>
+                        <p class="step-desc">พิจารณาอนุมัติภายใน 7 วันทำการ</p>
+                    </div>
+                </div>
+                <div class="col-xl-3 col-lg-3 col-md-6" data-aos="fade-up" data-aos-delay="400">
+                    <div class="step-card">
+                        <div class="step-number-badge">4</div>
+                        <div class="step-icon-circle">
+                            <i class="bi bi-check-circle-fill"></i>
+                        </div>
+                        <h4 class="step-title">รับใบอนุญาต</h4>
+                        <p class="step-desc">ชำระค่าธรรมเนียมและรับใบอนุญาต</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Requirements & Regulations Section -->
+    <section class="info-section">
+        <div class="container">
             <div class="row g-4">
-                <div class="col-lg col-md-6" data-aos="fade-up" data-aos-delay="100">
-                    <div class="step-item">
-                        <div class="step-number">01</div>
-                        <h5 class="step-title">ลงทะเบียน</h5>
-                        <p class="step-desc">สร้างบัญชีผู้ใช้งานเพื่อเข้าสู่ระบบยื่นคำร้อง</p>
+                <!-- Documents Box -->
+                <div class="col-lg-6" data-aos="fade-right">
+                    <div class="info-card">
+                        <div class="info-title">
+                            <i class="bi bi-journal-bookmark text-warning"></i>
+                            เอกสารที่ต้องเตรียม
+                        </div>
+                        <ul class="doc-list">
+                            <li><i class="bi bi-check-circle-fill"></i> สำเนาบัตรประจำตัวประชาชน</li>
+                            <li><i class="bi bi-check-circle-fill"></i> สำเนาทะเบียนบ้าน</li>
+                            <li><i class="bi bi-check-circle-fill"></i> แบบป้ายหรือภาพตัวอย่างป้าย</li>
+                            <li><i class="bi bi-check-circle-fill"></i> หนังสือยินยอมจากเจ้าของพื้นที่
+                                (กรณีติดตั้งในที่ดินผู้อื่น)</li>
+                        </ul>
                     </div>
                 </div>
-                <div class="col-lg col-md-6" data-aos="fade-up" data-aos-delay="200">
-                    <div class="step-item">
-                        <div class="step-number">02</div>
-                        <h5 class="step-title">กรอกข้อมูล</h5>
-                        <p class="step-desc">ระบุรายละเอียดป้ายและพิกัดที่ต้องการติดตั้ง</p>
-                    </div>
-                </div>
-                <div class="col-lg col-md-6" data-aos="fade-up" data-aos-delay="300">
-                    <div class="step-item">
-                        <div class="step-number">03</div>
-                        <h5 class="step-title">อัปโหลดเอกสาร</h5>
-                        <p class="step-desc">แนบภาพถ่ายป้ายและเอกสารประกอบ</p>
-                    </div>
-                </div>
-                <div class="col-lg col-md-6" data-aos="fade-up" data-aos-delay="400">
-                    <div class="step-item">
-                        <div class="step-number">04</div>
-                        <h5 class="step-title">รอการตรวจสอบ</h5>
-                        <p class="step-desc">เจ้าหน้าที่ตรวจสอบความถูกต้องและอนุมัติ</p>
-                    </div>
-                </div>
-                <div class="col-lg col-md-6" data-aos="fade-up" data-aos-delay="500">
-                    <div class="step-item">
-                        <div class="step-number">05</div>
-                        <h5 class="step-title">รับใบอนุญาต</h5>
-                        <p class="step-desc">รับใบอนุญาตออนไลน์ได้ทันทีเมื่ออนุมัติ</p>
+
+                <!-- Regulations Box -->
+                <div class="col-lg-6" data-aos="fade-left">
+                    <div class="info-card">
+                        <div class="info-title">
+                            <i class="bi bi-exclamation-circle text-warning"></i>
+                            ข้อกำหนดสำคัญ
+                        </div>
+
+                        <div class="reg-box reg-yellow">
+                            <h5 class="reg-box-title">ขนาดป้าย</h5>
+                            <p class="reg-box-desc">ป้ายชั่วคราวต้องมีขนาดไม่เกิน 2 x 3 เมตร หรือตามที่กำหนดในเทศบัญญัติ
+                            </p>
+                        </div>
+
+                        <div class="reg-box reg-blue">
+                            <h5 class="reg-box-title">ระยะเวลา</h5>
+                            <p class="reg-box-desc">ติดตั้งได้ไม่เกิน 30 วัน และสามารถต่ออายุได้ตามระเบียบ</p>
+                        </div>
+
+                        <div class="reg-box reg-green">
+                            <h5 class="reg-box-title">ค่าธรรมเนียม</h5>
+                            <p class="reg-box-desc">ตามประเภทและขนาดป้าย เริ่มต้น 100-500 บาท</p>
+                        </div>
                     </div>
                 </div>
             </div>
