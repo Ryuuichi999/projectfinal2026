@@ -88,7 +88,7 @@ if (isset($_POST['approve_confirm'])) {
 
     <div class="content fade-in-up">
         <div class="container py-4">
-            <div class="d-flex justify-content-between align-items-center mb-3">
+            <div class="d-flex mb-3">
                 <h4 class="mb-0"></h4> <!-- Spacer or Title if needed -->
                 <a href="request_list.php" class="btn btn-secondary"><i class="bi bi-arrow-left"></i> กลับ</a>
             </div>
@@ -173,7 +173,7 @@ if (isset($_POST['approve_confirm'])) {
                 showCancelButton: true,
                 confirmButtonColor: '#3085d6',
                 cancelButtonColor: '#d33',
-                confirmButtonText: 'ยืนยัน, อนุมัติเลย!',
+                confirmButtonText: 'ยืนยัน',
                 cancelButtonText: 'ยกเลิก'
             }).then((result) => {
                 if (result.isConfirmed) {
