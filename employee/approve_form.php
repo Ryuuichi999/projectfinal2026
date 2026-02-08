@@ -90,7 +90,7 @@ if (isset($_POST['approve_confirm'])) {
         <div class="container py-4">
             <div class="d-flex mb-3">
                 <h4 class="mb-0"></h4> <!-- Spacer or Title if needed -->
-                <a href="request_list.php" class="btn btn-secondary"><i class="bi bi-arrow-left"></i> กลับ</a>
+                <a href="request_list.php" class="btn btn-secondary"><i class="bi bi-arrow-left"></i> กลับหน้ารายงาน</a>
             </div>
 
             <?php if (isset($error)): ?>

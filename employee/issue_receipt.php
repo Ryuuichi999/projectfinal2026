@@ -141,7 +141,8 @@ if (isset($_POST['issue_receipt_confirm'])) {
 
     <div class="content fade-in-up">
         <div class="container py-4">
-            <a href="request_list.php" class="btn btn-secondary mb-3"><i class="bi bi-arrow-left"></i> กลับ</a>
+            <a href="request_list.php" class="btn btn-secondary mb-3"><i class="bi bi-arrow-left"></i>
+                กลับหน้ารายงาน</a>
 
             <?php if (isset($error)): ?>
                 <div class="alert alert-danger">
