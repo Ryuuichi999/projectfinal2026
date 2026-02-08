@@ -58,6 +58,7 @@ $approved_requests = $result_approved->fetch_assoc()['total'];
 <body>
 
     <?php include '../includes/sidebar.php'; ?>
+    <?php include '../includes/topbar.php'; ?>
 
     <div class="content fade-in-up">
         <h2 class="mb-2">แผงควบคุมผู้ดูแลระบบ</h2>

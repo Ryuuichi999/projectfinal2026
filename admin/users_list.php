@@ -43,6 +43,7 @@ $result = $conn->query($sql);
 <body>
 
     <?php include '../includes/sidebar.php'; ?>
+    <?php include '../includes/topbar.php'; ?>
 
     <div class="content fade-in-up">
         <div class="d-flex justify-content-between align-items-center mb-4">

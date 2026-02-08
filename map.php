@@ -48,6 +48,7 @@ if ($result_signs && $result_signs->num_rows > 0) {
 <body>
 
     <?php include './includes/sidebar.php'; ?>
+    <?php include './includes/topbar.php'; ?>
 
     <div class="content">
         <div class="card p-4 fade-in-up">

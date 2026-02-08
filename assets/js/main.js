@@ -37,6 +37,27 @@ document.addEventListener('DOMContentLoaded', function() {
             }, 200); // Wait for fade out
         });
     });
+
+    // Sidebar Toggle
+    const sidebarToggle = document.getElementById('sidebarToggle');
+    if (sidebarToggle) {
+        const toggleSidebar = () => document.body.classList.toggle('sidebar-collapsed');
+        sidebarToggle.addEventListener('click', toggleSidebar);
+        // Fallback: also respond to Enter/Space
+        sidebarToggle.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                toggleSidebar();
+            }
+        });
+    }
+
+    // Ensure Bootstrap dropdowns initialize
+    if (window.bootstrap) {
+        document.querySelectorAll('[data-bs-toggle="dropdown"]').forEach(el => {
+            try { new bootstrap.Dropdown(el); } catch (e) {}
+        });
+    }
 });
 
 // Helper for Confirmation

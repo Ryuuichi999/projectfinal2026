@@ -92,6 +92,7 @@ function get_status_badge($status)
 <body>
 
     <?php include '../includes/sidebar.php'; ?>
+    <?php include '../includes/topbar.php'; ?>
 
     <div class="content fade-in-up">
         <h2 class="mb-4">📝 รายการคำขออนุญาตติดตั้งป้าย</h2>

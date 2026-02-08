@@ -302,6 +302,7 @@ if (isset($_POST['submit'])) {
 <body>
 
     <?php include '../includes/sidebar.php'; ?>
+    <?php include '../includes/topbar.php'; ?>
 
     <div class="content">
         <div class="paper-form fade-in-up">

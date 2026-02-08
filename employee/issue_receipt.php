@@ -138,6 +138,7 @@ if (isset($_POST['issue_receipt_confirm'])) {
 
 <body class="bg-light">
     <?php include '../includes/sidebar.php'; ?>
+    <?php include '../includes/topbar.php'; ?>
 
     <div class="content fade-in-up">
         <div class="container py-4">

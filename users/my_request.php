@@ -89,6 +89,7 @@ function get_status_badge($status)
 <body>
 
     <?php include '../includes/sidebar.php'; ?>
+    <?php include '../includes/topbar.php'; ?>
 
     <div class="content">
         <div class="card p-4 fade-in-up">

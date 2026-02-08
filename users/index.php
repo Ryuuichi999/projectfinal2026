@@ -59,6 +59,7 @@ $approved = $stats['approved'] ?? 0;
 <body>
 
     <?php include '../includes/sidebar.php'; ?>
+    <?php include '../includes/topbar.php'; ?>
 
     <div class="content fade-in-up">
         <h2 class="mb-2">ภาพรวมคำขอติดตั้งป้ายชั่วคราว</h2>
