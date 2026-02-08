@@ -102,7 +102,6 @@ function get_status_badge($status)
                             <th>ID</th>
                             <th>ประเภทป้าย</th>
                             <th>ขนาด (ม.)</th>
-                            <th>พื้นที่ (ตร.ม.)</th>
                             <th>ค่าธรรมเนียม (บาท)</th>
                             <th>สถานะ</th>
                             <th>วันที่ยื่น</th>
@@ -119,12 +118,10 @@ function get_status_badge($status)
 
                         if ($result->num_rows > 0) {
                             while ($row = $result->fetch_assoc()) {
-                                $area = $row['width'] * $row['height'];
                                 echo "<tr>";
                                 echo "<td>{$row['id']}</td>";
                                 echo "<td>{$row['sign_type']}</td>";
                                 echo "<td>{$row['width']} x {$row['height']}</td>";
-                                echo "<td>" . number_format($area, 2) . "</td>";
                                 echo "<td>" . number_format($row['fee']) . "</td>";
                                 echo "<td>" . get_status_badge($row['status']) . "</td>";
                                 echo "<td>" . date('Y-m-d', strtotime($row['created_at'])) . "</td>";
@@ -143,7 +140,7 @@ function get_status_badge($status)
                                 echo "</tr>";
                             }
                         } else {
-                            echo "<tr><td colspan='8' class='text-center text-muted'>ยังไม่มีคำขอที่ถูกยื่น</td></tr>";
+                            echo "<tr><td colspan='7' class='text-center text-muted'>ยังไม่มีคำขอที่ถูกยื่น</td></tr>";
                         }
                         ?>
                     </tbody>
