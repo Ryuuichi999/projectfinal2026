@@ -30,7 +30,7 @@ if (!file_exists($filePath)) {
 }
 
 // Token
-$token = '1e8debf6-1ada-4f91-ad33-42bc73b52f7d';
+$token = '1a4e92a3-11d0-400e-9079-aa374779682a';
 
 // Call API
 function checkSlip($filePath, $token)
