@@ -58,7 +58,7 @@ if (isset($_POST['upload_slip'])) {
         if (in_array($ext, $allowed)) {
             // Check Slip with Thunder API
             $filePath = $_FILES['slip_file']['tmp_name'];
-            $token = '1e8debf6-1ada-4f91-ad33-42bc73b52f7d'; // Provided API Key
+            $token = '1a4e92a3-11d0-400e-9079-aa374779682a'; // Provided API Key
 
             $apiResult = checkSlip($filePath, $token);
 
