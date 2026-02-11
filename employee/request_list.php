@@ -61,6 +61,10 @@ function get_status_badge($status)
     switch ($status) {
         case 'pending':
             return '<span class="badge bg-warning text-dark">⏳ รอพิจารณา</span>';
+        case 'reviewing':
+            return '<span class="badge bg-primary">🔎 กำลังพิจารณา</span>';
+        case 'need_documents':
+            return '<span class="badge bg-info">📑 ขอเอกสารเพิ่ม</span>';
         case 'waiting_payment':
             return '<span class="badge bg-danger">💰 รอชำระเงิน</span>';
         case 'waiting_receipt':
@@ -156,7 +160,7 @@ function get_status_badge($status)
                                 <td><?= get_status_badge($row['status']) ?></td>
                                 <td>
                                     <div class="btn-group">
-                                        <a href="../users/request_detail.php?id=<?= $row['id'] ?>"
+                                        <a href="request_detail.php?id=<?= $row['id'] ?>"
                                             class="btn btn-sm btn-outline-primary" title="ดูรายละเอียด">
                                             🔍 รายละเอียด
                                         </a>

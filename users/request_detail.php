@@ -51,9 +51,21 @@ function get_status_badge($status)
             $class = 'warning';
             $text = '⏳ รอกำลังพิจารณา';
             break;
+        case 'reviewing':
+            $class = 'primary';
+            $text = '🔎 กำลังพิจารณา';
+            break;
+        case 'need_documents':
+            $class = 'info';
+            $text = '📑 ขอเอกสารเพิ่ม';
+            break;
         case 'waiting_payment':
             $class = 'danger';
             $text = '⚠️ รอชำระเงิน';
+            break;
+        case 'waiting_receipt':
+            $class = 'info';
+            $text = '🧾 รอออกใบเสร็จ';
             break;
         case 'approved':
             $class = 'success';
@@ -170,6 +182,14 @@ function get_status_badge($status)
                                     <?= nl2br(htmlspecialchars($request['description'])) ?>
                                 </div>
                             </div>
+                            <?php if (!empty($request['decision_note'])): ?>
+                                <div class="col-12">
+                                    <div class="detail-label">บันทึกจากเจ้าหน้าที่</div>
+                                    <div class="p-3 bg-warning-subtle rounded mt-1">
+                                        <?= nl2br(htmlspecialchars($request['decision_note'])) ?>
+                                    </div>
+                                </div>
+                            <?php endif; ?>
                         </div>
                     </div>
 
@@ -187,6 +207,11 @@ function get_status_badge($status)
                 <div class="col-md-4">
                     <div class="card p-4 fade-in-up delay-200">
                         <h4 class="text-success mb-3">📁 เอกสารแนบ</h4>
+                        <?php if ($request['status'] === 'need_documents'): ?>
+                            <a href="request_edit.php?id=<?= $request['id'] ?>" class="btn btn-warning w-100 mb-3">
+                                ยื่นเอกสารเพิ่มเติม
+                            </a>
+                        <?php endif; ?>
                         <?php if ($result_docs->num_rows > 0): ?>
                             <div class="d-flex flex-column gap-2">
                                 <?php while ($doc = $result_docs->fetch_assoc()): ?>

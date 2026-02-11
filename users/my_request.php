@@ -14,6 +14,14 @@ function get_status_badge($status)
             $class = 'warning';
             $text = '⏳ รอกำลังพิจารณา';
             break;
+        case 'reviewing':
+            $class = 'primary';
+            $text = '🔎 กำลังพิจารณา';
+            break;
+        case 'need_documents':
+            $class = 'info';
+            $text = '📑 ขอเอกสารเพิ่ม';
+            break;
         case 'waiting_payment':
             $class = 'danger';
             $text = '⚠️ รอชำระเงิน';
@@ -140,8 +148,6 @@ function get_status_badge($status)
                                 echo "</td>";
                                 echo "</tr>";
                             }
-                        } else {
-                            echo "<tr><td colspan='7' class='text-center text-muted'>ยังไม่มีคำขอที่ถูกยื่น</td></tr>";
                         }
                         ?>
                     </tbody>

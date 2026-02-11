@@ -41,8 +41,10 @@ if ($role === 'user' && $userId) {
         elseif ($status === 'approved') $label = 'อนุมัติแล้ว';
         elseif ($status === 'rejected') $label = 'ไม่อนุมัติ';
         elseif ($status === 'waiting_receipt') $label = 'รอออกใบเสร็จ';
+        elseif ($status === 'need_documents') $label = 'ขอเอกสารเพิ่ม';
+        elseif ($status === 'reviewing') $label = 'กำลังพิจารณา';
         $notifItems[] = ['id' => (int)$row['id'], 'label' => $label, 'date' => $row['created_at']];
-        if (in_array($status, ['waiting_payment', 'approved', 'rejected', 'waiting_receipt'])) $notifCount++;
+        if (in_array($status, ['waiting_payment', 'approved', 'rejected', 'waiting_receipt', 'need_documents'])) $notifCount++;
     }
 } else {
     $q = $conn->query("SELECT id, status, created_at FROM sign_requests ORDER BY id DESC LIMIT 5");
