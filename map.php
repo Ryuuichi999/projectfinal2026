@@ -7,11 +7,20 @@ if (!isset($_SESSION['user_id']) || ($_SESSION['role'] !== 'user' && $_SESSION['
     exit;
 }
 
-// *** ดึงข้อมูลป้ายที่อนุมัติแล้ว ***
-$approved_signs = [];
-$sql_signs = "SELECT location_lat, location_lng, sign_type FROM sign_requests WHERE status = 'approved' AND location_lat IS NOT NULL AND location_lng IS NOT NULL";
-$result_signs = $conn->query($sql_signs);
+// กำหนดบทบาทและผู้ใช้ปัจจุบัน
+$role = $_SESSION['role'];
+$userId = (int)$_SESSION['user_id'];
 
+// ดึงข้อมูลคำร้องที่มีพิกัด เพื่อแสดงบนแผนที่
+$approved_signs = [];
+if ($role === 'user') {
+    $stmt = $conn->prepare("SELECT location_lat, location_lng, sign_type FROM sign_requests WHERE user_id = ? AND location_lat IS NOT NULL AND location_lng IS NOT NULL");
+    $stmt->bind_param("i", $userId);
+    $stmt->execute();
+    $result_signs = $stmt->get_result();
+} else {
+    $result_signs = $conn->query("SELECT location_lat, location_lng, sign_type FROM sign_requests WHERE location_lat IS NOT NULL AND location_lng IS NOT NULL");
+}
 if ($result_signs && $result_signs->num_rows > 0) {
     while ($row = $result_signs->fetch_assoc()) {
         $approved_signs[] = [
@@ -23,17 +32,29 @@ if ($result_signs && $result_signs->num_rows > 0) {
 }
 
 $approved_rows = [];
-$sql_rows = "SELECT r.id, r.sign_type, r.receipt_date, u.title_name, u.first_name, u.last_name, u.address, u.phone 
-             FROM sign_requests r 
-             JOIN users u ON r.user_id = u.id 
-             WHERE r.status = 'approved' AND r.location_lat IS NOT NULL AND r.location_lng IS NOT NULL
-             ORDER BY r.id DESC LIMIT 1000";
-$res_rows = $conn->query($sql_rows);
+if ($role === 'user') {
+    $stmt_rows = $conn->prepare("SELECT r.id, r.sign_type, r.receipt_date, r.description, r.duration_days, u.title_name, u.first_name, u.last_name, u.address, u.phone 
+                                 FROM sign_requests r 
+                                 JOIN users u ON r.user_id = u.id 
+                                 WHERE r.user_id = ? AND r.location_lat IS NOT NULL AND r.location_lng IS NOT NULL
+                                 ORDER BY r.id DESC LIMIT 1000");
+    $stmt_rows->bind_param("i", $userId);
+    $stmt_rows->execute();
+    $res_rows = $stmt_rows->get_result();
+} else {
+    $res_rows = $conn->query("SELECT r.id, r.sign_type, r.receipt_date, r.description, r.duration_days, u.title_name, u.first_name, u.last_name, u.address, u.phone 
+                              FROM sign_requests r 
+                              JOIN users u ON r.user_id = u.id 
+                              WHERE r.location_lat IS NOT NULL AND r.location_lng IS NOT NULL
+                              ORDER BY r.id DESC LIMIT 1000");
+}
 if ($res_rows && $res_rows->num_rows > 0) {
     while ($row = $res_rows->fetch_assoc()) {
         $approved_rows[] = [
             'id' => (int)$row['id'],
             'type' => htmlspecialchars($row['sign_type']),
+            'desc' => htmlspecialchars($row['description'] ?? ''),
+            'duration' => (int)($row['duration_days'] ?? 0),
             'name' => htmlspecialchars(($row['title_name'] ?? '') . $row['first_name'] . ' ' . $row['last_name']),
             'address' => htmlspecialchars($row['address'] ?? ''),
             'phone' => htmlspecialchars($row['phone'] ?? ''),
@@ -84,8 +105,11 @@ if ($res_rows && $res_rows->num_rows > 0) {
     .map-container {
         position: relative;
     }
-    .table { min-width: 360px; font-size: 11px; }
+    .table { min-width: 540px; font-size: 11px; }
     .table th, .table td { padding: .2rem .45rem; }
+    .table-type { max-width: 80px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .table-desc { max-width: 160px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .table-name { max-width: 120px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     .full-height-card { min-height: calc(100vh - 140px); }
 </style>
 </head>
@@ -109,7 +133,7 @@ if ($res_rows && $res_rows->num_rows > 0) {
                 <div class="col-md-6">
                     <div class="card fixed-card">
                         <div class="p-2 border-bottom">
-                            <h6 class="mb-0">รายการป้ายที่อนุมัติ</h6>
+                            <h6 class="mb-0">รายการคำร้องบนแผนที่</h6>
                             <div class="d-flex align-items-center gap-2">
                                 <label class="text-muted">แสดง</label>
                                 <select id="pageSize" class="form-select form-select-sm w-auto">
@@ -130,6 +154,8 @@ if ($res_rows && $res_rows->num_rows > 0) {
                                         <tr>
                                             <th>เลขคำขอ</th>
                                             <th>ประเภท</th>
+                                            <th>รายละเอียด</th>
+                                            <th>ระยะเวลา</th>
                                             <th>ชื่อ</th>
                                         </tr>
                                     </thead>
@@ -276,6 +302,7 @@ if ($res_rows && $res_rows->num_rows > 0) {
                     return (r.type || '').toLowerCase().includes(q)
                         || (r.name || '').toLowerCase().includes(q)
                         || (r.address || '').toLowerCase().includes(q)
+                        || (r.desc || '').toLowerCase().includes(q)
                         || (String(r.id)).includes(q);
                 });
             }
@@ -287,7 +314,14 @@ if ($res_rows && $res_rows->num_rows > 0) {
                 var start = (page - 1) * size;
                 var slice = rows.slice(start, start + size);
                 tbody.innerHTML = slice.map(function(r){
-                    return "<tr><td>#"+r.id+"</td><td>"+r.type+"</td><td>"+r.name+"</td></tr>";
+                    var d = (r.duration || 0) + " วัน";
+                    return "<tr>"
+                        +"<td>#"+r.id+"</td>"
+                        +"<td class='table-type'>"+r.type+"</td>"
+                        +"<td class='table-desc'>"+r.desc+"</td>"
+                        +"<td>"+d+"</td>"
+                        +"<td class='table-name'>"+r.name+"</td>"
+                        +"</tr>";
                 }).join('');
                 pageInfo.textContent = "หน้า " + page + " / " + totalPages + " • ทั้งหมด " + rows.length + " รายการ";
                 prevBtn.disabled = page <= 1;
