@@ -28,9 +28,9 @@ elseif ($role === 'admin') $positionLabel = 'ผู้ดูแลระบบ';
 elseif ($role === 'user') $positionLabel = 'ผู้ใช้งาน';
 
 $notifItems = [];
-$notifCount = 0;
+$notifBadgeCount = 0;
 if ($role === 'user' && $userId) {
-    $stmtN = $conn->prepare("SELECT id, status, created_at FROM sign_requests WHERE user_id = ? ORDER BY id DESC LIMIT 5");
+    $stmtN = $conn->prepare("SELECT id, status, created_at FROM sign_requests WHERE user_id = ? ORDER BY id DESC LIMIT 50");
     $stmtN->bind_param("i", $userId);
     $stmtN->execute();
     $rs = $stmtN->get_result();
@@ -43,21 +43,28 @@ if ($role === 'user' && $userId) {
         elseif ($status === 'waiting_receipt') $label = 'รอออกใบเสร็จ';
         elseif ($status === 'need_documents') $label = 'ขอเอกสารเพิ่ม';
         elseif ($status === 'reviewing') $label = 'กำลังพิจารณา';
-        $notifItems[] = ['id' => (int)$row['id'], 'label' => $label, 'date' => $row['created_at']];
-        if (in_array($status, ['waiting_payment', 'approved', 'rejected', 'waiting_receipt', 'need_documents'])) $notifCount++;
+        if (in_array($status, ['reviewing','waiting_payment','waiting_receipt','approved','rejected','need_documents'])) {
+            $notifItems[] = ['id' => (int)$row['id'], 'label' => $label, 'date' => $row['created_at']];
+        }
     }
+    $currentCount = count($notifItems);
+    $lastView = $_SESSION['notif_last_view_user'] ?? 0;
+    $notifBadgeCount = max(0, $currentCount - $lastView);
 } else {
-    $q = $conn->query("SELECT id, status, created_at FROM sign_requests ORDER BY id DESC LIMIT 5");
+    $q = $conn->query("SELECT id, status, created_at, receipt_date FROM sign_requests ORDER BY id DESC LIMIT 50");
     while ($row = $q->fetch_assoc()) {
         $status = $row['status'];
         $label = $status;
         if ($status === 'pending') $label = 'คำขอใหม่';
-        elseif ($status === 'waiting_payment') $label = 'รอชำระเงิน';
-        elseif ($status === 'waiting_receipt') $label = 'รอออกใบเสร็จ';
+        elseif ($status === 'waiting_receipt') $label = 'ชำระเงินแล้ว';
         elseif ($status === 'approved') $label = 'อนุมัติแล้ว';
-        $notifItems[] = ['id' => (int)$row['id'], 'label' => $label, 'date' => $row['created_at']];
-        if (in_array($status, ['pending', 'waiting_payment', 'waiting_receipt'])) $notifCount++;
+        if (in_array($status, ['pending','waiting_receipt'])) {
+            $notifItems[] = ['id' => (int)$row['id'], 'label' => $label, 'date' => $row['created_at']];
+        }
     }
+    $currentCount = count($notifItems);
+    $lastView = $_SESSION['notif_last_view_emp'] ?? 0;
+    $notifBadgeCount = max(0, $currentCount - $lastView);
 }
 ?>
 <div class="topbar">
@@ -66,10 +73,10 @@ if ($role === 'user' && $userId) {
     </div>
     <div class="topbar-right">
         <div class="dropdown">
-            <button class="btn btn-light rounded-3 position-relative notif-btn" data-bs-toggle="dropdown" aria-expanded="false">
+            <button class="btn btn-light rounded-3 position-relative notif-btn dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false" type="button" id="notifBtn" data-role="<?= htmlspecialchars($role ?? '') ?>" data-count="<?= (int)$currentCount ?>">
                 <i class="bi bi-bell"></i>
-                <?php if ($notifCount > 0): ?>
-                    <span class="notif-badge badge bg-danger rounded-pill"><?= $notifCount ?></span>
+                <?php if ($notifBadgeCount > 0): ?>
+                    <span class="notif-badge badge bg-danger rounded-pill" id="notifBadge"><?= $notifBadgeCount ?></span>
                 <?php endif; ?>
             </button>
             <ul class="dropdown-menu dropdown-menu-end p-2" style="min-width: 300px;">
@@ -78,7 +85,7 @@ if ($role === 'user' && $userId) {
                 <?php else: ?>
                     <?php foreach ($notifItems as $n): ?>
                         <li>
-                            <a class="dropdown-item d-flex justify-content-between align-items-center" href="/Project2026/users/request_detail.php?id=<?= $n['id'] ?>">
+                            <a class="dropdown-item d-flex justify-content-between align-items-center" href="<?= ($role === 'user' ? '/Project2026/users/request_detail.php?id=' : '/Project2026/employee/request_detail.php?id=') . $n['id'] ?>">
                                 <span>#<?= $n['id'] ?> • <?= htmlspecialchars($n['label']) ?></span>
                                 <small class="text-muted"><?= date('d/m/Y', strtotime($n['date'])) ?></small>
                             </a>
@@ -107,3 +114,21 @@ if ($role === 'user' && $userId) {
         </div>
     </div>
 </div>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  var btn = document.getElementById('notifBtn');
+  if (!btn) return;
+  btn.addEventListener('show.bs.dropdown', function() {
+    var role = btn.getAttribute('data-role') || '';
+    var count = btn.getAttribute('data-count') || '0';
+    fetch('/Project2026/includes/notif_seen.php', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+      body: new URLSearchParams({role: role, count: count}).toString()
+    }).then(function() {
+      var badge = document.getElementById('notifBadge');
+      if (badge) badge.remove();
+    }).catch(function(){});
+  });
+});
+</script>
