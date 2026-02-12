@@ -245,6 +245,22 @@ function get_status_badge($status)
                 attribution: '&copy; OpenStreetMap contributors'
             }).addTo(map);
 
+            fetch('../data/sila.geojson')
+                .then(res => res.json())
+                .then(data => {
+                    L.geoJSON(data, {
+                        style: { color: 'blue', weight: 2, fillOpacity: 0 }
+                    }).addTo(map);
+                });
+
+            fetch('../data/road_sila.geojson')
+                .then(res => res.json())
+                .then(data => {
+                    L.geoJSON(data, {
+                        style: { color: '#f59e0b', weight: 3 }
+                    }).addTo(map);
+                });
+
             L.marker([lat, lng]).addTo(map)
                 .bindPopup("<b>จุดที่ติดตั้งป้าย</b>")
                 .openPopup();

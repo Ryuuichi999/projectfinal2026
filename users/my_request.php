@@ -105,7 +105,7 @@ function get_status_badge($status)
             <p class="text-muted mb-4">รายการคำขออนุญาตติดตั้งป้ายชั่วคราวทั้งหมด</p>
 
             <div class="table-responsive">
-                <table class="table table-striped table-hover">
+                <table id="myRequestsTable" class="table table-striped table-hover">
                     <thead>
                         <tr>
                             <th>ID</th>
@@ -166,7 +166,7 @@ function get_status_badge($status)
 
 <script>
     $(document).ready(function () {
-        $('.table').DataTable({
+        $('#myRequestsTable').DataTable({
             "language": {
                 "url": "//cdn.datatables.net/plug-ins/1.13.7/i18n/th.json"
             },

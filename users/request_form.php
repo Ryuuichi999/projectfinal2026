@@ -397,8 +397,9 @@ if (isset($_POST['submit'])) {
                 <div class="mb-3">
                     <label class="form-label small text-muted">ปักหมุดตำแหน่งหลัก (เพื่อการอ้างอิงพิกัด GPS)</label>
                     <div id="selectMap"></div>
-                    <div class="d-flex justify-content-end mt-2">
+                    <div class="d-flex justify-content-end mt-2 gap-2">
                         <span id="coordDisplay" class="badge bg-secondary">ยังไม่ได้เลือกพิกัด</span>
+                        <span id="roadHint" class="badge bg-danger">คลิกได้เฉพาะบนเส้นถนน</span>
                     </div>
                     <input type="hidden" name="lat" id="lat">
                     <input type="hidden" name="lng" id="lng">
@@ -489,16 +490,13 @@ if (isset($_POST['submit'])) {
                     }).addTo(map);
                 });
 
-            function onMapClick(e) {
+            function placeMarker(latlng) {
                 if (marker) {
-                    marker.setLatLng(e.latlng);
+                    marker.setLatLng(latlng);
                 } else {
-                    marker = L.marker(e.latlng, { draggable: true }).addTo(map);
-                    marker.on('dragend', function (event) {
-                        updateInput(event.target.getLatLng());
-                    });
+                    marker = L.marker(latlng).addTo(map);
                 }
-                updateInput(e.latlng);
+                updateInput(latlng);
             }
 
             function updateInput(latlng) {
@@ -506,9 +504,28 @@ if (isset($_POST['submit'])) {
                 document.getElementById('lng').value = latlng.lng;
                 document.getElementById('coordDisplay').textContent = "Lat: " + latlng.lat.toFixed(5) + ", Lng: " + latlng.lng.toFixed(5);
                 document.getElementById('coordDisplay').className = "badge bg-success";
+                var hint = document.getElementById('roadHint');
+                if (hint) { hint.textContent = "เลือกพิกัดบนเส้นถนนแล้ว"; hint.className = "badge bg-success"; }
             }
 
-            map.on('click', onMapClick);
+            fetch('../data/road_sila.geojson')
+                .then(function(res){ return res.json(); })
+                .then(function(data){
+                    L.geoJSON(data, {
+                        style: { color: '#f59e0b', weight: 3 },
+                        onEachFeature: function(feature, layer){
+                            layer.on('click', function(e){
+                                placeMarker(e.latlng);
+                                var hint = document.getElementById('roadHint');
+                                if (hint) { hint.textContent = "เลือกพิกัดบนเส้นถนนแล้ว"; hint.className = "badge bg-success"; }
+                            });
+                        }
+                    }).addTo(map);
+                });
+            map.on('click', function(){
+                var hint = document.getElementById('roadHint');
+                if (hint) { hint.textContent = "คลิกได้เฉพาะบนเส้นถนน"; hint.className = "badge bg-danger"; }
+            });
         });
     </script>
     <?php include '../includes/scripts.php'; ?>

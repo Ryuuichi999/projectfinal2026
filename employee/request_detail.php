@@ -246,6 +246,20 @@ function get_status_badge($status)
             L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
                 attribution: '&copy; OpenStreetMap contributors'
             }).addTo(map);
+            fetch('../data/sila.geojson')
+                .then(res => res.json())
+                .then(data => {
+                    L.geoJSON(data, {
+                        style: { color: 'blue', weight: 2, fillOpacity: 0 }
+                    }).addTo(map);
+                });
+            fetch('../data/road_sila.geojson')
+                .then(res => res.json())
+                .then(data => {
+                    L.geoJSON(data, {
+                        style: { color: '#f59e0b', weight: 3 }
+                    }).addTo(map);
+                });
             L.marker([lat, lng]).addTo(map).bindPopup("จุดที่ติดตั้งป้าย").openPopup();
         }
     });

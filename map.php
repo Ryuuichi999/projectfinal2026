@@ -277,6 +277,24 @@ if ($res_rows && $res_rows->num_rows > 0) {
                     console.error("Error loading GeoJSON data:", error);
                 });
 
+            var roadLayer = null;
+            fetch('data/road_sila.geojson')
+                .then(function(response){
+                    if (!response.ok) {
+                        throw new Error(response.statusText);
+                    }
+                    return response.json();
+                })
+                .then(function(roads){
+                    roadLayer = L.geoJSON(roads, {
+                        style: { color: '#f59e0b', weight: 3 }
+                    }).addTo(mymap);
+                    layerControl.addOverlay(roadLayer, "Roads");
+                })
+                .catch(function(err){
+                    console.error(err);
+                });
+
             mymap.on('zoomend', function(){
                 var z = mymap.getZoom();
                 if (z < 13) {
