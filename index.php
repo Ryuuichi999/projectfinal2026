@@ -514,15 +514,6 @@ if (session_status() === PHP_SESSION_NONE) {
                             </div>
                             <div class="doc-item">
                                 <div class="doc-icon-box">
-                                    <i class="bi bi-house-door"></i>
-                                </div>
-                                <div class="doc-content">
-                                    <h6>ทะเบียนบ้าน</h6>
-                                    <p>สำเนาทะเบียนบ้านหน้าปัจจุบันที่มีชื่อผู้ยื่นคำร้อง</p>
-                                </div>
-                            </div>
-                            <div class="doc-item">
-                                <div class="doc-icon-box">
                                     <i class="bi bi-image"></i>
                                 </div>
                                 <div class="doc-content">
