@@ -301,10 +301,9 @@ if (isset($_POST['submit'])) {
 
 <body>
 
-    <?php include '../includes/sidebar.php'; ?>
-    <?php include '../includes/topbar.php'; ?>
+    <?php include '../includes/user_navbar.php'; ?>
 
-    <div class="content">
+    <div class="container fade-in-up">
         <div class="paper-form fade-in-up">
 
             <?php if ($message): ?>

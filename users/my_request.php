@@ -96,11 +96,10 @@ function get_status_badge($status)
 
 <body>
 
-    <?php include '../includes/sidebar.php'; ?>
-    <?php include '../includes/topbar.php'; ?>
+    <?php include '../includes/user_navbar.php'; ?>
 
-    <div class="content">
-        <div class="card p-4 fade-in-up">
+    <div class="container fade-in-up">
+        <div class="card p-4">
             <h2 class="mb-2">📄 สถานะคำขอของฉัน</h2>
             <p class="text-muted mb-4">รายการคำขออนุญาตติดตั้งป้ายชั่วคราวทั้งหมด</p>
 

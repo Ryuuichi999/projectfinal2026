@@ -58,10 +58,9 @@ $approved = $stats['approved'] ?? 0;
 
 <body>
 
-    <?php include '../includes/sidebar.php'; ?>
-    <?php include '../includes/topbar.php'; ?>
+    <?php include '../includes/user_navbar.php'; ?>
 
-    <div class="content fade-in-up">
+    <div class="container fade-in-up">
         <h2 class="mb-2">ภาพรวมคำขอติดตั้งป้ายชั่วคราว</h2>
         <p class="text-muted mb-1 fs-5">
             ยินดีต้อนรับคุณ <span class="fw-bold text-primary"><?= htmlspecialchars($user_name) ?></span>

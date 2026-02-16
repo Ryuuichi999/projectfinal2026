@@ -107,53 +107,58 @@ if (isset($_POST['submit'])) {
 ?>
 <!DOCTYPE html>
 <html lang="th">
+
 <head>
     <meta charset="UTF-8">
     <title>ยื่นเอกสารเพิ่มเติม #<?= $request['id'] ?></title>
     <?php include '../includes/header.php'; ?>
     <link rel="stylesheet" href="../assets/css/style.css">
 </head>
+
 <body>
-<?php include '../includes/sidebar.php'; ?>
-<?php include '../includes/topbar.php'; ?>
 
-<div class="content">
-    <div class="card p-4">
-        <h3 class="mb-3">ยื่นเอกสารเพิ่มเติมสำหรับคำขอ #<?= $request['id'] ?></h3>
-        <?php if ($message): ?>
-            <div class="alert alert-<?= $message_type ?>"><?= $message ?></div>
-        <?php endif; ?>
-        <form method="post" enctype="multipart/form-data">
-            <div class="row g-3">
-                <div class="col-md-6">
-                    <label class="form-label">แบบป้าย/รูปภาพโฆษณา</label>
-                    <input type="file" name="file_sign_plan" class="form-control">
+    <?php include '../includes/user_navbar.php'; ?>
+
+    <div class="container fade-in-up">
+        <div class="card p-4">
+            <h3 class="mb-3">ยื่นเอกสารเพิ่มเติมสำหรับคำขอ #<?= $request['id'] ?></h3>
+            <?php if ($message): ?>
+                <div class="alert alert-<?= $message_type ?>"><?= $message ?></div>
+            <?php endif; ?>
+            <form method="post" enctype="multipart/form-data">
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label class="form-label">แบบป้าย/รูปภาพโฆษณา</label>
+                        <input type="file" name="file_sign_plan" class="form-control">
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">สำเนาบัตรประชาชน</label>
+                        <input type="file" name="file_id_card" class="form-control">
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">หนังสือยินยอมเจ้าของที่/สัญญาเช่า</label>
+                        <input type="file" name="file_land_doc" class="form-control">
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">เอกสารอื่นๆ</label>
+                        <input type="file" name="file_other" class="form-control">
+                    </div>
+                    <div class="col-12">
+                        <label class="form-label">ปรับปรุงรายละเอียด (ถ้าต้องการ)</label>
+                        <textarea name="description" class="form-control" rows="3"
+                            placeholder="ระบุรายละเอียดเพิ่มเติม"></textarea>
+                    </div>
                 </div>
-                <div class="col-md-6">
-                    <label class="form-label">สำเนาบัตรประชาชน</label>
-                    <input type="file" name="file_id_card" class="form-control">
+                <div class="mt-3 d-flex gap-2">
+                    <button type="submit" name="submit" class="btn btn-primary"><i class="bi bi-upload"></i>
+                        ส่งเอกสาร</button>
+                    <a href="request_detail.php?id=<?= $request['id'] ?>" class="btn btn-secondary">ยกเลิก</a>
                 </div>
-                <div class="col-md-6">
-                    <label class="form-label">หนังสือยินยอมเจ้าของที่/สัญญาเช่า</label>
-                    <input type="file" name="file_land_doc" class="form-control">
-                </div>
-                <div class="col-md-6">
-                    <label class="form-label">เอกสารอื่นๆ</label>
-                    <input type="file" name="file_other" class="form-control">
-                </div>
-                <div class="col-12">
-                    <label class="form-label">ปรับปรุงรายละเอียด (ถ้าต้องการ)</label>
-                    <textarea name="description" class="form-control" rows="3" placeholder="ระบุรายละเอียดเพิ่มเติม"></textarea>
-                </div>
-            </div>
-            <div class="mt-3 d-flex gap-2">
-                <button type="submit" name="submit" class="btn btn-primary"><i class="bi bi-upload"></i> ส่งเอกสาร</button>
-                <a href="request_detail.php?id=<?= $request['id'] ?>" class="btn btn-secondary">ยกเลิก</a>
-            </div>
-        </form>
+            </form>
+        </div>
     </div>
-</div>
 
-<?php include '../includes/scripts.php'; ?>
+    <?php include '../includes/scripts.php'; ?>
 </body>
+
 </html>

@@ -122,10 +122,9 @@ function get_status_badge($status)
 
 <body>
 
-    <?php include '../includes/sidebar.php'; ?>
-    <?php include '../includes/topbar.php'; ?>
+    <?php include '../includes/user_navbar.php'; ?>
 
-    <div class="content">
+    <div class="container fade-in-up mt-4">
         <div class="container-fluid">
             <div class="d-flex justify-content-between align-items-center mb-4">
                 <h2 class="mb-0">📋 รายละเอียดคำขอ #<?= $request['id'] ?></h2>
