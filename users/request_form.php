@@ -441,10 +441,12 @@ if (isset($_POST['submit'])) {
                         <div class="mt-4 mb-4 p-3 border rounded bg-light text-start">
                             <div class="form-check">
                                 <input class="form-check-input" type="checkbox" value="" id="agreementCheck" required>
-                                <label class="form-check-label" for="agreementCheck" style="text-align: justify; line-height: 1.8;">
+                                <label class="form-check-label" for="agreementCheck"
+                                    style="text-align: justify; line-height: 1.8;">
                                     ข้าพเจ้าได้ระบุสถานที่ที่จะติดตั้งป้าย ปิด ทิ้ง โปรย แผ่นประกาศใบปลิว
                                     สถานที่ใกล้เคียงพร้อมตัวอย่างของสื่อโฆษณามาด้วยแล้ว
-                                    และขอรับรองว่าเมื่อครบกำหนดเวลาในหนังสือขออนุญาตแล้วจะเก็บ ปลดถอน ขูด ลบ หรือล้าง ป้าย
+                                    และขอรับรองว่าเมื่อครบกำหนดเวลาในหนังสือขออนุญาตแล้วจะเก็บ ปลดถอน ขูด ลบ หรือล้าง
+                                    ป้าย
                                     ปิดทิ้ง โปรย แผ่นประกาศใบปลิว
                                     ออกจากบริเวณดังกล่าว ถ้าเกินกำหนดระยะเวลาแล้ว ข้าพเจ้าไม่ทำการรื้อถอน
                                     ทำให้เทศบาลต้องทำการรื้อถอนเอง
@@ -474,9 +476,9 @@ if (isset($_POST['submit'])) {
     <script>
         document.addEventListener('DOMContentLoaded', function () {
             var map = L.map('selectMap').setView([16.485, 102.835], 13);
-            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                attribution: 'OpenStreetMap',
-                maxZoom: 19
+            L.tileLayer('https://api.maptiler.com/maps/dataviz-v4/{z}/{x}/{y}.png?key=<?php echo MAPTILER_API_KEY; ?>', {
+                attribution: '<a href="https://www.maptiler.com/copyright/" target="_blank">&copy; MapTiler</a> <a href="https://www.openstreetmap.org/copyright" target="_blank">&copy; OpenStreetMap contributors</a>',
+                maxZoom: 20
             }).addTo(map);
 
             var marker;
@@ -509,12 +511,12 @@ if (isset($_POST['submit'])) {
             }
 
             fetch('../data/road_sila.geojson')
-                .then(function(res){ return res.json(); })
-                .then(function(data){
+                .then(function (res) { return res.json(); })
+                .then(function (data) {
                     L.geoJSON(data, {
                         style: { color: '#f59e0b', weight: 3 },
-                        onEachFeature: function(feature, layer){
-                            layer.on('click', function(e){
+                        onEachFeature: function (feature, layer) {
+                            layer.on('click', function (e) {
                                 placeMarker(e.latlng);
                                 var hint = document.getElementById('roadHint');
                                 if (hint) { hint.textContent = "เลือกพิกัดบนเส้นถนนแล้ว"; hint.className = "badge bg-success"; }
@@ -522,7 +524,7 @@ if (isset($_POST['submit'])) {
                         }
                     }).addTo(map);
                 });
-            map.on('click', function(){
+            map.on('click', function () {
                 var hint = document.getElementById('roadHint');
                 if (hint) { hint.textContent = "คลิกได้เฉพาะบนเส้นถนน"; hint.className = "badge bg-danger"; }
             });

@@ -9,7 +9,7 @@ if (!isset($_SESSION['user_id']) || ($_SESSION['role'] !== 'user' && $_SESSION['
 
 // กำหนดบทบาทและผู้ใช้ปัจจุบัน
 $role = $_SESSION['role'];
-$userId = (int)$_SESSION['user_id'];
+$userId = (int) $_SESSION['user_id'];
 
 // ดึงข้อมูลคำร้องที่มีพิกัด เพื่อแสดงบนแผนที่
 $approved_signs = [];
@@ -51,10 +51,10 @@ if ($role === 'user') {
 if ($res_rows && $res_rows->num_rows > 0) {
     while ($row = $res_rows->fetch_assoc()) {
         $approved_rows[] = [
-            'id' => (int)$row['id'],
+            'id' => (int) $row['id'],
             'type' => htmlspecialchars($row['sign_type']),
             'desc' => htmlspecialchars($row['description'] ?? ''),
-            'duration' => (int)($row['duration_days'] ?? 0),
+            'duration' => (int) ($row['duration_days'] ?? 0),
             'name' => htmlspecialchars(($row['title_name'] ?? '') . $row['first_name'] . ' ' . $row['last_name']),
             'address' => htmlspecialchars($row['address'] ?? ''),
             'phone' => htmlspecialchars($row['phone'] ?? ''),
@@ -77,41 +77,75 @@ if ($res_rows && $res_rows->num_rows > 0) {
 
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
 
-<style>
-    #mapid {
-        height: 480px;
-        width: 100%;
-        border-radius: 14px;
-        border: 1px solid #e5e7eb;
-    }
-    .fixed-card {
-        height: 480px;
-        display: flex;
-        flex-direction: column;
-    }
-    .fixed-card-body {
-        flex: 1 1 auto;
-        overflow: hidden;
-    }
-    .table-wrap {
-        height: 400px;
-        overflow: auto;
-        margin-top: 6px;
-    }
-    .table-page {
-        height: 100%;
-        overflow-y: auto;
-    }
-    .map-container {
-        position: relative;
-    }
-    .table { min-width: 540px; font-size: 11px; }
-    .table th, .table td { padding: .2rem .45rem; }
-    .table-type { max-width: 80px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    .table-desc { max-width: 160px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    .table-name { max-width: 120px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    .full-height-card { min-height: calc(100vh - 140px); }
-</style>
+    <style>
+        #mapid {
+            height: 480px;
+            width: 100%;
+            border-radius: 14px;
+            border: 1px solid #e5e7eb;
+        }
+
+        .fixed-card {
+            height: 480px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .fixed-card-body {
+            flex: 1 1 auto;
+            overflow: hidden;
+        }
+
+        .table-wrap {
+            height: 400px;
+            overflow: auto;
+            margin-top: 6px;
+        }
+
+        .table-page {
+            height: 100%;
+            overflow-y: auto;
+        }
+
+        .map-container {
+            position: relative;
+        }
+
+        .table {
+            min-width: 540px;
+            font-size: 11px;
+        }
+
+        .table th,
+        .table td {
+            padding: .2rem .45rem;
+        }
+
+        .table-type {
+            max-width: 80px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .table-desc {
+            max-width: 160px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .table-name {
+            max-width: 120px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .full-height-card {
+            min-height: calc(100vh - 140px);
+        }
+    </style>
 </head>
 
 <body>
@@ -143,7 +177,8 @@ if ($res_rows && $res_rows->num_rows > 0) {
                                 </select>
                                 <div class="ms-auto d-flex align-items-center gap-2">
                                     <label class="text-muted">ค้นหา</label>
-                                    <input id="searchInput" type="text" class="form-control form-control-sm" placeholder="ชื่อ/ที่อยู่/ประเภท">
+                                    <input id="searchInput" type="text" class="form-control form-control-sm"
+                                        placeholder="ชื่อ/ที่อยู่/ประเภท">
                                 </div>
                             </div>
                         </div>
@@ -166,8 +201,10 @@ if ($res_rows && $res_rows->num_rows > 0) {
                         <div class="p-2 border-top d-flex justify-content-between align-items-center">
                             <div id="pageInfo" class="small text-muted"></div>
                             <div class="btn-group">
-                                <button id="prevBtn" class="btn btn-outline-secondary btn-sm"><i class="bi bi-chevron-left"></i></button>
-                                <button id="nextBtn" class="btn btn-outline-secondary btn-sm"><i class="bi bi-chevron-right"></i></button>
+                                <button id="prevBtn" class="btn btn-outline-secondary btn-sm"><i
+                                        class="bi bi-chevron-left"></i></button>
+                                <button id="nextBtn" class="btn btn-outline-secondary btn-sm"><i
+                                        class="bi bi-chevron-right"></i></button>
                             </div>
                         </div>
                     </div>
@@ -199,9 +236,9 @@ if ($res_rows && $res_rows->num_rows > 0) {
 
             var mymap = L.map('mapid', { zoomControl: true }).setView([initialLat, initialLng], initialZoom);
 
-            var osm = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                maxZoom: 18,
-                attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+            var dataviz = L.tileLayer('https://api.maptiler.com/maps/dataviz-v4/{z}/{x}/{y}.png?key=<?php echo MAPTILER_API_KEY; ?>', {
+                maxZoom: 20,
+                attribution: '<a href="https://www.maptiler.com/copyright/" target="_blank">&copy; MapTiler</a> <a href="https://www.openstreetmap.org/copyright" target="_blank">&copy; OpenStreetMap contributors</a>'
             }).addTo(mymap);
 
             // *** 4. การแสดงตำแหน่งป้ายที่อนุมัติแล้วจากฐานข้อมูล ***
@@ -209,10 +246,10 @@ if ($res_rows && $res_rows->num_rows > 0) {
             var approvedList = <?php echo json_encode($approved_rows); ?>;
 
             var markers = L.markerClusterGroup();
-            var heat = L.heatLayer(approvedSigns.map(function(s){ return [s.lat, s.lng, 0.6]; }), {radius: 20, blur: 15});
-            var baseLayers = {"OSM": osm};
-            var overlays = {"Heatmap": heat, "Approved Markers": markers};
-            var layerControl = L.control.layers(baseLayers, overlays, {collapsed: true, position: 'topright'}).addTo(mymap);
+            var heat = L.heatLayer(approvedSigns.map(function (s) { return [s.lat, s.lng, 0.6]; }), { radius: 20, blur: 15 });
+            var baseLayers = { "Dataviz": dataviz };
+            var overlays = { "Heatmap": heat, "Approved Markers": markers };
+            var layerControl = L.control.layers(baseLayers, overlays, { collapsed: true, position: 'topright' }).addTo(mymap);
             approvedSigns.forEach(function (sign) {
                 if (sign.lat && sign.lng) {
                     var m = L.marker([sign.lat, sign.lng]).bindPopup("<b>ประเภทป้าย:</b> " + sign.type);
@@ -279,23 +316,23 @@ if ($res_rows && $res_rows->num_rows > 0) {
 
             var roadLayer = null;
             fetch('data/road_sila.geojson')
-                .then(function(response){
+                .then(function (response) {
                     if (!response.ok) {
                         throw new Error(response.statusText);
                     }
                     return response.json();
                 })
-                .then(function(roads){
+                .then(function (roads) {
                     roadLayer = L.geoJSON(roads, {
                         style: { color: '#f59e0b', weight: 3 }
                     }).addTo(mymap);
                     layerControl.addOverlay(roadLayer, "Roads");
                 })
-                .catch(function(err){
+                .catch(function (err) {
                     console.error(err);
                 });
 
-            mymap.on('zoomend', function(){
+            mymap.on('zoomend', function () {
                 var z = mymap.getZoom();
                 if (z < 13) {
                     if (!mymap.hasLayer(heat)) heat.addTo(mymap);
@@ -316,7 +353,7 @@ if ($res_rows && $res_rows->num_rows > 0) {
             function filtered() {
                 var q = (searchEl.value || '').toLowerCase();
                 if (!q) return approvedList;
-                return approvedList.filter(function(r){
+                return approvedList.filter(function (r) {
                     return (r.type || '').toLowerCase().includes(q)
                         || (r.name || '').toLowerCase().includes(q)
                         || (r.address || '').toLowerCase().includes(q)
@@ -331,24 +368,24 @@ if ($res_rows && $res_rows->num_rows > 0) {
                 if (page > totalPages) page = totalPages;
                 var start = (page - 1) * size;
                 var slice = rows.slice(start, start + size);
-                tbody.innerHTML = slice.map(function(r){
+                tbody.innerHTML = slice.map(function (r) {
                     var d = (r.duration || 0) + " วัน";
                     return "<tr>"
-                        +"<td>#"+r.id+"</td>"
-                        +"<td class='table-type'>"+r.type+"</td>"
-                        +"<td class='table-desc'>"+r.desc+"</td>"
-                        +"<td>"+d+"</td>"
-                        +"<td class='table-name'>"+r.name+"</td>"
-                        +"</tr>";
+                        + "<td>#" + r.id + "</td>"
+                        + "<td class='table-type'>" + r.type + "</td>"
+                        + "<td class='table-desc'>" + r.desc + "</td>"
+                        + "<td>" + d + "</td>"
+                        + "<td class='table-name'>" + r.name + "</td>"
+                        + "</tr>";
                 }).join('');
                 pageInfo.textContent = "หน้า " + page + " / " + totalPages + " • ทั้งหมด " + rows.length + " รายการ";
                 prevBtn.disabled = page <= 1;
                 nextBtn.disabled = page >= totalPages;
             }
-            pageSizeEl.addEventListener('change', function(){ page = 1; render(); });
-            searchEl.addEventListener('input', function(){ page = 1; render(); });
-            prevBtn.addEventListener('click', function(){ if (page > 1) { page--; render(); } });
-            nextBtn.addEventListener('click', function(){
+            pageSizeEl.addEventListener('change', function () { page = 1; render(); });
+            searchEl.addEventListener('input', function () { page = 1; render(); });
+            prevBtn.addEventListener('click', function () { if (page > 1) { page--; render(); } });
+            nextBtn.addEventListener('click', function () {
                 var size = parseInt(pageSizeEl.value, 10);
                 var rows = filtered();
                 var totalPages = Math.max(1, Math.ceil(rows.length / size));
