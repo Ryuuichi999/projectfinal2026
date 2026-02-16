@@ -236,10 +236,15 @@ if ($res_rows && $res_rows->num_rows > 0) {
 
             var mymap = L.map('mapid', { zoomControl: true }).setView([initialLat, initialLng], initialZoom);
 
-            var dataviz = L.tileLayer('https://api.maptiler.com/maps/dataviz-v4/{z}/{x}/{y}.png?key=<?php echo MAPTILER_API_KEY; ?>', {
+            var baseStyle = L.tileLayer('https://api.maptiler.com/maps/base-v4/{z}/{x}/{y}.png?key=<?php echo MAPTILER_API_KEY; ?>', {
                 maxZoom: 20,
                 attribution: '<a href="https://www.maptiler.com/copyright/" target="_blank">&copy; MapTiler</a> <a href="https://www.openstreetmap.org/copyright" target="_blank">&copy; OpenStreetMap contributors</a>'
             }).addTo(mymap);
+
+            var datavizStyle = L.tileLayer('https://api.maptiler.com/maps/dataviz-v4/{z}/{x}/{y}.png?key=<?php echo MAPTILER_API_KEY; ?>', {
+                maxZoom: 20,
+                attribution: '<a href="https://www.maptiler.com/copyright/" target="_blank">&copy; MapTiler</a> <a href="https://www.openstreetmap.org/copyright" target="_blank">&copy; OpenStreetMap contributors</a>'
+            });
 
             // *** 4. การแสดงตำแหน่งป้ายที่อนุมัติแล้วจากฐานข้อมูล ***
             var approvedSigns = <?php echo json_encode($approved_signs); ?>;
@@ -247,7 +252,10 @@ if ($res_rows && $res_rows->num_rows > 0) {
 
             var markers = L.markerClusterGroup();
             var heat = L.heatLayer(approvedSigns.map(function (s) { return [s.lat, s.lng, 0.6]; }), { radius: 20, blur: 15 });
-            var baseLayers = { "Dataviz": dataviz };
+            var baseLayers = {
+                "แผนที่หลัก": baseStyle,
+                "แผนที่ Dataviz": datavizStyle
+            };
             var overlays = { "Heatmap": heat, "Approved Markers": markers };
             var layerControl = L.control.layers(baseLayers, overlays, { collapsed: true, position: 'topright' }).addTo(mymap);
             approvedSigns.forEach(function (sign) {

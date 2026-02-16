@@ -203,13 +203,15 @@ function get_status_badge($status)
                             <div class="col-12">
                                 <div class="detail-label text-muted">รายละเอียด/ข้อความ</div>
                                 <div class="p-3 bg-light rounded mt-1">
-                                    <?= nl2br(htmlspecialchars($request['description'])) ?></div>
+                                    <?= nl2br(htmlspecialchars($request['description'])) ?>
+                                </div>
                             </div>
                             <?php if (!empty($request['decision_note'])): ?>
                                 <div class="col-12">
                                     <div class="detail-label text-muted">บันทึกการตัดสินใจ</div>
                                     <div class="p-3 bg-warning-subtle rounded mt-1">
-                                        <?= nl2br(htmlspecialchars($request['decision_note'])) ?></div>
+                                        <?= nl2br(htmlspecialchars($request['decision_note'])) ?>
+                                    </div>
                                 </div>
                             <?php endif; ?>
                         </div>
@@ -254,10 +256,22 @@ function get_status_badge($status)
             var lng = <?= $request['location_lng'] ?: 'null' ?>;
             if (lat !== null && lng !== null) {
                 var map = L.map('map').setView([lat, lng], 15);
-                L.tileLayer('https://api.maptiler.com/maps/dataviz-v4/{z}/{x}/{y}.png?key=<?php echo MAPTILER_API_KEY; ?>', {
+
+                var baseStyle = L.tileLayer('https://api.maptiler.com/maps/base-v4/{z}/{x}/{y}.png?key=<?php echo MAPTILER_API_KEY; ?>', {
                     attribution: '<a href="https://www.maptiler.com/copyright/" target="_blank">&copy; MapTiler</a> <a href="https://www.openstreetmap.org/copyright" target="_blank">&copy; OpenStreetMap contributors</a>',
                     maxZoom: 20
                 }).addTo(map);
+
+                var datavizStyle = L.tileLayer('https://api.maptiler.com/maps/dataviz-v4/{z}/{x}/{y}.png?key=<?php echo MAPTILER_API_KEY; ?>', {
+                    attribution: '<a href="https://www.maptiler.com/copyright/" target="_blank">&copy; MapTiler</a> <a href="https://www.openstreetmap.org/copyright" target="_blank">&copy; OpenStreetMap contributors</a>',
+                    maxZoom: 20
+                });
+
+                var baseLayers = {
+                    "แผนที่หลัก": baseStyle,
+                    "แผนที่ Dataviz": datavizStyle
+                };
+                L.control.layers(baseLayers, null, { collapsed: true }).addTo(map);
                 fetch('../data/sila.geojson')
                     .then(res => res.json())
                     .then(data => {

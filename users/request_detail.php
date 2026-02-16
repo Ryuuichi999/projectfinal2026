@@ -241,10 +241,21 @@ function get_status_badge($status)
 
             var map = L.map('map').setView([lat, lng], 15);
 
-            L.tileLayer('https://api.maptiler.com/maps/dataviz-v4/{z}/{x}/{y}.png?key=<?php echo MAPTILER_API_KEY; ?>', {
+            var baseStyle = L.tileLayer('https://api.maptiler.com/maps/base-v4/{z}/{x}/{y}.png?key=<?php echo MAPTILER_API_KEY; ?>', {
                 attribution: '<a href="https://www.maptiler.com/copyright/" target="_blank">&copy; MapTiler</a> <a href="https://www.openstreetmap.org/copyright" target="_blank">&copy; OpenStreetMap contributors</a>',
                 maxZoom: 20
             }).addTo(map);
+
+            var datavizStyle = L.tileLayer('https://api.maptiler.com/maps/dataviz-v4/{z}/{x}/{y}.png?key=<?php echo MAPTILER_API_KEY; ?>', {
+                attribution: '<a href="https://www.maptiler.com/copyright/" target="_blank">&copy; MapTiler</a> <a href="https://www.openstreetmap.org/copyright" target="_blank">&copy; OpenStreetMap contributors</a>',
+                maxZoom: 20
+            });
+
+            var baseLayers = {
+                "แผนที่หลัก": baseStyle,
+                "แผนที่ Dataviz": datavizStyle
+            };
+            L.control.layers(baseLayers, null, { collapsed: true }).addTo(map);
 
             fetch('../data/sila.geojson')
                 .then(res => res.json())
