@@ -2,14 +2,17 @@
 // สมมติว่าไฟล์ map.php อยู่ในรูทของ Projectป้าย/
 require './includes/db.php';
 
+// Public GIS map accessible without login
+/*
 if (!isset($_SESSION['user_id']) || ($_SESSION['role'] !== 'user' && $_SESSION['role'] !== 'admin' && $_SESSION['role'] !== 'employee')) {
     header("Location: login.php");
     exit;
 }
+*/
 
 // กำหนดบทบาทและผู้ใช้ปัจจุบัน
-$role = $_SESSION['role'];
-$userId = (int) $_SESSION['user_id'];
+$role = $_SESSION['role'] ?? 'guest';
+$userId = isset($_SESSION['user_id']) ? (int) $_SESSION['user_id'] : 0;
 
 // ดึงข้อมูลคำร้องที่มีพิกัด เพื่อแสดงบนแผนที่
 $approved_signs = [];
@@ -150,10 +153,9 @@ if ($res_rows && $res_rows->num_rows > 0) {
 
 <body>
 
-    <?php include './includes/sidebar.php'; ?>
-    <?php include './includes/topbar.php'; ?>
+    <?php include './includes/navbar.php'; ?>
 
-    <div class="content">
+    <div class="container-fluid px-md-5 fade-in-up mt-4">
         <div class="card p-4 fade-in-up full-height-card">
             <h2 class="mb-2">🗺️ แผนที่ข้อมูลพื้นที่ (GIS)</h2>
             <p class="text-muted mb-4">แสดงขอบเขต ตำแหน่งป้ายที่ได้รับอนุมัติ และเส้นทางถนนในเขต ทม.ศิลา</p>

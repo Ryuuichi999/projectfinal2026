@@ -119,7 +119,7 @@ if (isset($_POST['submit'])) {
 
     <?php include '../includes/user_navbar.php'; ?>
 
-    <div class="container fade-in-up">
+    <div class="container fade-in-up mt-4">
         <div class="card p-4">
             <h3 class="mb-3">ยื่นเอกสารเพิ่มเติมสำหรับคำขอ #<?= $request['id'] ?></h3>
             <?php if ($message): ?>

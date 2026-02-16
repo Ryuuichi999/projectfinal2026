@@ -77,6 +77,7 @@ if ($userId && $role === 'user') {
         border-radius: 50px;
         border: 1px solid #e2e8f0;
         cursor: pointer;
+        white-space: nowrap;
     }
     .avatar-circle {
         width: 32px;
@@ -112,10 +113,24 @@ if ($userId && $role === 'user') {
         border-radius: 50px;
         border: 2px solid #fff;
     }
+    /* Fixed top adjustment */
+    body {
+        padding-top: 110px;
+    }
+    .btn-primary-custom {
+        background: #1a56db;
+        border: none;
+        transition: 0.3s;
+    }
+    .btn-primary-custom:hover {
+        background: #1e429f;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(26, 86, 219, 0.2);
+    }
 </style>
 
 <nav class="navbar navbar-expand-lg navbar-main fixed-top">
-    <div class="container">
+    <div class="container-fluid px-md-5">
         <a class="navbar-brand d-flex align-items-center" href="/Project2026/index.php">
             <img src="/Project2026/image/logosila.png" alt="Logo" style="height: 50px; width: auto;">
             <span class="ms-2 fw-bold text-dark">เทศบาลเมืองศิลา</span>
@@ -129,6 +144,7 @@ if ($userId && $role === 'user') {
                 <li class="nav-item"><a class="nav-link" href="/Project2026/index.php#steps">ขั้นตอน</a></li>
                 <li class="nav-item"><a class="nav-link" href="/Project2026/index.php#services">บริการ</a></li>
                 <li class="nav-item"><a class="nav-link" href="/Project2026/index.php#legal">เอกสาร</a></li>
+                <li class="nav-item"><a class="nav-link" href="/Project2026/map.php"><i class="bi bi-geo-alt me-1"></i>แผนที่ GIS</a></li>
             </ul>
             <div class="d-flex align-items-center gap-3">
                 <?php if ($userId): ?>

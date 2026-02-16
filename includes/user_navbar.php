@@ -98,6 +98,7 @@ if ($userId && $role === 'user') {
         border: 1px solid #e2e8f0;
         cursor: pointer;
         transition: 0.2s;
+        white-space: nowrap;
     }
 
     .user-profile-pill:hover {
@@ -152,7 +153,7 @@ if ($userId && $role === 'user') {
 
     /* Fixed top adjustment for page content */
     body {
-        padding-top: 85px;
+        padding-top: 110px;
     }
 
     /* Remove sidebar logic for users */
@@ -163,7 +164,7 @@ if ($userId && $role === 'user') {
 </style>
 
 <nav class="navbar navbar-expand-lg navbar-user fixed-top">
-    <div class="container">
+    <div class="container-fluid px-md-5">
         <!-- Brand -->
         <a class="navbar-brand d-flex align-items-center" href="/Project2026/index.php">
             <img src="/Project2026/image/logosila.png" alt="Logo" style="height: 50px; width: auto;">
@@ -188,7 +189,7 @@ if ($userId && $role === 'user') {
                 <li class="nav-item">
                     <a class="nav-link <?= strpos($_SERVER['PHP_SELF'], 'users/request_form.php') !== false ? 'active' : '' ?>"
                         href="/Project2026/users/request_form.php">
-                        <i class="bi bi-file-earmark-plus me-1"></i> ยื่นคำขอใหม่
+                        <i class="bi bi-file-earmark-plus me-1"></i> ยื่นคำขอ
                     </a>
                 </li>
                 <li class="nav-item">
@@ -259,7 +260,7 @@ if ($userId && $role === 'user') {
                             <?= $initials ?>
                         </div>
                         <div class="d-none d-md-block text-start">
-                            <div class="fw-bold line-clamp-1" style="max-width: 120px; font-size: 0.85rem;">
+                            <div class="fw-bold" style="max-width: 150px; font-size: 0.85rem;">
                                 <?= htmlspecialchars($displayName) ?>
                             </div>
                             <div class="text-muted" style="font-size: 0.75rem;">ผู้ใช้งาน</div>
@@ -300,4 +301,3 @@ if ($userId && $role === 'user') {
         }
     });
 </script>
-⚓,Complexity:2,Description:

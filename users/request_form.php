@@ -162,7 +162,7 @@ if (isset($_POST['submit'])) {
             padding: 50px;
             box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
             max-width: 900px;
-            margin: 30px auto;
+            margin: 0 auto 30px;
             border-radius: 4px;
             font-family: 'Sarabun', sans-serif;
             position: relative;
@@ -303,7 +303,7 @@ if (isset($_POST['submit'])) {
 
     <?php include '../includes/user_navbar.php'; ?>
 
-    <div class="container fade-in-up">
+    <div class="container fade-in-up mt-4">
         <div class="paper-form fade-in-up">
 
             <?php if ($message): ?>

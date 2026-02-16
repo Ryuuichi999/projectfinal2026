@@ -98,7 +98,7 @@ function get_status_badge($status)
 
     <?php include '../includes/user_navbar.php'; ?>
 
-    <div class="container fade-in-up">
+    <div class="container fade-in-up mt-4">
         <div class="card p-4">
             <h2 class="mb-2">📄 สถานะคำขอของฉัน</h2>
             <p class="text-muted mb-4">รายการคำขออนุญาตติดตั้งป้ายชั่วคราวทั้งหมด</p>
@@ -127,7 +127,7 @@ function get_status_badge($status)
                         if ($result->num_rows > 0) {
                             while ($row = $result->fetch_assoc()) {
                                 echo "<tr>";
-                                echo "<td>{$row['id']}</td>";
+                                echo "<td>#{$row['id']}</td>";
                                 echo "<td>{$row['sign_type']}</td>";
                                 echo "<td>{$row['width']} x {$row['height']}</td>";
                                 echo "<td>" . number_format($row['fee']) . "</td>";
@@ -155,27 +155,19 @@ function get_status_badge($status)
         </div>
     </div>
 
-</body>
-<?php include '../includes/scripts.php'; ?>
-<!-- jQuery -->
-<script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
-<!-- DataTables -->
-<script src="https://cdn.datatables.net/1.13.7/js/jquery.dataTables.min.js"></script>
-<script src="https://cdn.datatables.net/1.13.7/js/dataTables.bootstrap5.min.js"></script>
-
-<script>
-    $(document).ready(function () {
-        $('#myRequestsTable').DataTable({
-            "language": {
-                "url": "//cdn.datatables.net/plug-ins/1.13.7/i18n/th.json"
-            },
-            "order": [], // Disable initial sort
-            "dom": "<'row'<'col-sm-12'f>>" +
-                "<'row'<'col-sm-12'tr>>" +
-                "<'row align-items-center'<'col-md-6'l><'col-md-6 d-flex justify-content-end'p>>",
-            "pageLength": 10
+    <?php include '../includes/scripts.php'; ?>
+    <script src="https://cdn.datatables.net/1.13.7/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.7/js/dataTables.bootstrap5.min.js"></script>
+    <script>
+        $(document).ready(function () {
+            $('#myRequestsTable').DataTable({
+                "language": {
+                    "url": "//cdn.datatables.net/plug-ins/1.13.7/i18n/th.json"
+                },
+                "order": [[0, "desc"]]
+            });
         });
-    });
-</script>
+    </script>
+</body>
 
 </html>
