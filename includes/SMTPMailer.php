@@ -16,7 +16,7 @@ class SMTPMailer
         $this->password = $password;
     }
 
-    public function send($to, $subject, $body, $fromName = 'System Notification')
+    public function send($to, $subject, $body, $fromName = 'System Notification', $isHtml = false)
     {
         $this->logs = [];
         $this->log("Connecting to {$this->host}:{$this->port}...");
@@ -60,7 +60,8 @@ class SMTPMailer
             return false;
 
         $headers = "MIME-Version: 1.0\r\n";
-        $headers .= "Content-type: text/plain; charset=UTF-8\r\n";
+        $contentType = $isHtml ? "text/html" : "text/plain";
+        $headers .= "Content-type: {$contentType}; charset=UTF-8\r\n";
         $headers .= "From: =?UTF-8?B?" . base64_encode($fromName) . "?= <{$this->username}>\r\n";
         $headers .= "To: <$to>\r\n";
         $headers .= "Subject: =?UTF-8?B?" . base64_encode($subject) . "?=\r\n";
