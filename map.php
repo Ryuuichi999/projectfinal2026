@@ -14,22 +14,24 @@ if (!isset($_SESSION['user_id']) || ($_SESSION['role'] !== 'user' && $_SESSION['
 $role = $_SESSION['role'] ?? 'guest';
 $userId = isset($_SESSION['user_id']) ? (int) $_SESSION['user_id'] : 0;
 
-// ดึงข้อมูลคำร้องที่มีพิกัด เพื่อแสดงบนแผนที่
+// ดึงข้อมูลคำร้องที่มีพิกัดและสถานะ เพื่อแสดงบนแผนที่
 $approved_signs = [];
 if ($role === 'user') {
-    $stmt = $conn->prepare("SELECT location_lat, location_lng, sign_type FROM sign_requests WHERE user_id = ? AND location_lat IS NOT NULL AND location_lng IS NOT NULL");
+    $stmt = $conn->prepare("SELECT id, location_lat, location_lng, sign_type, status FROM sign_requests WHERE user_id = ? AND location_lat IS NOT NULL AND location_lng IS NOT NULL");
     $stmt->bind_param("i", $userId);
     $stmt->execute();
     $result_signs = $stmt->get_result();
 } else {
-    $result_signs = $conn->query("SELECT location_lat, location_lng, sign_type FROM sign_requests WHERE location_lat IS NOT NULL AND location_lng IS NOT NULL");
+    $result_signs = $conn->query("SELECT id, location_lat, location_lng, sign_type, status FROM sign_requests WHERE location_lat IS NOT NULL AND location_lng IS NOT NULL");
 }
 if ($result_signs && $result_signs->num_rows > 0) {
     while ($row = $result_signs->fetch_assoc()) {
         $approved_signs[] = [
+            'id' => (int) $row['id'],
             'lat' => (float) $row['location_lat'],
             'lng' => (float) $row['location_lng'],
-            'type' => htmlspecialchars($row['sign_type'])
+            'type' => htmlspecialchars($row['sign_type']),
+            'status' => htmlspecialchars($row['status'])
         ];
     }
 }
@@ -163,6 +165,14 @@ if ($res_rows && $res_rows->num_rows > 0) {
             <div class="row g-3">
                 <div class="col-md-6">
                     <div class="map-container">
+                        <div class="d-flex align-items-center gap-2 mb-2">
+                            <span class="badge" style="background-color: #16a34a; color: white;">🪧 อนุมัติแล้ว</span>
+                            <span class="badge" style="background-color: #f59e0b; color: white;">🪧 รอดำเนินการ</span>
+                            <span class="badge" style="background-color: #3b82f6; color: white;">🪧 รอชำระเงิน</span>
+                            <span class="badge" style="background-color: #8b5cf6; color: white;">🪧 รอใบเสร็จ</span>
+                            <span class="badge" style="background-color: #dc2626; color: white;">🪧 ไม่อนุมัติ</span>
+                            <span class="badge" style="background-color: #6b7280; color: white;">🪧 ยกเลิก</span>
+                        </div>
                         <div id="mapid"></div>
                     </div>
                 </div>
@@ -262,7 +272,37 @@ if ($res_rows && $res_rows->num_rows > 0) {
             var layerControl = L.control.layers(baseLayers, overlays, { collapsed: true, position: 'topright' }).addTo(mymap);
             approvedSigns.forEach(function (sign) {
                 if (sign.lat && sign.lng) {
-                    var m = L.marker([sign.lat, sign.lng]).bindPopup("<b>ประเภทป้าย:</b> " + sign.type);
+                    // กำหนดสีหมุดตามสถานะ
+                    var markerColor = '#16a34a'; // สีเขียว (อนุมัติแล้ว) - default
+                    var statusText = 'อนุมัติแล้ว';
+                    
+                    if (sign.status === 'pending') {
+                        markerColor = '#f59e0b'; // สีเหลือง (รอดำเนินการ)
+                        statusText = 'รอดำเนินการ';
+                    } else if (sign.status === 'waiting_payment') {
+                        markerColor = '#3b82f6'; // สีน้ำเงิน (รอชำระเงิน)
+                        statusText = 'รอชำระเงิน';
+                    } else if (sign.status === 'waiting_receipt') {
+                        markerColor = '#8b5cf6'; // สีม่วง (รอใบเสร็จ)
+                        statusText = 'รอใบเสร็จ';
+                    } else if (sign.status === 'rejected') {
+                        markerColor = '#dc2626'; // สีแดง (ไม่อนุมัติ)
+                        statusText = 'ไม่อนุมัติ';
+                    } else if (sign.status === 'cancelled') {
+                        markerColor = '#6b7280'; // สีเทา (ยกเลิก)
+                        statusText = 'ยกเลิก';
+                    }
+                    
+                    // สร้าง custom marker icon
+                    var customIcon = L.divIcon({
+                        className: 'custom-marker',
+                        html: '<div style="background-color: ' + markerColor + '; width: 24px; height: 24px; border-radius: 4px; border: 2px solid white; box-shadow: 0 2px 6px rgba(0,0,0,0.4); display: flex; align-items: center; justify-content: center; font-weight: bold; color: white; font-size: 12px;">🪧</div>',
+                        iconSize: [24, 24],
+                        iconAnchor: [12, 12]
+                    });
+                    
+                    var m = L.marker([sign.lat, sign.lng], {icon: customIcon})
+                        .bindPopup("<b>เลขคำขอ #" + sign.id + "</b><br><b>ประเภทป้าย:</b> " + sign.type + "<br><b>สถานะ:</b> " + statusText);
                     markers.addLayer(m);
                 }
             });
@@ -288,7 +328,6 @@ if ($res_rows && $res_rows->num_rows > 0) {
             fetch(geojsonPath)
                 .then(response => {
                     if (!response.ok) {
-
                         throw new Error(`Failed to load GeoJSON: ${response.statusText}`);
                     }
                     return response.json();
@@ -299,8 +338,9 @@ if ($res_rows && $res_rows->num_rows > 0) {
                             return {
                                 weight: 3,             // ความหนาของเส้นขอบ
                                 opacity: 1,
-                                color: 'blue',         // สีเส้นขอบ
-                                fillOpacity: 0       // ความโปร่งใสของสีเติม
+                                color: '#dc2626',     // สีแดงสำหรับเขตเทศบาล
+                                fillOpacity: 0.1,      // ความโปร่งใสของสีเติม
+                                fillColor: '#dc2626'   // สีเติมแดงอ่อนๆ
                             };
                         },
                         onEachFeature: function (feature, layer) {
