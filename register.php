@@ -5,14 +5,15 @@ if (isset($_POST['submit'])) {
     $pass = password_hash($_POST['password'], PASSWORD_DEFAULT);
 
     $stmt = $conn->prepare(
-        "INSERT INTO users(title_name,first_name,last_name,citizen_id,phone,address,password)
-         VALUES (?,?,?,?,?,?,?)"
+        "INSERT INTO users(title_name,first_name,last_name,email,citizen_id,phone,address,password)
+         VALUES (?,?,?,?,?,?,?,?)"
     );
     $stmt->bind_param(
-        "sssssss",
+        "ssssssss",
         $_POST['title_name'],
         $_POST['first_name'],
         $_POST['last_name'],
+        $_POST['email'],
         $_POST['citizen_id'],
         $_POST['phone'],
         $_POST['address'],
@@ -232,6 +233,12 @@ if (isset($_POST['submit'])) {
             <div class="mb-2">
                 <label class="form-label">เบอร์โทรศัพท์</label>
                 <input class="form-control" name="phone" id="phone" placeholder="0xx-xxx-xxxx" required>
+            </div>
+
+            <div class="mb-2">
+                <label class="form-label">อีเมล (สำหรับรับแจ้งเตือน)</label>
+                <input type="email" class="form-control" name="email" id="email" placeholder="example@mail.com"
+                    required>
             </div>
 
             <div class="mb-2">

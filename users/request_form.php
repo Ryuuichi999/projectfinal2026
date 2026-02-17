@@ -27,6 +27,7 @@ if (isset($_POST['submit'])) {
     $quantity = (int) $_POST['quantity'];
     $road_name = trim($_POST['road_name']);
     $description = trim($_POST['description']);
+    $email = trim($_POST['email']);
 
     // วันที่และระยะเวลา
     $install_date = $_POST['install_date'];
@@ -56,15 +57,16 @@ if (isset($_POST['submit'])) {
             // ตรวจสอบคอลัมน์ใหม่ว่ามีหรือยัง (เผื่อ script update schema ยังไม่รัน)
             // แต่เราสมมติว่ารันแล้วตาม Plan
             $sql = "INSERT INTO sign_requests 
-            (user_id, applicant_name, applicant_address, sign_type, width, height, quantity, road_name, location_lat, location_lng, fee, status, duration_days, description) 
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'pending', ?, ?)";
+            (user_id, applicant_name, applicant_address, email, sign_type, width, height, quantity, road_name, location_lat, location_lng, fee, status, duration_days, description) 
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'pending', ?, ?)";
 
             $stmt = $conn->prepare($sql);
             $stmt->bind_param(
-                "isssddisddiis",
+                "issssddisddiis",
                 $user_id,
                 $applicant_name,
                 $applicant_address,
+                $email,
                 $sign_type,
                 $width,
                 $height,
@@ -347,6 +349,11 @@ if (isset($_POST['submit'])) {
                     <label>เบอร์โทรศัพท์</label>
                     <input type="text" name="phone" class="form-input-line w-200px" value="<?= $me['phone'] ?>"
                         required>
+                </div>
+                <div class="form-line">
+                    <label>อีเมล (สำหรับรับแจ้งเตือน)</label>
+                    <input type="email" name="email" class="form-input-line w-full" value="<?= $me['email'] ?? '' ?>"
+                        required placeholder="example@mail.com">
                 </div>
 
                 <div class="form-line mt-4">

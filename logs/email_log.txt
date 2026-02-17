@@ -1,0 +1,4 @@
+[2026-02-17 10:01:20] ID: #1, Status: approved, Email: test@example.com, Sent: No
+[2026-02-17 10:05:40] ID: #28, Status: reviewing, Email: ryuuichii09@gmail.com, Sent: No
+[2026-02-17 10:06:07] ID: #28, Status: waiting_payment, Email: ryuuichii09@gmail.com, Sent: No
+[2026-02-17 10:09:02] ID: #28, Status: approved, Email: ryuuichii09@gmail.com, Sent: No

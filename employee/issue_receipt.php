@@ -1,6 +1,7 @@
 <?php
 session_start();
 require '../includes/db.php';
+require '../includes/email_helper.php';
 
 if (!isset($_SESSION['user_id']) || ($_SESSION['role'] !== 'admin' && $_SESSION['role'] !== 'employee')) {
     header("Location: ../login.php");
@@ -89,6 +90,7 @@ if (isset($_POST['issue_receipt_confirm'])) {
     $stmt_up->bind_param("sssi", $receipt_no, $receipt_date, $receipt_issued_by, $request_id);
 
     if ($stmt_up->execute()) {
+        send_status_notification($request_id, $conn);
 
         ?>
         <!DOCTYPE html>

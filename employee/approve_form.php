@@ -1,6 +1,7 @@
 <?php
 session_start();
 require '../includes/db.php';
+require '../includes/email_helper.php';
 
 if (!isset($_SESSION['user_id']) || ($_SESSION['role'] !== 'admin' && $_SESSION['role'] !== 'employee')) {
     header("Location: ../login.php");
@@ -44,6 +45,7 @@ if (isset($_POST['approve_confirm'])) {
     $stmt_up->bind_param("ssii", $permit_no, $permit_date, $approver_id, $request_id);
 
     if ($stmt_up->execute()) {
+        send_status_notification($request_id, $conn);
 
         echo '<!DOCTYPE html>
 <html lang="th">
