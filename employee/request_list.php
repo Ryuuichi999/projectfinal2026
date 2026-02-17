@@ -91,6 +91,14 @@ function get_status_badge($status)
     <link rel="stylesheet" href="https://cdn.datatables.net/1.13.7/css/dataTables.bootstrap5.min.css">
     <!-- jQuery UI for Autocomplete -->
     <link rel="stylesheet" href="https://code.jquery.com/ui/1.13.2/themes/ui-lightness/jquery-ui.css">
+    <style>
+        .action-btn {
+            font-size: 11px !important;
+            padding: 4px 8px !important;
+            border-radius: 4px;
+            white-space: nowrap;
+        }
+    </style>
 </head>
 
 <body>
@@ -159,36 +167,38 @@ function get_status_badge($status)
                                 <td><?= date('d/m/Y H:i', strtotime($row['created_at'])) ?></td>
                                 <td><?= get_status_badge($row['status']) ?></td>
                                 <td>
-                                    <div class="btn-group">
+                                    <div class="d-flex gap-1 align-items-center flex-nowrap"
+                                        style="min-width: fit-content; white-space: nowrap;">
                                         <a href="request_detail.php?id=<?= $row['id'] ?>"
-                                            class="btn btn-sm btn-outline-primary" title="ดูรายละเอียด">
-                                            🔍 รายละเอียด
+                                            class="btn btn-sm btn-outline-primary action-btn" title="ดูรายละเอียด">
+                                            <i class="bi bi-search"></i> รายละเอียด
                                         </a>
 
                                         <?php if ($row['status'] == 'pending'): ?>
                                             <!-- Approve Button -->
-                                            <a href="approve_form.php?id=<?= $row['id'] ?>" class=" btn btn-sm btn-success"
-                                                title="อนุมัติ">
+                                            <a href="approve_form.php?id=<?= $row['id'] ?>"
+                                                class="btn btn-sm btn-success action-btn" title="อนุมัติ">
                                                 <i class="bi bi-check-circle"></i> อนุมัติ
                                             </a>
                                             <!-- Reject Button -->
                                             <form method="post" onsubmit="return confirmReject(event, this);"
-                                                style="display:inline;">
+                                                class="m-0 d-inline-flex">
                                                 <input type="hidden" name="request_id" value="<?= $row['id'] ?>">
                                                 <input type="hidden" name="action" value="reject">
-                                                <button class="btn btn-sm btn-danger" type="submit" title="ปฏิเสธ">
+                                                <button class="btn btn-sm btn-danger action-btn" type="submit" title="ปฏิเสธ">
                                                     <i class="bi bi-x-circle"></i> ปฏิเสธ
                                                 </button>
                                             </form>
 
                                         <?php elseif ($row['status'] == 'waiting_payment'): ?>
-                                            <button class="btn btn-sm btn-outline-secondary" disabled title="รอผู้ใช้ชำระเงิน">
+                                            <button class="btn btn-sm btn-outline-secondary action-btn" disabled
+                                                title="รอผู้ใช้ชำระเงิน">
                                                 <i class="bi bi-hourglass-split"></i> รอชำระเงิน
                                             </button>
 
                                         <?php elseif ($row['status'] == 'waiting_receipt'): ?>
                                             <a href="issue_receipt.php?id=<?= $row['id'] ?>"
-                                                class="btn btn-sm btn-warning text-dark" title="ออกใบเสร็จรับเงิน">
+                                                class="btn btn-sm btn-warning text-dark action-btn" title="ออกใบเสร็จรับเงิน">
                                                 <i class="bi bi-receipt"></i> ออกใบเสร็จ
                                             </a>
                                         <?php endif; ?>
@@ -315,4 +325,4 @@ function get_status_badge($status)
     </script>
 </body>
 
-</html>
+</html>⚓,Complexity:2,Description:
