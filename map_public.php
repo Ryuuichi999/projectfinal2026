@@ -151,7 +151,6 @@ if ($res_rows && $res_rows->num_rows > 0) {
                             <span class="badge" style="background-color: #3b82f6; color: white;">🪧 รอชำระเงิน</span>
                             <span class="badge" style="background-color: #8b5cf6; color: white;">🪧 รอใบเสร็จ</span>
                             <span class="badge" style="background-color: #dc2626; color: white;">🪧 ไม่อนุมัติ</span>
-                            <span class="badge" style="background-color: #6b7280; color: white;">🪧 ยกเลิก</span>
                         </div>
                         <div id="mapid"></div>
                     </div>
