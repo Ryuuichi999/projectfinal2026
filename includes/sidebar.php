@@ -22,7 +22,7 @@
                     class="<?= (strpos($_SERVER['PHP_SELF'], 'employee') !== false) ? 'active' : '' ?>">
                     📝 รายการคำขอ
                 </a>
-                <a href="/Project2026/map.php" class="<?= basename($_SERVER['PHP_SELF']) == 'map.php' ? 'active' : '' ?>">
+                <a href="/Project2026/employee/map.php" class="<?= (strpos($_SERVER['PHP_SELF'], 'employee/map.php') !== false) ? 'active' : '' ?>">
                     🗺️ แผนที่
                 </a>
             <?php endif; ?>
@@ -40,7 +40,7 @@
                 class="<?= basename($_SERVER['PHP_SELF']) == 'my_request.php' ? 'active' : '' ?>">
                 📄 สถานะคำขอ
             </a>
-            <a href="/Project2026/map.php" class="<?= basename($_SERVER['PHP_SELF']) == 'map.php' ? 'active' : '' ?>">
+            <a href="/Project2026/map_public.php" class="<?= basename($_SERVER['PHP_SELF']) == 'map_public.php' ? 'active' : '' ?>">
                 🗺️ แผนที่
             </a>
         <?php endif; ?>

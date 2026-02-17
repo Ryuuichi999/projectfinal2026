@@ -2,26 +2,18 @@
 // สมมติว่าไฟล์ map.php อยู่ในรูทของ Projectป้าย/
 require './includes/db.php';
 
-// User GIS map - require login
-if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'user') {
-    header("Location: login.php");
-    exit;
-}
+// Public GIS map - no login required
+// สำหรับผู้ใช้ทั่วไปที่ไม่ได้ล็อกอิน - ดูแผนที่ได้แต่ไม่เห็นหมุด
 
 // กำหนดบทบาทและผู้ใช้ปัจจุบัน
-$role = $_SESSION['role'] ?? 'guest';
-$userId = isset($_SESSION['user_id']) ? (int) $_SESSION['user_id'] : 0;
+$role = 'guest';
+$userId = 0;
 
 // ดึงข้อมูลคำร้องที่มีพิกัดและสถานะ เพื่อแสดงบนแผนที่
-$approved_signs = [];
-if ($role === 'user') {
-    $stmt = $conn->prepare("SELECT id, location_lat, location_lng, sign_type, status FROM sign_requests WHERE user_id = ? AND location_lat IS NOT NULL AND location_lng IS NOT NULL");
-    $stmt->bind_param("i", $userId);
-    $stmt->execute();
-    $result_signs = $stmt->get_result();
-} else {
-    $result_signs = $conn->query("SELECT id, location_lat, location_lng, sign_type, status FROM sign_requests WHERE location_lat IS NOT NULL AND location_lng IS NOT NULL");
-}
+$approved_signs = []; // ว่างเปล่า
+
+// สำหรับผู้ใช้ทั่วไปที่ไม่ได้ล็อกอิน - แสดงหมุดทั้งหมด
+$result_signs = $conn->query("SELECT id, location_lat, location_lng, sign_type, status FROM sign_requests WHERE location_lat IS NOT NULL AND location_lng IS NOT NULL");
 if ($result_signs && $result_signs->num_rows > 0) {
     while ($row = $result_signs->fetch_assoc()) {
         $approved_signs[] = [
@@ -34,23 +26,13 @@ if ($result_signs && $result_signs->num_rows > 0) {
     }
 }
 
-$approved_rows = [];
-if ($role === 'user') {
-    $stmt_rows = $conn->prepare("SELECT r.id, r.sign_type, r.receipt_date, r.description, r.duration_days, u.title_name, u.first_name, u.last_name, u.address, u.phone 
-                                 FROM sign_requests r 
-                                 JOIN users u ON r.user_id = u.id 
-                                 WHERE r.user_id = ? AND r.location_lat IS NOT NULL AND r.location_lng IS NOT NULL
-                                 ORDER BY r.id DESC LIMIT 1000");
-    $stmt_rows->bind_param("i", $userId);
-    $stmt_rows->execute();
-    $res_rows = $stmt_rows->get_result();
-} else {
-    $res_rows = $conn->query("SELECT r.id, r.sign_type, r.receipt_date, r.description, r.duration_days, u.title_name, u.first_name, u.last_name, u.address, u.phone 
+$approved_rows = []; // ว่างเปล่า
+// สำหรับผู้ใช้ทั่วไปที่ไม่ได้ล็อกอิน - แสดงข้อมูลทั้งหมด
+$res_rows = $conn->query("SELECT r.id, r.sign_type, r.receipt_date, r.description, r.duration_days, u.title_name, u.first_name, u.last_name, u.address, u.phone 
                               FROM sign_requests r 
                               JOIN users u ON r.user_id = u.id 
                               WHERE r.location_lat IS NOT NULL AND r.location_lng IS NOT NULL
                               ORDER BY r.id DESC LIMIT 1000");
-}
 if ($res_rows && $res_rows->num_rows > 0) {
     while ($row = $res_rows->fetch_assoc()) {
         $approved_rows[] = [
@@ -153,12 +135,12 @@ if ($res_rows && $res_rows->num_rows > 0) {
 
 <body>
 
-    <?php include './includes/user_navbar.php'; ?>
+    <?php include './includes/navbar.php'; ?>
 
     <div class="container-fluid px-md-5 fade-in-up mt-4">
         <div class="card p-4 fade-in-up full-height-card">
             <h2 class="mb-2">🗺️ แผนที่ข้อมูลพื้นที่ (GIS)</h2>
-            <p class="text-muted mb-4">แสดงขอบเขต ตำแหน่งป้ายที่ได้รับอนุมัติ และเส้นทางถนนในเขต ทม.ศิลา</p>
+            <p class="text-muted mb-4">แสดงขอบเขตเทศบาลเมืองศิลา ตำแหน่งป้ายที่ได้รับอนุมัติ และเส้นทางถนนในพื้นที่</p>
 
             <div class="row g-3">
                 <div class="col-md-6">
@@ -260,6 +242,7 @@ if ($res_rows && $res_rows->num_rows > 0) {
             var approvedSigns = <?php echo json_encode($approved_signs); ?>;
             var approvedList = <?php echo json_encode($approved_rows); ?>;
 
+            // สำหรับผู้ใช้ทั่วไป - แสดงหมุดทั้งหมด
             var markers = L.markerClusterGroup();
             var heat = L.heatLayer(approvedSigns.map(function (s) { return [s.lat, s.lng, 0.6]; }), { radius: 20, blur: 15 });
             var baseLayers = {
