@@ -45,7 +45,7 @@ if (!function_exists('send_status_notification')) {
         }
 
         $to = $request['email'];
-        $subject = "=?UTF-8?B?" . base64_encode("อัปเดตสถานะคำขอติดตั้งป้าย (ID: #{$request_id})") . "?=";
+        $plain_subject = "อัปเดตสถานะคำขอติดตั้งป้าย (ID: #{$request_id})";
         $status_text = get_status_label($request['status']);
 
         $message = "เรียนคุณ {$request['applicant_name']},\n\n";
@@ -55,11 +55,15 @@ if (!function_exists('send_status_notification')) {
         $message .= "http://localhost/Project2026/users/my_request.php\n\n";
         $message .= "ขอบคุณที่ใช้บริการ\nเทศบาลเมืองศิลา";
 
-        $headers = "From: noreply@sila.go.th\r\n";
-        $headers .= "Content-Type: text/plain; charset=UTF-8\r\n";
+        // 2. ส่งอีเมลด้วย SMTPMailer (Direct SSL Socket)
+        require_once 'SMTPMailer.php';
 
-        // 2. ส่งอีเมล
-        $mail_sent = @mail($to, $subject, $message, $headers);
+        // ตั้งค่า Gmail App Password ที่นี่โดยตรง
+        $smtp_user = 'riwlove1230@gmail.com';
+        $smtp_pass = 'wzmiidvidhsbkqcu'; // App Password
+
+        $mailer = new SMTPMailer($smtp_user, $smtp_pass);
+        $mail_sent = $mailer->send($to, $plain_subject, $message, 'เทศบาลเมืองศิลา');
 
         // 3. บันทึก Log
         $log_dir = __DIR__ . "/../logs/";
@@ -69,7 +73,12 @@ if (!function_exists('send_status_notification')) {
         $log_content = "[" . date('Y-m-d H:i:s') . "] ID: #{$request_id}, "
             . "Status: {$request['status']}, "
             . "Email: {$to}, "
-            . "Sent: " . ($mail_sent ? "Yes" : "No") . "\n";
+            . "Sent: " . ($mail_sent ? "Yes (SMTP)" : "No (SMTP Error)") . "\n";
+
+        if (!$mail_sent) {
+            $log_content .= "SMTP Logs:\n" . print_r($mailer->getLogs(), true) . "\n";
+        }
+
         file_put_contents($log_dir . "email_log.txt", $log_content, FILE_APPEND);
 
         return $mail_sent;
