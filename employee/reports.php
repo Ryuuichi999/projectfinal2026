@@ -318,7 +318,7 @@ if (isset($_GET['export']) && $_GET['export'] === 'csv') {
                         </thead>
                         <tbody>
                             <?php while ($exp = $expiring_result->fetch_assoc()):
-                                $days_left = (int) (strtotime($exp['expire_date']) - time()) / 86400;
+                                $days_left = ceil((strtotime($exp['expire_date']) - time()) / 86400);
                                 $badge_class = $days_left <= 7 ? 'expiring-danger' : 'expiring-warning';
                                 ?>
                                 <tr>
@@ -353,8 +353,8 @@ if (isset($_GET['export']) && $_GET['export'] === 'csv') {
     <script>
         // Monthly Chart
         <?php if ($month == 0): ?>
-                const monthlyLabels = [<?php for ($m = 1; $m <= 12; $m++)
-                    echo "'" . $thai_months[$m] . "',"; ?>];
+            const monthlyLabels = [<?php for ($m = 1; $m <= 12; $m++)
+                echo "'" . $thai_months[$m] . "',"; ?>];
             const monthlyTotal = [<?php for ($m = 1; $m <= 12; $m++)
                 echo ($monthly_data[$m]['total'] ?? 0) . ','; ?>];
             const monthlyApproved = [<?php for ($m = 1; $m <= 12; $m++)
@@ -410,16 +410,48 @@ if (isset($_GET['export']) && $_GET['export'] === 'csv') {
             $type_counts[] = $t['cnt'];
         }
         ?>
-            new Chart(document.getElementById('typeChart'), {
-                type: 'doughnut',
+        new Chart(document.getElementById('typeChart'), {
+            type: 'doughnut',
+            data: {
+                labels: <?= json_encode($type_labels) ?>,
+                datasets: [{
+                    data: <?= json_encode($type_counts) ?>,
+                    backgroundColor: [
+                        '#4dc9f6', '#f67019', '#f53794', '#537bc4', '#acc236',
+                        '#166a8f', '#00a950', '#58595b', '#8549ba'
+                    ]
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: {
+                            font: {
+                                size: 11
+                            }
+                        }
+                    }
+                }
+            }
+        });
+
+        // Status Pie (if month view)
+        <?php if ($month > 0): ?>
+            new Chart(document.getElementById('statusChart'), {
+                type: 'pie',
                 data: {
-                    labels: <?= json_encode($type_labels) ?>,
+                    labels: ['รอดำเนินการ', 'รอชำระเงิน', 'อนุมัติ', 'ปฏิเสธ'],
                     datasets: [{
-                        data: <?= json_encode($type_counts) ?>,
-                        backgroundColor: [
-                            '#4dc9f6', '#f67019', '#f53794', '#537bc4', '#acc236',
-                            '#166a8f', '#00a950', '#58595b', '#8549ba'
-                        ]
+                        data: [
+                            <?= $stats['pending'] ?>,
+                            <?= $stats['waiting_payment'] ?>,
+                            <?= $stats['approved'] ?>,
+                            <?= $stats['rejected'] ?>
+                        ],
+                        backgroundColor: ['#ffc107', '#17a2b8', '#28a745', '#dc3545']
                     }]
                 },
                 options: {
@@ -427,43 +459,11 @@ if (isset($_GET['export']) && $_GET['export'] === 'csv') {
                     maintainAspectRatio: false,
                     plugins: {
                         legend: {
-                            position: 'bottom',
-                            labels: {
-                                font: {
-                                    size: 11
-                                }
-                            }
+                            position: 'bottom'
                         }
                     }
                 }
             });
-
-        // Status Pie (if month view)
-        <?php if ($month > 0): ?>
-                new Chart(document.getElementById('statusChart'), {
-                    type: 'pie',
-                    data: {
-                        labels: ['รอดำเนินการ', 'รอชำระเงิน', 'อนุมัติ', 'ปฏิเสธ'],
-                        datasets: [{
-                            data: [
-                                <?= $stats['pending'] ?>,
-                                <?= $stats['waiting_payment'] ?>,
-                                <?= $stats['approved'] ?>,
-                                <?= $stats['rejected'] ?>
-                            ],
-                            backgroundColor: ['#ffc107', '#17a2b8', '#28a745', '#dc3545']
-                        }]
-                    },
-                    options: {
-                        responsive: true,
-                        maintainAspectRatio: false,
-                        plugins: {
-                            legend: {
-                                position: 'bottom'
-                            }
-                        }
-                    }
-                });
         <?php endif; ?>
     </script>
 </body>
