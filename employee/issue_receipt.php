@@ -2,68 +2,30 @@
 session_start();
 require '../includes/db.php';
 require '../includes/email_helper.php';
+require '../includes/receipt_helper.php';
+require '../includes/settings_helper.php';
 
 if (!isset($_SESSION['user_id']) || ($_SESSION['role'] !== 'admin' && $_SESSION['role'] !== 'employee')) {
     header("Location: ../login.php");
     exit;
 }
+// ... (lines 9-47 skipped)
+// Ensure columns exist (via helper)
+ensureReceiptColumnsExist($conn);
+ensureSettingsTable($conn); // Lazy init
 
-if (!isset($_GET['id'])) {
-    header("Location: request_list.php");
-    exit;
-}
+// ดึงชื่อผู้ลงนาม (Official Signer) จากการตั้งค่า
+$issuer_name_default = getSetting($conn, 'receipt_signer_name', '');
 
-$request_id = $_GET['id'];
-$sql = "SELECT r.*, u.citizen_id, u.title_name, u.first_name, u.last_name, u.address as user_address, u.phone 
-        FROM sign_requests r 
-        JOIN users u ON r.user_id = u.id 
-        WHERE r.id = ?";
-$stmt = $conn->prepare($sql);
-$stmt->bind_param("i", $request_id);
-$stmt->execute();
-$result = $stmt->get_result();
-
-if ($result->num_rows === 0) {
-    echo "ไม่พบข้อมูลคำขอ";
-    exit;
-}
-
-$request = $result->fetch_assoc();
-
-// --- Ensure DB column exists (receipt_issued_by) ---
-function ensureColumnExists($conn, $table, $column, $definition)
-{
-    $dbRes = $conn->query("SELECT DATABASE() AS db_name");
-    $dbRow = $dbRes ? $dbRes->fetch_assoc() : null;
-    $dbName = $dbRow ? $dbRow['db_name'] : null;
-    if (!$dbName) {
-        return;
+// ถ้าไม่ได้ตั้งค่าไว้ ให้ใช้ชื่อพนักงานที่ login อยู่
+if (empty($issuer_name_default)) {
+    $stmt_emp = $conn->prepare("SELECT title_name, first_name, last_name FROM users WHERE id = ? LIMIT 1");
+    $stmt_emp->bind_param("i", $_SESSION['user_id']);
+    $stmt_emp->execute();
+    $emp = $stmt_emp->get_result()->fetch_assoc();
+    if ($emp) {
+        $issuer_name_default = trim(($emp['title_name'] ?? '') . ($emp['first_name'] ?? '') . ' ' . ($emp['last_name'] ?? ''));
     }
-
-    $sql = "SELECT COUNT(*) AS cnt
-            FROM INFORMATION_SCHEMA.COLUMNS
-            WHERE TABLE_SCHEMA = ?
-              AND TABLE_NAME = ?
-              AND COLUMN_NAME = ?";
-    $stmt = $conn->prepare($sql);
-    $stmt->bind_param("sss", $dbName, $table, $column);
-    $stmt->execute();
-    $cnt = (int) ($stmt->get_result()->fetch_assoc()['cnt'] ?? 0);
-    if ($cnt === 0) {
-        $conn->query("ALTER TABLE `$table` ADD COLUMN `$column` $definition");
-    }
-}
-
-ensureColumnExists($conn, 'sign_requests', 'receipt_issued_by', "VARCHAR(255) NULL");
-
-// ดึงชื่อพนักงาน (ผู้ออกใบเสร็จ) จาก session
-$issuer_name_default = '';
-$stmt_emp = $conn->prepare("SELECT title_name, first_name, last_name FROM users WHERE id = ? LIMIT 1");
-$stmt_emp->bind_param("i", $_SESSION['user_id']);
-$stmt_emp->execute();
-$emp = $stmt_emp->get_result()->fetch_assoc();
-if ($emp) {
-    $issuer_name_default = trim(($emp['title_name'] ?? '') . ($emp['first_name'] ?? '') . ' ' . ($emp['last_name'] ?? ''));
 }
 
 // ตรวจสอบว่าสถานะเป็น waiting_receipt
@@ -72,10 +34,8 @@ if ($request['status'] !== 'waiting_receipt') {
     exit;
 }
 
-// Auto-generate Receipt Number (Example: RCPT-01362/68)
-$current_year_th = date('Y') + 543;
-$last_2_digits = substr($current_year_th, -2);
-$receipt_number = "RCPT-01362/{$last_2_digits}";
+// Auto-generate Receipt Number
+$receipt_number = generateNextReceiptNumber($conn);
 
 if (isset($_POST['issue_receipt_confirm'])) {
     $receipt_no = $_POST['receipt_no'];

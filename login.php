@@ -11,8 +11,10 @@ if (isset($_POST['login'])) {
         $_SESSION['user_id'] = $user['id'];
         $_SESSION['role'] = $user['role'];
 
-        if ($user['role'] === 'admin' || $user['role'] === 'employee') {
+        if ($user['role'] === 'admin') {
             $redirect_to = "admin/dashboard.php";
+        } elseif ($user['role'] === 'employee') {
+            $redirect_to = "employee/dashboard.php";
         } else {
             $redirect_to = "users/index.php";
         }

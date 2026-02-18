@@ -2,6 +2,7 @@
 require '../includes/auth.php'; // Session check
 require '../includes/db.php';
 require '../includes/thaibaht.php';
+require '../includes/settings_helper.php';
 
 if (!isset($_GET['id'])) {
     die("Invalid Request ID");
@@ -274,11 +275,28 @@ function getThaiDate($date)
                 <div
                     style="display: flex; align-items: flex-end; justify-content: center; gap: 15px; margin-bottom: 5px;">
                     <span>(ลงชื่อ)</span>
-                    <img src="../image/ลายเซ็น2.png" style="height: 70px;">
+                    <?php
+                    $sig_path = getSetting($conn, 'receipt_signature_path', 'image/ลายเซ็น2.png');
+                    // Check if file exists relative to this file (users/)
+                    // DB stores relative to root: image/.. or uploads/..
+                    // So we need ../$sig_path
+                    $full_sig_path = "../" . $sig_path;
+                    if (!file_exists($full_sig_path)) {
+                        // Fallback to default if config points to missing file
+                        $full_sig_path = "../image/ลายเซ็น2.png";
+                    }
+                    ?>
+                    <?php if (file_exists($full_sig_path)): ?>
+                        <img src="<?= htmlspecialchars($full_sig_path) ?>" style="height: 70px;">
+                    <?php else: ?>
+                        <div
+                            style="height: 70px; width: 100px; display: flex; align-items: center; justify-content: center; border-bottom: 1px dotted #000;">
+                            (ไม่มีลายเซ็น)</div>
+                    <?php endif; ?>
                     <span>ผู้รับเงิน</span>
                 </div>
                 (<?= htmlspecialchars($request['receipt_issued_by'] ?? '........................................................') ?>)<br>
-                ตำแหน่ง เจ้าพนักงานธุรการ
+                ตำแหน่ง <?= htmlspecialchars(getSetting($conn, 'receipt_signer_position', 'เจ้าพนักงานธุรการ')) ?>
             </div>
         </div>
     </div>

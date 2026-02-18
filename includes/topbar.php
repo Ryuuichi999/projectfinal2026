@@ -210,7 +210,8 @@ if ($role === 'user' && $userId) {
                     <hr class="dropdown-divider">
                 </li>
                 <li><a class="dropdown-item text-center text-primary small py-1"
-                        href="/Project2026/employee/request_list.php">ดูรายการทั้งหมด</a></li>
+                        href="<?= ($role === 'user' ? '/Project2026/users/my_request.php' : '/Project2026/employee/request_list.php') ?>">ดูรายการทั้งหมด</a>
+                </li>
             </ul>
         </div>
 
@@ -230,7 +231,8 @@ if ($role === 'user' && $userId) {
                 <i class="bi bi-chevron-down small text-muted"></i>
             </div>
             <ul class="dropdown-menu dropdown-menu-end shadow-lg border-0 p-2 mt-2" style="border-radius: 12px;">
-                <li><a class="dropdown-item rounded-3" href="/Project2026/admin/dashboard.php"><i
+                <li><a class="dropdown-item rounded-3"
+                        href="<?= ($role === 'employee' ? '/Project2026/employee/dashboard.php' : '/Project2026/admin/dashboard.php') ?>"><i
                             class="bi bi-speedometer2 me-2"></i>แดชบอร์ด</a></li>
                 <?php if ($role === 'admin'): ?>
                     <li><a class="dropdown-item rounded-3" href="/Project2026/admin/users_list.php"><i

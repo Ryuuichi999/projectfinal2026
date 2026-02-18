@@ -7,23 +7,33 @@
 
         <?php if (isset($_SESSION['role']) && ($_SESSION['role'] === 'admin' || $_SESSION['role'] === 'employee')): ?>
             <!-- เมนูสำหรับผู้ดูแลระบบ (Admin) และพนักงาน (Employee) -->
-            <a href="/Project2026/admin/dashboard.php"
+            <?php
+            $dashboard_link = ($_SESSION['role'] === 'admin') ? '/Project2026/admin/dashboard.php' : '/Project2026/employee/dashboard.php';
+            ?>
+            <a href="<?= $dashboard_link ?>"
                 class="<?= basename($_SERVER['PHP_SELF']) == 'dashboard.php' ? 'active' : '' ?>">
                 📊 ภาพรวมระบบ
             </a>
+
             <?php if ($_SESSION['role'] === 'admin'): ?>
                 <a href="/Project2026/admin/users_list.php"
                     class="<?= basename($_SERVER['PHP_SELF']) == 'users_list.php' ? 'active' : '' ?>">
                     👥 จัดการผู้ใช้งาน
                 </a>
             <?php endif; ?>
+
             <?php if ($_SESSION['role'] === 'employee'): ?>
-                <a href="/Project2026/employee/request_list.php"
-                    class="<?= (strpos($_SERVER['PHP_SELF'], 'employee') !== false) ? 'active' : '' ?>">
+                        <a href="/Project2026/employee/request_list.php"
+                    class="<?= (strpos($_SERVER['PHP_SELF'], 'employee/request_list.php') !== false) ? 'active' : '' ?>">
                     📝 รายการคำขอ
                 </a>
-                <a href="/Project2026/employee/map.php" class="<?= (strpos($_SERVER['PHP_SELF'], 'employee/map.php') !== false) ? 'active' : '' ?>">
+                <a href="/Project2026/employee/map.php"
+                    class="<?= (strpos($_SERVER['PHP_SELF'], 'employee/map.php') !== false) ? 'active' : '' ?>">
                     🗺️ แผนที่
+                </a>
+                <a href="/Project2026/employee/settings.php"
+                    class="<?= basename($_SERVER['PHP_SELF']) == 'settings.php' ? 'active' : '' ?>">
+                    ⚙️ ตั้งค่าใบเสร็จ
                 </a>
             <?php endif; ?>
         <?php else: ?>
@@ -40,7 +50,8 @@
                 class="<?= basename($_SERVER['PHP_SELF']) == 'my_request.php' ? 'active' : '' ?>">
                 📄 สถานะคำขอ
             </a>
-            <a href="/Project2026/map_public.php" class="<?= basename($_SERVER['PHP_SELF']) == 'map_public.php' ? 'active' : '' ?>">
+            <a href="/Project2026/map_public.php"
+                class="<?= basename($_SERVER['PHP_SELF']) == 'map_public.php' ? 'active' : '' ?>">
                 🗺️ แผนที่
             </a>
         <?php endif; ?>

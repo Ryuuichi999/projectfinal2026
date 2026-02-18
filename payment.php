@@ -1,11 +1,14 @@
 <?php
 require './includes/db.php';
 require_once './includes/email_helper.php';
+require_once './includes/receipt_helper.php';
+require_once './includes/settings_helper.php';
 
 if (!isset($_SESSION['user_id'])) {
     header("Location: login.php");
     exit;
 }
+
 
 if (!isset($_GET['id'])) {
     header("Location: users/my_request.php");
@@ -90,10 +93,19 @@ if (isset($_POST['upload_slip'])) {
                         $stmt_doc->bind_param("isss", $request_id, $doc_type, $dest_path, $transRef);
 
                         if ($stmt_doc->execute()) {
-                            // อัปเดตสถานะคำขอ
-                            $update_sql = "UPDATE sign_requests SET status = 'waiting_receipt' WHERE id = ?";
+                            // Auto-generate Receipt Number & Approve immediately
+                            // Ensure Settings Table exists (lazy init)
+                            ensureSettingsTable($conn);
+
+                            $receipt_no = generateNextReceiptNumber($conn);
+                            $receipt_date = date('Y-m-d');
+                            $receipt_issued_by = getSetting($conn, 'receipt_signer_name', 'ระบบอัตโนมัติ (ชำระเงินออนไลน์)');
+
+                            $update_sql = "UPDATE sign_requests 
+                                           SET status = 'approved', receipt_no = ?, receipt_date = ?, receipt_issued_by = ? 
+                                           WHERE id = ?";
                             $stmt_update = $conn->prepare($update_sql);
-                            $stmt_update->bind_param("i", $request_id);
+                            $stmt_update->bind_param("sssi", $receipt_no, $receipt_date, $receipt_issued_by, $request_id);
 
                             if ($stmt_update->execute()) {
                                 // ส่ง email แจ้งเตือนสถานะ
@@ -104,7 +116,7 @@ if (isset($_POST['upload_slip'])) {
 
                                 <head>
                                     <meta charset="UTF-8">
-                                    <title>สำเร็จ</title>
+                                    <title>ชำระเงินสำเร็จ</title>
                                     <?php include './includes/header.php'; ?>
                                 </head>
 
@@ -113,10 +125,10 @@ if (isset($_POST['upload_slip'])) {
                                         document.addEventListener('DOMContentLoaded', function () {
                                             Swal.fire({
                                                 icon: 'success',
-                                                title: 'ตรวจสอบสลิปสำเร็จ',
-                                                html: 'ยอดเงิน: <?= number_format($apiResult['amount'], 2) ?> บาท<br>ผู้โอน: <?= $apiResult['sender_name'] ?>',
-                                                showConfirmButton: false,
-                                                timer: 2000
+                                                title: 'ชำระเงินสำเร็จ!',
+                                                html: 'ระบบตรวจสอบยอดเงินเรียบร้อยแล้ว<br>ออกใบเสร็จเลขที่: <strong><?= $receipt_no ?></strong><br>คุณสามารถดาวน์โหลดใบเสร็จได้ที่หน้ารายละเอียด',
+                                                showConfirmButton: true,
+                                                confirmButtonText: 'ตกลง'
                                             }).then(() => {
                                                 window.location.href = 'users/my_request.php';
                                             });
@@ -129,7 +141,7 @@ if (isset($_POST['upload_slip'])) {
                                 <?php
                                 exit;
                             } else {
-                                $error = "เกิดข้อผิดพลาดในการอัปเดตสถานะ";
+                                $error = "เกิดข้อผิดพลาดในการอัปเดตสถานะ: " . $conn->error;
                             }
                         } else {
                             $error = "เกิดข้อผิดพลาดในการบันทึกข้อมูล";
