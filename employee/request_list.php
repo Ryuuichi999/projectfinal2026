@@ -1,7 +1,7 @@
 <?php
-session_start();
 require '../includes/db.php';
 require '../includes/email_helper.php';
+require_once '../includes/status_helper.php';
 
 // ตรวจสอบสิทธิ์ Admin
 // ตรวจสอบสิทธิ์ Admin หรือ Employee
@@ -58,27 +58,7 @@ while ($row_auto = $result->fetch_assoc()) {
 // Reset result pointer
 $result->data_seek(0);
 
-function get_status_badge($status)
-{
-    switch ($status) {
-        case 'pending':
-            return '<span class="badge bg-warning text-dark">⏳ รอพิจารณา</span>';
-        case 'reviewing':
-            return '<span class="badge bg-primary">🔎 กำลังพิจารณา</span>';
-        case 'need_documents':
-            return '<span class="badge bg-info">📑 ขอเอกสารเพิ่ม</span>';
-        case 'waiting_payment':
-            return '<span class="badge bg-danger">💰 รอชำระเงิน</span>';
-        case 'waiting_receipt':
-            return '<span class="badge bg-info">📄 รอออกใบเสร็จ</span>';
-        case 'approved':
-            return '<span class="badge bg-success">✅ อนุมัติ</span>';
-        case 'rejected':
-            return '<span class="badge bg-secondary">❌ ไม่ผ่าน</span>';
-        default:
-            return '<span class="badge bg-light text-dark">' . $status . '</span>';
-    }
-}
+
 ?>
 
 <!DOCTYPE html>
@@ -109,7 +89,12 @@ function get_status_badge($status)
     <?php include '../includes/topbar.php'; ?>
 
     <div class="content fade-in-up">
-        <h2 class="mb-4">📝 รายการคำขออนุญาตติดตั้งป้าย</h2>
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2 class="mb-0">📝 รายการคำขออนุญาตติดตั้งป้าย</h2>
+            <a href="export_csv.php" class="btn btn-outline-success">
+                <i class="bi bi-file-earmark-spreadsheet"></i> Export CSV
+            </a>
+        </div>
 
         <?php if (isset($success)): ?>
             <script>
@@ -183,13 +168,13 @@ function get_status_badge($status)
                                                 <i class="bi bi-check-circle"></i> อนุมัติ
                                             </a>
                                             <!-- Reject Button -->
-                                            <form method="post" onsubmit="return confirmReject(event, this);"
-                                                class="m-0 d-inline-flex">
+                                            <button type="button" class="btn btn-sm btn-danger action-btn" title="ปฏิเสธ"
+                                                onclick="confirmReject(<?= $row['id'] ?>)">
+                                                <i class="bi bi-x-circle"></i> ปฏิเสธ
+                                            </button>
+                                            <form id="rejectForm<?= $row['id'] ?>" method="post" class="d-none">
                                                 <input type="hidden" name="request_id" value="<?= $row['id'] ?>">
                                                 <input type="hidden" name="action" value="reject">
-                                                <button class="btn btn-sm btn-danger action-btn" type="submit" title="ปฏิเสธ">
-                                                    <i class="bi bi-x-circle"></i> ปฏิเสธ
-                                                </button>
                                             </form>
 
                                         <?php elseif ($row['status'] == 'waiting_payment'): ?>
@@ -324,6 +309,24 @@ function get_status_badge($status)
                 new bootstrap.Dropdown(dropdownToggleEl);
             });
         });
+
+        // SweetAlert ยืนยันก่อนปฏิเสธ
+        function confirmReject(requestId) {
+            Swal.fire({
+                title: 'ยืนยันการปฏิเสธ?',
+                text: 'คุณต้องการปฏิเสธคำขอ #' + requestId + ' หรือไม่?',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#d33',
+                cancelButtonColor: '#6c757d',
+                confirmButtonText: '<i class="bi bi-x-circle"></i> ปฏิเสธ',
+                cancelButtonText: 'ยกเลิก'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    document.getElementById('rejectForm' + requestId).submit();
+                }
+            });
+        }
     </script>
 </body>
 

@@ -151,12 +151,9 @@ if (!function_exists('send_status_notification')) {
 
         // 2. ส่งอีเมลด้วย SMTPMailer (Direct SSL Socket)
         require_once 'SMTPMailer.php';
+        require_once __DIR__ . '/config.php';
 
-        // ตั้งค่า Gmail App Password ที่นี่โดยตรง
-        $smtp_user = 'riwlove1230@gmail.com';
-        $smtp_pass = 'wzmiidvidhsbkqcu'; // App Password
-
-        $mailer = new SMTPMailer($smtp_user, $smtp_pass);
+        $mailer = new SMTPMailer(SMTP_USER, SMTP_PASS);
         // Param 5 = true (HTML Mode)
         $mail_sent = $mailer->send($to, $plain_subject, $message, 'เทศบาลเมืองศิลา', true);
 

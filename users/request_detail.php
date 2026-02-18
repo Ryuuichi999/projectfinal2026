@@ -1,5 +1,6 @@
 <?php
 require '../includes/db.php';
+require_once '../includes/status_helper.php';
 
 // อนุญาตให้เข้าถึงได้ถ้ามี Login
 if (!isset($_SESSION['user_id'])) {
@@ -42,45 +43,6 @@ $stmt_docs = $conn->prepare($sql_docs);
 $stmt_docs->bind_param("i", $request_id);
 $stmt_docs->execute();
 $result_docs = $stmt_docs->get_result();
-
-// ฟังก์ชันแสดงสถานะ (เหมือนใน my_request.php)
-function get_status_badge($status)
-{
-    switch ($status) {
-        case 'pending':
-            $class = 'warning';
-            $text = '⏳ รอกำลังพิจารณา';
-            break;
-        case 'reviewing':
-            $class = 'primary';
-            $text = '🔎 กำลังพิจารณา';
-            break;
-        case 'need_documents':
-            $class = 'info';
-            $text = '📑 ขอเอกสารเพิ่ม';
-            break;
-        case 'waiting_payment':
-            $class = 'danger';
-            $text = '⚠️ รอชำระเงิน';
-            break;
-        case 'waiting_receipt':
-            $class = 'info';
-            $text = '🧾 รอออกใบเสร็จ';
-            break;
-        case 'approved':
-            $class = 'success';
-            $text = '✅ อนุมัติแล้ว';
-            break;
-        case 'rejected':
-            $class = 'secondary';
-            $text = '❌ ไม่อนุมัติ';
-            break;
-        default:
-            $class = 'info';
-            $text = $status;
-    }
-    return "<span class='badge bg-$class'>$text</span>";
-}
 ?>
 
 <!DOCTYPE html>

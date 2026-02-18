@@ -1,7 +1,7 @@
 <?php
-session_start();
 require '../includes/db.php';
 require '../includes/email_helper.php';
+require_once '../includes/status_helper.php';
 
 if (!isset($_SESSION['user_id']) || ($_SESSION['role'] !== 'admin' && $_SESSION['role'] !== 'employee')) {
     header("Location: ../login.php");
@@ -92,27 +92,7 @@ $stmt_docs->bind_param("i", $request_id);
 $stmt_docs->execute();
 $result_docs = $stmt_docs->get_result();
 
-function get_status_badge($status)
-{
-    switch ($status) {
-        case 'pending':
-            return "<span class='badge bg-warning text-dark'>⏳ รอพิจารณา</span>";
-        case 'reviewing':
-            return "<span class='badge bg-primary'>🔎 กำลังพิจารณา</span>";
-        case 'need_documents':
-            return "<span class='badge bg-info'>📑 ขอเอกสารเพิ่ม</span>";
-        case 'waiting_payment':
-            return "<span class='badge bg-danger'>⚠️ รอชำระเงิน</span>";
-        case 'waiting_receipt':
-            return "<span class='badge bg-info'>🧾 รอออกใบเสร็จ</span>";
-        case 'approved':
-            return "<span class='badge bg-success'>✅ อนุมัติแล้ว</span>";
-        case 'rejected':
-            return "<span class='badge bg-secondary'>❌ ไม่อนุมัติ</span>";
-        default:
-            return "<span class='badge bg-light text-dark'>$status</span>";
-    }
-}
+
 ?>
 <!DOCTYPE html>
 <html lang="th">

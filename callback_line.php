@@ -1,10 +1,8 @@
 <?php
-session_start();
 require 'includes/db.php';
+require_once 'includes/config.php';
 
-define('LINE_LOGIN_CHANNEL_ID', '2008891589');
-define('LINE_LOGIN_CHANNEL_SECRET', '18d3225d0acdbfb87a3671037ea27d90');
-define('LINE_LOGIN_CALLBACK_URL', 'http://localhost/Project2026/callback_line.php');
+// 1. กรณีได้รับ Code จาก LINE
 
 // 1. กรณีได้รับ Code จาก LINE
 if (isset($_GET['code'])) {

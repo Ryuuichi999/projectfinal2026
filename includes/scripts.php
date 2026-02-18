@@ -14,3 +14,27 @@
 <div id="page-loader">
     <div class="loader-spinner"></div>
 </div>
+
+<!-- Global: Loading state for form submit buttons -->
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        document.querySelectorAll('form').forEach(function (form) {
+            form.addEventListener('submit', function () {
+                var btn = form.querySelector('button[type="submit"], button[name="submit"]');
+                if (btn && !btn.disabled) {
+                    var originalHTML = btn.innerHTML;
+                    // Defer disable so browser captures form data (including button name) first
+                    setTimeout(function () {
+                        btn.disabled = true;
+                        btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> กำลังดำเนินการ...';
+                        // Re-enable after 8s fallback (in case submit fails)
+                        setTimeout(function () {
+                            btn.disabled = false;
+                            btn.innerHTML = originalHTML;
+                        }, 8000);
+                    }, 0);
+                }
+            });
+        });
+    });
+</script>

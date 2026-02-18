@@ -1,5 +1,6 @@
 <?php
 require './includes/db.php';
+require_once './includes/email_helper.php';
 
 if (!isset($_SESSION['user_id'])) {
     header("Location: login.php");
@@ -58,7 +59,7 @@ if (isset($_POST['upload_slip'])) {
         if (in_array($ext, $allowed)) {
             // Check Slip with Thunder API
             $filePath = $_FILES['slip_file']['tmp_name'];
-            $token = '1a4e92a3-11d0-400e-9079-aa374779682a'; // Provided API Key
+            $token = THUNDER_API_TOKEN;
 
             $apiResult = checkSlip($filePath, $token);
 
@@ -95,6 +96,8 @@ if (isset($_POST['upload_slip'])) {
                             $stmt_update->bind_param("i", $request_id);
 
                             if ($stmt_update->execute()) {
+                                // ส่ง email แจ้งเตือนสถานะ
+                                send_status_notification($request_id, $conn);
                                 ?>
                                 <!DOCTYPE html>
                                 <html lang="th">

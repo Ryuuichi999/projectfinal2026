@@ -270,7 +270,9 @@ if ($userId && $role === 'user') {
                     <ul class="dropdown-menu dropdown-menu-end shadow-lg border-0 p-2 mt-2"
                         style="border-radius: 12px;">
                         <li><a class="dropdown-item rounded-3" href="/Project2026/users/index.php"><i
-                                    class="bi bi-person me-2"></i>ข้อมูลส่วนตัว</a></li>
+                                    class="bi bi-speedometer2 me-2"></i>แดชบอร์ด</a></li>
+                        <li><a class="dropdown-item rounded-3" href="/Project2026/users/profile.php"><i
+                                    class="bi bi-person-gear me-2"></i>แก้ไขโปรไฟล์</a></li>
                         <li>
                             <hr class="dropdown-divider">
                         </li>
