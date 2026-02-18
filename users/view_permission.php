@@ -149,11 +149,12 @@ function toThaiNum($number)
         }
 
         .indent {
-            text-indent: 2.0cm;
+            padding-left: 3.0cm;
+            text-indent: -1.0cm;
         }
 
         .indent-2 {
-            padding-left: 2.0cm;
+            padding-left: 3.0cm;
         }
 
         /* Justify content like official docs */
@@ -184,15 +185,23 @@ function toThaiNum($number)
 
 <body>
 
-    <div class="no-print text-center py-3">
+    <div class="no-print" style="text-align: center; padding: 10px; display: flex; justify-content: center; gap: 10px;">
+        <button onclick="downloadPDF()"
+            style="padding: 10px 20px; font-size: 14px; cursor: pointer; background: #28a745; color: white; border: none; border-radius: 5px;">
+            ⬇ ดาวน์โหลด PDF
+        </button>
         <button onclick="window.print()"
-            style="padding: 10px 20px; font-size: 16px; cursor: pointer;">พิมพ์เอกสาร</button>
+            style="padding: 10px 20px; font-size: 14px; cursor: pointer; background: #007bff; color: white; border: none; border-radius: 5px;">
+            🖨 พิมพ์เอกสาร
+        </button>
     </div>
 
     <div class="page">
         <!-- รหัสแบบฟอร์ม (ขวาบน) -->
         <div class="text-right" style="position: absolute; top: 15mm; right: 20mm; font-size: 14pt;">
             แบบ ร.ส. ๒
+            <div id="qrcode" style="margin-top: 10px; display: flex; justify-content: flex-end;"></div>
+            <div style="font-size: 10pt; margin-top: 5px; color: #666;">สแกนเพื่อตรวจสอบสถานะ</div>
         </div>
 
         <div class="header-garuda">
@@ -300,6 +309,47 @@ function toThaiNum($number)
 
     </div>
 
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            var permitUrl = "http://" + window.location.host + "/Project2026/check_permit.php?id=<?= $request['id'] ?>";
+            new QRCode(document.getElementById("qrcode"), {
+                text: permitUrl,
+                width: 70,
+                height: 70
+            });
+        });
+    </script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <script>
+        function downloadPDF() {
+            const element = document.querySelector('.page');
+            const origMargin = element.style.margin;
+            element.style.margin = '0';
+            element.style.height = '297mm';
+            element.style.overflow = 'hidden';
+
+            const opt = {
+                margin: 0,
+                filename: 'permission_<?= str_replace('/', '-', $request['permit_no']) ?>.pdf',
+                image: { type: 'jpeg', quality: 0.98 },
+                html2canvas: {
+                    scale: 2,
+                    useCORS: true,
+                    scrollY: 0,
+                    width: element.scrollWidth,
+                    height: element.scrollHeight
+                },
+                jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+            };
+
+            html2pdf().set(opt).from(element).save().then(function() {
+                element.style.margin = origMargin;
+                element.style.height = '';
+                element.style.overflow = '';
+            });
+        }
+    </script>
 </body>
 
 </html>

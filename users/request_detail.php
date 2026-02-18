@@ -166,6 +166,29 @@ $result_docs = $stmt_docs->get_result();
 
                 <!-- ไฟล์เอกสาร -->
                 <div class="col-md-4">
+                    <!-- เอกสารราชการ (ใบอนุญาต/ใบเสร็จ) -->
+                    <?php if ($request['status'] === 'approved'): ?>
+                        <div class="card p-4 fade-in-up mb-4 border-success shadow-sm">
+                            <div class="text-center mb-3">
+                                <i class="bi bi-check-circle-fill text-success fs-1"></i>
+                                <h5 class="text-success mt-2">อนุมัติแล้ว</h5>
+                            </div>
+                            <div class="d-grid gap-2">
+                                <a href="view_permission.php?id=<?= $request['id'] ?>" target="_blank"
+                                    class="btn btn-success">
+                                    <i class="bi bi-file-earmark-check"></i> ดูหนังสืออนุญาต
+                                </a>
+                                <a href="view_sticker.php?id=<?= $request['id'] ?>" target="_blank" class="btn btn-warning">
+                                    <i class="bi bi-sticky-fill"></i> พิมพ์สติ๊กเกอร์ติดป้าย
+                                </a>
+                                <a href="view_receipt.php?id=<?= $request['id'] ?>" target="_blank"
+                                    class="btn btn-outline-success">
+                                    <i class="bi bi-receipt"></i> ดูใบเสร็จรับเงิน
+                                </a>
+                            </div>
+                        </div>
+                    <?php endif; ?>
+
                     <div class="card p-4 fade-in-up delay-200">
                         <h4 class="text-success mb-3">📁 เอกสารแนบ</h4>
                         <?php if ($request['status'] === 'need_documents'): ?>

@@ -2,7 +2,6 @@
 require '../includes/auth.php'; // Session check
 require '../includes/db.php';
 require '../includes/thaibaht.php';
-require '../includes/settings_helper.php';
 
 if (!isset($_GET['id'])) {
     die("Invalid Request ID");
@@ -73,19 +72,27 @@ function getThaiDate($date)
         @media print {
             body {
                 margin: 0;
+                padding: 0;
                 background: white;
             }
 
             .page {
-                width: 100%;
+                width: 210mm;
+                height: 297mm;
                 margin: 0;
-                padding: 10mm;
+                padding: 15mm 20mm;
                 box-shadow: none;
                 border: none;
+                overflow: hidden;
             }
 
             .no-print {
                 display: none !important;
+            }
+
+            @page {
+                size: A4;
+                margin: 0;
             }
         }
 
@@ -189,8 +196,15 @@ function getThaiDate($date)
 </head>
 
 <body>
-    <div class="no-print" style="text-align: center; padding: 10px;">
-        <button onclick="window.print()" style="padding: 10px 20px;">พิมพ์ใบเสร็จ</button>
+    <div class="no-print" style="text-align: center; padding: 10px; display: flex; justify-content: center; gap: 10px;">
+        <button onclick="downloadPDF()"
+            style="padding: 10px 20px; font-size: 14px; cursor: pointer; background: #28a745; color: white; border: none; border-radius: 5px;">
+            ⬇ ดาวน์โหลด PDF
+        </button>
+        <button onclick="window.print()"
+            style="padding: 10px 20px; font-size: 14px; cursor: pointer; background: #007bff; color: white; border: none; border-radius: 5px;">
+            🖨 พิมพ์ใบเสร็จ
+        </button>
     </div>
 
     <div class="page">
@@ -245,7 +259,7 @@ function getThaiDate($date)
                     <td></td>
                 </tr>
                 <!-- Padding rows to fill space -->
-                <tr style="height: 100px;">
+                <tr style="height: 60px;">
                     <td></td>
                     <td></td>
                     <td></td>
@@ -275,32 +289,50 @@ function getThaiDate($date)
                 <div
                     style="display: flex; align-items: flex-end; justify-content: center; gap: 15px; margin-bottom: 5px;">
                     <span>(ลงชื่อ)</span>
-                    <?php
-                    $sig_path = getSetting($conn, 'receipt_signature_path', 'image/ลายเซ็น2.png');
-                    // Check if file exists relative to this file (users/)
-                    // DB stores relative to root: image/.. or uploads/..
-                    // So we need ../$sig_path
-                    $full_sig_path = "../" . $sig_path;
-                    if (!file_exists($full_sig_path)) {
-                        // Fallback to default if config points to missing file
-                        $full_sig_path = "../image/ลายเซ็น2.png";
-                    }
-                    ?>
-                    <?php if (file_exists($full_sig_path)): ?>
-                        <img src="<?= htmlspecialchars($full_sig_path) ?>" style="height: 70px;">
-                    <?php else: ?>
-                        <div
-                            style="height: 70px; width: 100px; display: flex; align-items: center; justify-content: center; border-bottom: 1px dotted #000;">
-                            (ไม่มีลายเซ็น)</div>
-                    <?php endif; ?>
+                    <img src="../image/ลายเซ็น2.png" style="height: 70px;">
                     <span>ผู้รับเงิน</span>
                 </div>
                 (<?= htmlspecialchars($request['receipt_issued_by'] ?? '........................................................') ?>)<br>
-                ตำแหน่ง <?= htmlspecialchars(getSetting($conn, 'receipt_signer_position', 'เจ้าพนักงานธุรการ')) ?>
+                ตำแหน่ง เจ้าพนักงานธุรการ
             </div>
         </div>
     </div>
-    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <script>
+        function downloadPDF() {
+            const element = document.querySelector('.page');
+            // Save & temporarily reset styles for clean capture
+            const origMargin = element.style.margin;
+            const origMinHeight = element.style.minHeight;
+            element.style.margin = '0';
+            element.style.minHeight = '297mm';
+            element.style.height = '297mm';
+            element.style.overflow = 'hidden';
+
+            const opt = {
+                margin: 0,
+                filename: 'receipt_<?= $request['receipt_no'] ?>.pdf',
+                image: { type: 'jpeg', quality: 0.98 },
+                html2canvas: {
+                    scale: 2,
+                    useCORS: true,
+                    scrollY: 0,
+                    width: element.scrollWidth,
+                    height: element.scrollHeight
+                },
+                jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+            };
+
+            html2pdf().set(opt).from(element).save().then(function() {
+                // Restore
+                element.style.margin = origMargin;
+                element.style.minHeight = origMinHeight;
+                element.style.height = '';
+                element.style.overflow = '';
+            });
+        }
+    </script>
 </body>
 
 </html>
