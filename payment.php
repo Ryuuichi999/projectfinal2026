@@ -230,56 +230,51 @@ $qr_url = "https://promptpay.io/{$promptpay_id}/{$amount}.png";
 
 <body>
 
-    <?php include './includes/sidebar.php'; ?>
+    <?php include './includes/user_navbar.php'; ?>
 
-    <div class="content">
-        <div class="container-fluid" style="max-width: 800px;">
-            <div class="card p-4 fade-in-up">
-                <h2 class="text-center mb-4">💳 ชำระค่าธรรมเนียมคำขอ #
-                    <?= $request_id ?>
-                </h2>
+    <div class="container fade-in-up mt-5" style="max-width: 900px;">
+        <div class="card p-4 shadow-sm">
+            <h2 class="text-center mb-4">💳 ชำระค่าธรรมเนียมคำขอ #
+                <?= $request_id ?>
+            </h2>
 
-                <?php if (isset($error)): ?>
-                    <div class="alert alert-danger">
-                        <?= $error ?>
-                    </div>
-                <?php endif; ?>
+            <?php if (isset($error)): ?>
+                <div class="alert alert-danger">
+                    <?= $error ?>
+                </div>
+            <?php endif; ?>
 
-                <div class="row">
-                    <div class="col-md-6 text-center border-end">
-                        <h5 class="text-muted">สแกน QR Code เพื่อจ่ายเงิน</h5>
-                        <img src="<?= $qr_url ?>" alt="PromptPay QR" class="img-fluid my-3"
-                            style="max-width: 300px; border: 1px solid #ddd; border-radius: 8px;">
-                        <h3 class="text-primary">
-                            <?= number_format($amount, 2) ?> บาท
-                        </h3>
-                        <p class="text-muted small">PromptPay ID:
-                            <?= $promptpay_id ?>
-                        </p>
-                    </div>
+            <div class="row">
+                <div class="col-md-6 text-center border-end">
+                    <h5 class="text-muted">สแกน QR Code เพื่อจ่ายเงิน</h5>
+                    <img src="<?= $qr_url ?>" alt="PromptPay QR" class="img-fluid my-3"
+                        style="max-width: 300px; border: 1px solid #ddd; border-radius: 8px;">
+                    <h3 class="text-primary">
+                        <?= number_format($amount, 2) ?> บาท
+                    </h3>
+                    <p class="text-muted small">PromptPay ID:
+                        <?= $promptpay_id ?>
+                    </p>
+                </div>
 
-                    <div class="col-md-6 d-flex flex-column justify-content-center p-4">
-                        <h5 class="mb-3">📢 แจ้งโอนเงิน (Upload Slip)</h5>
-                        <form method="post" enctype="multipart/form-data">
-                            <div class="mb-3">
-                                <label class="form-label">อัปโหลดหลักฐานการโอนเงิน</label>
-                                <input type="file" name="slip_file" class="form-control" required
-                                    accept="image/*, .pdf">
-                                <div class="form-text">รองรับไฟล์ .jpg, .png, .pdf</div>
-                            </div>
-                            <div class="d-grid gap-2">
-                                <button type="submit" name="upload_slip" class="btn btn-success btn-lg">
-                                    ✅ ยืนยันการชำระเงิน
-                                </button>
-                                <a href="users/my_request.php" class="btn btn-outline-secondary">กลับไปหน้ารายการ</a>
-                            </div>
-                        </form>
-                    </div>
+                <div class="col-md-6 d-flex flex-column justify-content-center p-4">
+                    <h5 class="mb-3">📢 แจ้งโอนเงิน (Upload Slip)</h5>
+                    <form method="post" enctype="multipart/form-data">
+                        <div class="mb-3">
+                            <label class="form-label">อัปโหลดหลักฐานการโอนเงิน</label>
+                            <input type="file" name="slip_file" class="form-control" required accept="image/*, .pdf">
+                            <div class="form-text">รองรับไฟล์ .jpg, .png, .pdf</div>
+                        </div>
+                        <div class="d-grid gap-2">
+                            <button type="submit" name="upload_slip" class="btn btn-success btn-lg">
+                                ✅ ยืนยันการชำระเงิน
+                            </button>
+                            <a href="users/my_request.php" class="btn btn-outline-secondary">กลับไปหน้ารายการ</a>
+                        </div>
+                    </form>
                 </div>
             </div>
         </div>
-    </div>
-
     </div>
 
     <?php include './includes/scripts.php'; ?>
