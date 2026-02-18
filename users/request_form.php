@@ -50,7 +50,7 @@ if (isset($_POST['submit'])) {
         // 2. คำนวณค่าธรรมเนียม
         $area = $width * $height; // ตร.ม. ต่อป้าย
         $rate = ($area >= 50) ? 400 : 200; // อัตราต่อป้าย
-        $fee = $rate * $quantity; // ราคารวม
+        $fee = $rate * $quantity * $duration_days; // ราคารวม (ตามจำนวนวัน)
 
         // 3. Insert ลง DB
         $conn->begin_transaction();

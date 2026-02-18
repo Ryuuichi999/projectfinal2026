@@ -163,17 +163,21 @@ $days_left = (int) ((strtotime($expire_date) - time()) / 86400);
                             <label class="form-label fw-bold">วันที่เริ่มต้น (ต่ออายุ)</label>
                             <input type="date" name="install_date" class="form-control"
                                 value="<?= date('Y-m-d', strtotime($expire_date . ' + 1 day')) ?>" required>
+                            <div class="form-text">วันที่เริ่มนับอายุใบอนุญาตใหม่ (ต่อเนื่องจากเดิม)</div>
                         </div>
                         <div class="mb-3">
                             <label class="form-label fw-bold">ระยะเวลาที่ต้องการต่อ (วัน)</label>
-                            <input type="number" name="duration_days" class="form-control"
+                            <input type="number" name="duration_days" id="duration_days" class="form-control"
                                 value="<?= $old_request['duration_days'] ?>" min="1" max="365" required>
+                            <div class="form-text">จำนวนวันที่ต้องการขอติดตั้งเพิ่ม</div>
                         </div>
                         <div class="mb-3">
                             <label class="form-label fw-bold">ค่าธรรมเนียม (ประเมิน)</label>
-                            <input type="text" class="form-control"
+                            <input type="text" id="estimated_fee" class="form-control"
                                 value="<?= number_format($old_request['fee']) ?> บาท" disabled>
-                            <small class="text-muted">ค่าธรรมเนียมคิดตามขนาดและจำนวนป้ายเดิม</small>
+                            <small class="text-muted">อัตราวันละ
+                                <?= number_format(($old_request['width'] * $old_request['height'] >= 50 ? 400 : 200) * $old_request['quantity']) ?>
+                                บาท</small>
                         </div>
                         <button type="submit" name="submit_renew" class="btn btn-success w-100">
                             🔄 ยื่นต่ออายุ
@@ -187,6 +191,24 @@ $days_left = (int) ((strtotime($expire_date) - time()) / 86400);
 
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <?php include '../includes/scripts.php'; ?>
+    <script>
+        const quantity = <?= $old_request['quantity'] ?>;
+        const area = <?= $old_request['width'] * $old_request['height'] ?>;
+        const ratePerDay = (area >= 50 ? 400 : 200) * quantity;
+
+        const durationInput = document.getElementById('duration_days');
+        const feeInput = document.getElementById('estimated_fee');
+
+        function updateFee() {
+            const days = parseInt(durationInput.value) || 0;
+            const totalFee = days * ratePerDay;
+            feeInput.value = new Intl.NumberFormat('th-TH').format(totalFee) + ' บาท';
+        }
+
+        durationInput.addEventListener('input', updateFee);
+        // Init
+        updateFee();
+    </script>
 </body>
 
 </html>
