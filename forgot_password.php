@@ -84,12 +84,13 @@ if (isset($_POST['verify_otp'])) {
         exit;
     }
 
+    $now = date('Y-m-d H:i:s');
     $stmt = $conn->prepare(
         "SELECT id FROM password_resets 
-         WHERE citizen_id = ? AND otp = ? AND used = 0 AND expires_at > NOW()
+         WHERE citizen_id = ? AND otp = ? AND used = 0 AND expires_at > ?
          ORDER BY id DESC LIMIT 1"
     );
-    $stmt->bind_param("ss", $citizen_id, $otp);
+    $stmt->bind_param("sss", $citizen_id, $otp, $now);
     $stmt->execute();
     $result = $stmt->get_result();
 

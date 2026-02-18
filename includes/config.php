@@ -1,4 +1,6 @@
 <?php
+// Set Timezone
+date_default_timezone_set('Asia/Bangkok');
 /**
  * ไฟล์ตั้งค่ากลาง (Config) — เก็บ credentials และค่าคงที่ทั้งหมดไว้ที่เดียว
  * เพื่อความปลอดภัยและง่ายต่อการดูแลรักษา
