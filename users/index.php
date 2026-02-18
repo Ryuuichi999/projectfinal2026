@@ -453,13 +453,6 @@ function getStatusBadge($status)
                 <h5>โปรไฟล์</h5>
                 <p>จัดการข้อมูลส่วนตัว</p>
             </a>
-            <a href="../faq.php" class="menu-card">
-                <div class="menu-card-icon" style="background: #06b6d4;">
-                    <i class="bi bi-question-circle"></i>
-                </div>
-                <h5>คู่มือ & FAQ</h5>
-                <p>คำถามที่พบบ่อย</p>
-            </a>
         </div>
 
         <!-- Recent Requests List -->
@@ -537,7 +530,7 @@ function getStatusBadge($status)
             <i class="bi bi-info-circle-fill fs-5"></i>
             <div>
                 <strong>คำแนะนำ:</strong> กรุณาตรวจสอบข้อมูลให้ครบถ้วนก่อนยื่นคำร้อง
-                หากมีข้อสงสัยกรุณาดู <a href="../faq.php">คู่มือ & คำถามที่พบบ่อย</a>
+                หากมีข้อสงสัยกรุณาดู <a href="../index.php#faq">คู่มือ & คำถามที่พบบ่อย</a>
             </div>
         </div>
     </div>

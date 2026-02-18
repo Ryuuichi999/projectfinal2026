@@ -352,6 +352,40 @@ if (session_status() === PHP_SESSION_NONE) {
                 font-size: 2.5rem;
             }
         }
+
+        /* FAQ & Contact Styles */
+        .accordion-button:not(.collapsed) {
+            background-color: #f0f4ff;
+            color: #1a56db;
+            font-weight: 600;
+        }
+
+        .accordion-button:focus {
+            box-shadow: none;
+        }
+
+        .contact-card {
+            background: #f8f9fa;
+            border-radius: 12px;
+            padding: 30px;
+            text-align: center;
+            height: 100%;
+            transition: 0.3s;
+            border: 1px solid #f1f5f9;
+        }
+
+        .contact-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+            border-color: #1a56db;
+        }
+
+        .contact-card i {
+            font-size: 2.5rem;
+            color: #1a56db;
+            margin-bottom: 15px;
+            display: inline-block;
+        }
     </style>
 </head>
 
@@ -576,6 +610,89 @@ if (session_status() === PHP_SESSION_NONE) {
         </div>
     </section>
 
+
+    <!-- FAQ Section -->
+    <section class="py-5" id="faq">
+        <div class="container py-5">
+            <div class="row justify-content-center mb-5" data-aos="fade-up">
+                <div class="col-lg-8 text-center">
+                    <h2 class="fw-bold fs-2 mb-3">คำถามที่พบบ่อย</h2>
+                    <p class="text-muted fs-5">รวมคำถาม-ตอบที่ผู้ใช้งานสงสัยบ่อยที่สุด</p>
+                </div>
+            </div>
+
+            <div class="row justify-content-center" data-aos="fade-up" data-aos-delay="100">
+                <div class="col-lg-8">
+                    <div class="accordion" id="faqAccordion">
+                        <?php
+                        $faqs = [
+                            ['ค่าธรรมเนียมคำนวณอย่างไร?', 'คิดตามขนาดพื้นที่ป้าย:<br>• ป้ายขนาด <b>น้อยกว่า 50 ตร.ม.</b> = <b>200 บาท</b> ต่อป้าย<br>• ป้ายขนาด <b>50 ตร.ม. ขึ้นไป</b> = <b>400 บาท</b> ต่อป้าย<br>ค่าธรรมเนียมรวม = อัตราต่อป้าย × จำนวนป้าย'],
+                            ['ใช้เวลากี่วันในการอนุมัติ?', 'โดยปกติเจ้าหน้าที่จะตรวจสอบภายใน <b>7 วันทำการ</b> หลังจากยื่นคำร้องเรียบร้อย หากเอกสารครบถ้วน'],
+                            ['ชำระเงินอย่างไร?', 'สแกน QR Code PromptPay ในหน้าชำระเงิน แล้วอัปโหลดสลิป ระบบจะตรวจสอบสลิปอัตโนมัติและออกใบเสร็จทันที'],
+                            ['ถ้าเอกสารไม่ครบจะทำอย่างไร?', 'เจ้าหน้าที่จะส่งกลับให้แก้ไข คุณจะได้รับแจ้งเตือนทาง Email และสามารถยื่นเอกสารเพิ่มเติมได้ในหน้ารายละเอียดคำร้อง'],
+                            ['สามารถติดตั้งป้ายได้ที่ไหนบ้าง?', 'สามารถติดตั้งได้เฉพาะในเขตเทศบาลเมืองศิลาเท่านั้น ระบบจะตรวจสอบพิกัดจากแผนที่โดยอัตโนมัติ'],
+                            ['ต่ออายุใบอนุญาตได้อย่างไร?', 'หลังจากใบอนุญาตหมดอายุ ให้ยื่นคำร้องใหม่โดยกรอกข้อมูลเหมือนเดิม หรือกดปุ่ม "ต่ออายุ" ที่อยู่ในหน้าสถานะคำขอ'],
+                            ['QR Code บนหนังสืออนุญาตใช้ทำอะไร?', 'เจ้าหน้าที่สามารถสแกน QR Code เพื่อตรวจสอบว่าใบอนุญาตเป็นของจริงและยังไม่หมดอายุ'],
+                            ['ลืมรหัสผ่านทำอย่างไร?', 'กดปุ่ม <b>"ลืมรหัสผ่าน?"</b> ที่หน้าเข้าสู่ระบบ แล้วกรอกเลขบัตรประชาชน ระบบจะส่ง OTP ไปทาง Email ที่ลงทะเบียนไว้'],
+                        ];
+                        foreach ($faqs as $i => $faq):
+                            ?>
+                            <div class="accordion-item mb-3 border rounded overflow-hidden">
+                                <h2 class="accordion-header">
+                                    <button class="accordion-button collapsed py-3" type="button" data-bs-toggle="collapse"
+                                        data-bs-target="#faq<?= $i ?>">
+                                        <?= $faq[0] ?>
+                                    </button>
+                                </h2>
+                                <div id="faq<?= $i ?>" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                                    <div class="accordion-body text-muted">
+                                        <?= $faq[1] ?>
+                                    </div>
+                                </div>
+                            </div>
+                        <?php endforeach; ?>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Contact Section -->
+    <section class="py-5 bg-light" id="contact">
+        <div class="container pb-5">
+            <div class="text-center mb-5" data-aos="fade-up">
+                <h2 class="fw-bold fs-2">ช่องทางติดต่อ</h2>
+                <p class="text-muted">สอบถามข้อมูลเพิ่มเติมได้ตลอดเวลาทำการ</p>
+            </div>
+
+            <div class="row g-4 justify-content-center">
+                <div class="col-md-4" data-aos="fade-up" data-aos-delay="100">
+                    <div class="contact-card">
+                        <i class="bi bi-telephone-fill"></i>
+                        <h5 class="fw-bold">โทรศัพท์</h5>
+                        <p class="text-muted mb-0">043-000000</p>
+                        <p class="text-muted small">(จันทร์-ศุกร์ 08:30-16:30 น.)</p>
+                    </div>
+                </div>
+                <div class="col-md-4" data-aos="fade-up" data-aos-delay="200">
+                    <div class="contact-card">
+                        <i class="bi bi-line"></i>
+                        <h5 class="fw-bold">LINE Official</h5>
+                        <p class="text-muted mb-0">@silacity</p>
+                        <p class="text-muted small">ติดตามข่าวสารและแจ้งเตือน</p>
+                    </div>
+                </div>
+                <div class="col-md-4" data-aos="fade-up" data-aos-delay="300">
+                    <div class="contact-card">
+                        <i class="bi bi-geo-alt-fill"></i>
+                        <h5 class="fw-bold">สำนักงาน</h5>
+                        <p class="text-muted mb-0">เทศบาลเมืองศิลา</p>
+                        <p class="text-muted small">อ.เมืองขอนแก่น จ.ขอนแก่น</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
 
     <?php include 'includes/footer.php'; ?>
 

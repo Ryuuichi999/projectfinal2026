@@ -35,13 +35,19 @@ if ($userId && $role === 'user') {
     while ($row = $rs->fetch_assoc()) {
         $status = $row['status'];
         $label = $status;
-        if ($status === 'waiting_payment') $label = 'รอชำระเงิน';
-        elseif ($status === 'approved') $label = 'อนุมัติแล้ว';
-        elseif ($status === 'rejected') $label = 'ไม่อนุมัติ';
-        elseif ($status === 'waiting_receipt') $label = 'รอออกใบเสร็จ';
-        elseif ($status === 'need_documents') $label = 'ขอเอกสารเพิ่ม';
-        elseif ($status === 'reviewing') $label = 'กำลังพิจารณา';
-        $notifItems[] = ['id' => (int)$row['id'], 'label' => $label, 'date' => $row['created_at']];
+        if ($status === 'waiting_payment')
+            $label = 'รอชำระเงิน';
+        elseif ($status === 'approved')
+            $label = 'อนุมัติแล้ว';
+        elseif ($status === 'rejected')
+            $label = 'ไม่อนุมัติ';
+        elseif ($status === 'waiting_receipt')
+            $label = 'รอออกใบเสร็จ';
+        elseif ($status === 'need_documents')
+            $label = 'ขอเอกสารเพิ่ม';
+        elseif ($status === 'reviewing')
+            $label = 'กำลังพิจารณา';
+        $notifItems[] = ['id' => (int) $row['id'], 'label' => $label, 'date' => $row['created_at']];
     }
     $currentCount = count($notifItems);
     $lastView = $_SESSION['notif_last_view_user'] ?? 0;
@@ -57,6 +63,7 @@ if ($userId && $role === 'user') {
         padding: 12px 0;
         transition: 0.3s;
     }
+
     .navbar-main .nav-link {
         font-weight: 600;
         color: #334155;
@@ -64,10 +71,12 @@ if ($userId && $role === 'user') {
         padding: 8px 16px !important;
         border-radius: 8px;
     }
+
     .navbar-main .nav-link:hover {
         color: #1a56db;
         background: rgba(26, 86, 219, 0.05);
     }
+
     .user-profile-pill {
         display: flex;
         align-items: center;
@@ -79,6 +88,7 @@ if ($userId && $role === 'user') {
         cursor: pointer;
         white-space: nowrap;
     }
+
     .avatar-circle {
         width: 32px;
         height: 32px;
@@ -91,6 +101,7 @@ if ($userId && $role === 'user') {
         font-weight: 700;
         font-size: 0.85rem;
     }
+
     .notif-btn-main {
         width: 42px;
         height: 42px;
@@ -102,6 +113,7 @@ if ($userId && $role === 'user') {
         border: 1px solid #e2e8f0;
         position: relative;
     }
+
     .notif-badge-main {
         position: absolute;
         top: -4px;
@@ -113,15 +125,18 @@ if ($userId && $role === 'user') {
         border-radius: 50px;
         border: 2px solid #fff;
     }
+
     /* Fixed top adjustment */
     body {
         padding-top: 110px;
     }
+
     .btn-primary-custom {
         background: #1a56db;
         border: none;
         transition: 0.3s;
     }
+
     .btn-primary-custom:hover {
         background: #1e429f;
         transform: translateY(-2px);
@@ -135,46 +150,53 @@ if ($userId && $role === 'user') {
             <img src="/Project2026/image/logosila.png" alt="Logo" style="height: 50px; width: auto;">
             <span class="ms-2 fw-bold text-dark">เทศบาลเมืองศิลา</span>
         </a>
-        <button class="navbar-toggler border-0 shadow-none" type="button" data-bs-toggle="collapse" data-bs-target="#mainNavbar">
+        <button class="navbar-toggler border-0 shadow-none" type="button" data-bs-toggle="collapse"
+            data-bs-target="#mainNavbar">
             <i class="bi bi-list fs-2"></i>
         </button>
         <div class="collapse navbar-collapse" id="mainNavbar">
             <ul class="navbar-nav mx-auto mb-2 mb-lg-0 gap-1">
-                <li class="nav-item"><a class="nav-link" href="/Project2026/index.php#home">หน้าหลัก</a></li>
-                <li class="nav-item"><a class="nav-link" href="/Project2026/index.php#steps">ขั้นตอน</a></li>
-                <li class="nav-item"><a class="nav-link" href="/Project2026/index.php#services">บริการ</a></li>
-                <li class="nav-item"><a class="nav-link" href="/Project2026/index.php#legal">เอกสาร</a></li>
-                <li class="nav-item"><a class="nav-link" href="/Project2026/map_public.php"><i class="bi bi-geo-alt me-1"></i>แผนที่ GIS</a></li>
+                <li class="nav-item"><a class="nav-link" href="/Project2026/index.php#steps">ขั้นตอนการยื่น</a></li>
+                <li class="nav-item"><a class="nav-link" href="/Project2026/index.php#legal">เอกสารที่ใช้</a></li>
+                <li class="nav-item"><a class="nav-link" href="/Project2026/index.php#faq">ช่วยเหลือ & ติดต่อ</a></li>
+                 <li class="nav-item"><a class="nav-link" href="/Project2026/map_public.php">แผนที่จุดติดตั้ง</a></li>
             </ul>
             <div class="d-flex align-items-center gap-3">
                 <?php if ($userId): ?>
                     <!-- Notifications -->
                     <div class="dropdown">
-                        <button class="notif-btn-main text-muted shadow-none border-1" data-bs-toggle="dropdown" id="mainNotifBtn" data-count="<?= count($notifItems) ?>">
+                        <button class="notif-btn-main text-muted shadow-none border-1" data-bs-toggle="dropdown"
+                            id="mainNotifBtn" data-count="<?= count($notifItems) ?>">
                             <i class="bi bi-bell"></i>
                             <?php if ($notifBadgeCount > 0): ?>
                                 <span class="notif-badge-main" id="mainNotifBadge"><?= $notifBadgeCount ?></span>
                             <?php endif; ?>
                         </button>
-                        <ul class="dropdown-menu dropdown-menu-end shadow-lg border-0 p-2 mt-2" style="width: 280px; border-radius: 12px;">
+                        <ul class="dropdown-menu dropdown-menu-end shadow-lg border-0 p-2 mt-2"
+                            style="width: 280px; border-radius: 12px;">
                             <li class="px-2 py-1 mb-2 border-bottom"><span class="fw-bold">การแจ้งเตือน</span></li>
                             <?php if (empty($notifItems)): ?>
                                 <li class="text-center p-3 text-muted small">ไม่มีการแจ้งเตือน</li>
                             <?php else: ?>
                                 <?php foreach ($notifItems as $n): ?>
                                     <li>
-                                        <a class="dropdown-item p-2 rounded-3" href="/Project2026/users/request_detail.php?id=<?= $n['id'] ?>">
+                                        <a class="dropdown-item p-2 rounded-3"
+                                            href="/Project2026/users/request_detail.php?id=<?= $n['id'] ?>">
                                             <div class="d-flex justify-content-between align-items-center mb-1">
                                                 <span class="fw-bold text-primary small">#<?= $n['id'] ?></span>
-                                                <small class="text-muted" style="font-size: 0.7rem;"><?= date('d/m/Y', strtotime($n['date'])) ?></small>
+                                                <small class="text-muted"
+                                                    style="font-size: 0.7rem;"><?= date('d/m/Y', strtotime($n['date'])) ?></small>
                                             </div>
                                             <div class="text-dark small lh-sm"><?= htmlspecialchars($n['label']) ?></div>
                                         </a>
                                     </li>
                                 <?php endforeach; ?>
                             <?php endif; ?>
-                            <li><hr class="dropdown-divider"></li>
-                            <li><a class="dropdown-item text-center text-primary small" href="/Project2026/users/my_request.php">ดูทั้งหมด</a></li>
+                            <li>
+                                <hr class="dropdown-divider">
+                            </li>
+                            <li><a class="dropdown-item text-center text-primary small"
+                                    href="/Project2026/users/my_request.php">ดูทั้งหมด</a></li>
                         </ul>
                     </div>
 
@@ -188,14 +210,20 @@ if ($userId && $role === 'user') {
                             </div>
                             <i class="bi bi-chevron-down small text-muted"></i>
                         </div>
-                        <ul class="dropdown-menu dropdown-menu-end shadow-lg border-0 p-2 mt-2" style="border-radius: 12px;">
+                        <ul class="dropdown-menu dropdown-menu-end shadow-lg border-0 p-2 mt-2"
+                            style="border-radius: 12px;">
                             <?php if ($role === 'user'): ?>
-                                <li><a class="dropdown-item rounded-3" href="/Project2026/users/index.php"><i class="bi bi-grid-1x2 me-2"></i>หน้าจัดการ</a></li>
+                                <li><a class="dropdown-item rounded-3" href="/Project2026/users/index.php"><i
+                                            class="bi bi-grid-1x2 me-2"></i>หน้าจัดการ</a></li>
                             <?php else: ?>
-                                <li><a class="dropdown-item rounded-3" href="/Project2026/employee/request_list.php"><i class="bi bi-grid-1x2 me-2"></i>หน้าเจ้าหน้าที่</a></li>
+                                <li><a class="dropdown-item rounded-3" href="/Project2026/employee/request_list.php"><i
+                                            class="bi bi-grid-1x2 me-2"></i>หน้าเจ้าหน้าที่</a></li>
                             <?php endif; ?>
-                            <li><hr class="dropdown-divider"></li>
-                            <li><a class="dropdown-item rounded-3 text-danger" href="/Project2026/logout.php"><i class="bi bi-box-arrow-right me-2"></i>ออกจากระบบ</a></li>
+                            <li>
+                                <hr class="dropdown-divider">
+                            </li>
+                            <li><a class="dropdown-item rounded-3 text-danger" href="/Project2026/logout.php"><i
+                                        class="bi bi-box-arrow-right me-2"></i>ออกจากระบบ</a></li>
                         </ul>
                     </div>
                 <?php else: ?>
@@ -208,20 +236,20 @@ if ($userId && $role === 'user') {
 </nav>
 
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-    var notifBtn = document.getElementById('mainNotifBtn');
-    if (notifBtn) {
-        notifBtn.addEventListener('show.bs.dropdown', function() {
-            var count = notifBtn.getAttribute('data-count') || '0';
-            fetch('/Project2026/includes/notif_seen.php', {
-                method: 'POST',
-                headers: {'Content-Type': 'application/x-www-form-urlencoded'},
-                body: new URLSearchParams({role: 'user', count: count}).toString()
-            }).then(() => {
-                var badge = document.getElementById('mainNotifBadge');
-                if (badge) badge.remove();
-            }).catch(() => {});
-        });
-    }
-});
+    document.addEventListener('DOMContentLoaded', function () {
+        var notifBtn = document.getElementById('mainNotifBtn');
+        if (notifBtn) {
+            notifBtn.addEventListener('show.bs.dropdown', function () {
+                var count = notifBtn.getAttribute('data-count') || '0';
+                fetch('/Project2026/includes/notif_seen.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                    body: new URLSearchParams({ role: 'user', count: count }).toString()
+                }).then(() => {
+                    var badge = document.getElementById('mainNotifBadge');
+                    if (badge) badge.remove();
+                }).catch(() => { });
+            });
+        }
+    });
 </script>
