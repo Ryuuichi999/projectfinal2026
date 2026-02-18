@@ -77,7 +77,7 @@ if (session_status() === PHP_SESSION_NONE) {
 
         /* Hero Section Refined */
         .hero-section {
-            padding: 110px 0 80px;
+            padding: 40px 0 60px;
             /* Reduced top padding to move closer to navbar */
             background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
             background-image: radial-gradient(#1a56db15 1px, transparent 1px);
@@ -657,42 +657,6 @@ if (session_status() === PHP_SESSION_NONE) {
         </div>
     </section>
 
-    <!-- Contact Section -->
-    <section class="py-5 bg-light" id="contact">
-        <div class="container pb-5">
-            <div class="text-center mb-5" data-aos="fade-up">
-                <h2 class="fw-bold fs-2">ช่องทางติดต่อ</h2>
-                <p class="text-muted">สอบถามข้อมูลเพิ่มเติมได้ตลอดเวลาทำการ</p>
-            </div>
-
-            <div class="row g-4 justify-content-center">
-                <div class="col-md-4" data-aos="fade-up" data-aos-delay="100">
-                    <div class="contact-card">
-                        <i class="bi bi-telephone-fill"></i>
-                        <h5 class="fw-bold">โทรศัพท์</h5>
-                        <p class="text-muted mb-0">043-000000</p>
-                        <p class="text-muted small">(จันทร์-ศุกร์ 08:30-16:30 น.)</p>
-                    </div>
-                </div>
-                <div class="col-md-4" data-aos="fade-up" data-aos-delay="200">
-                    <div class="contact-card">
-                        <i class="bi bi-line"></i>
-                        <h5 class="fw-bold">LINE Official</h5>
-                        <p class="text-muted mb-0">@silacity</p>
-                        <p class="text-muted small">ติดตามข่าวสารและแจ้งเตือน</p>
-                    </div>
-                </div>
-                <div class="col-md-4" data-aos="fade-up" data-aos-delay="300">
-                    <div class="contact-card">
-                        <i class="bi bi-geo-alt-fill"></i>
-                        <h5 class="fw-bold">สำนักงาน</h5>
-                        <p class="text-muted mb-0">เทศบาลเมืองศิลา</p>
-                        <p class="text-muted small">อ.เมืองขอนแก่น จ.ขอนแก่น</p>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
 
     <?php include 'includes/footer.php'; ?>
 
