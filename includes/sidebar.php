@@ -20,10 +20,14 @@
                     class="<?= basename($_SERVER['PHP_SELF']) == 'users_list.php' ? 'active' : '' ?>">
                     👥 จัดการผู้ใช้งาน
                 </a>
+                <a href="/Project2026/admin/audit_log.php"
+                    class="<?= basename($_SERVER['PHP_SELF']) == 'audit_log.php' ? 'active' : '' ?>">
+                    📋 ประวัติการใช้งาน
+                </a>
             <?php endif; ?>
 
             <?php if ($_SESSION['role'] === 'employee'): ?>
-                        <a href="/Project2026/employee/request_list.php"
+                <a href="/Project2026/employee/request_list.php"
                     class="<?= (strpos($_SERVER['PHP_SELF'], 'employee/request_list.php') !== false) ? 'active' : '' ?>">
                     📝 รายการคำขอ
                 </a>
@@ -34,6 +38,10 @@
                 <a href="/Project2026/employee/settings.php"
                     class="<?= basename($_SERVER['PHP_SELF']) == 'settings.php' ? 'active' : '' ?>">
                     ⚙️ ตั้งค่าใบเสร็จ
+                </a>
+                <a href="/Project2026/employee/reports.php"
+                    class="<?= basename($_SERVER['PHP_SELF']) == 'reports.php' ? 'active' : '' ?>">
+                    📊 รายงาน
                 </a>
             <?php endif; ?>
         <?php else: ?>

@@ -2,6 +2,7 @@
 session_start();
 require '../includes/db.php';
 require '../includes/email_helper.php';
+require_once '../includes/log_helper.php';
 
 if (!isset($_SESSION['user_id']) || ($_SESSION['role'] !== 'admin' && $_SESSION['role'] !== 'employee')) {
     header("Location: ../login.php");
@@ -46,6 +47,10 @@ if (isset($_POST['approve_confirm'])) {
 
     if ($stmt_up->execute()) {
         send_status_notification($request_id, $conn);
+        logRequestAction($conn, $request_id, 'waiting_payment', 'อนุมัติคำร้อง — รอชำระค่าธรรมเนียม', $approver_id, 'เลขที่ใบอนุญาต: ' . $permit_no);
+
+        require_once '../includes/audit_helper.php';
+        logAudit($conn, 'approve', 'sign_requests', $request_id, 'อนุมัติคำร้อง permit_no: ' . $permit_no);
 
         echo '<!DOCTYPE html>
 <html lang="th">

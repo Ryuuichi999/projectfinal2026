@@ -2,6 +2,7 @@
 require '../includes/db.php';
 require '../includes/email_helper.php';
 require_once '../includes/status_helper.php';
+require_once '../includes/log_helper.php';
 
 // ตรวจสอบสิทธิ์ Admin
 // ตรวจสอบสิทธิ์ Admin หรือ Employee
@@ -32,6 +33,11 @@ if (isset($_POST['action']) && isset($_POST['request_id'])) {
         $stmt_update->bind_param("si", $status, $request_id);
         if ($stmt_update->execute()) {
             send_status_notification($request_id, $conn);
+            logRequestAction($conn, $request_id, $status, $msg, $_SESSION['user_id']);
+
+            require_once '../includes/audit_helper.php';
+            logAudit($conn, $action, 'sign_requests', $request_id, $msg);
+
             $success = $msg;
         } else {
             $error = "เกิดข้อผิดพลาด: " . $conn->error;

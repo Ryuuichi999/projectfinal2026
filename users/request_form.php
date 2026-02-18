@@ -1,5 +1,6 @@
 <?php
 require '../includes/db.php';
+require_once '../includes/log_helper.php';
 
 if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'user') {
     header("Location: login.php");
@@ -111,6 +112,9 @@ if (isset($_POST['submit'])) {
             }
 
             $conn->commit();
+
+            // บันทึก Log
+            logRequestAction($conn, $request_id, 'created', 'ยื่นคำร้องใหม่', $user_id, 'ประเภท: ' . $sign_type);
 
             // แสดง SweetAlert และ Redirect
             echo '<!DOCTYPE html>

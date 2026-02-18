@@ -11,6 +11,10 @@ if (isset($_POST['login'])) {
         $_SESSION['user_id'] = $user['id'];
         $_SESSION['role'] = $user['role'];
 
+        // Audit Log
+        require_once 'includes/audit_helper.php';
+        logAudit($conn, 'login', 'users', $user['id'], 'Login ด้วย citizen_id');
+
         if ($user['role'] === 'admin') {
             $redirect_to = "admin/dashboard.php";
         } elseif ($user['role'] === 'employee') {
@@ -297,6 +301,12 @@ if (isset($_POST['login'])) {
                                 <i class="bi bi-eye text-muted"></i>
                             </button>
                         </div>
+                    </div>
+
+                    <div class="text-end mb-3">
+                        <a href="forgot_password.php" class="text-muted small text-decoration-none">
+                            <i class="bi bi-question-circle"></i> ลืมรหัสผ่าน?
+                        </a>
                     </div>
 
                     <button name="login" class="btn btn-primary btn-primary-custom mb-3">

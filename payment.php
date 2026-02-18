@@ -3,6 +3,7 @@ require './includes/db.php';
 require_once './includes/email_helper.php';
 require_once './includes/receipt_helper.php';
 require_once './includes/settings_helper.php';
+require_once './includes/log_helper.php';
 
 if (!isset($_SESSION['user_id'])) {
     header("Location: login.php");
@@ -108,6 +109,10 @@ if (isset($_POST['upload_slip'])) {
                             $stmt_update->bind_param("sssi", $receipt_no, $receipt_date, $receipt_issued_by, $request_id);
 
                             if ($stmt_update->execute()) {
+                                // บันทึก Log
+                                logRequestAction($conn, $request_id, 'paid', 'ชำระเงินสำเร็จ', $user_id, 'จำนวน: ' . number_format($amount) . ' บาท');
+                                logRequestAction($conn, $request_id, 'receipt_issued', 'ออกใบเสร็จอัตโนมัติ', null, 'เลขที่: ' . $receipt_no);
+                                logRequestAction($conn, $request_id, 'approved', 'อนุมัติคำร้อง', null, 'อนุมัติอัตโนมัติหลังชำระเงิน');
                                 // ส่ง email แจ้งเตือนสถานะ
                                 send_status_notification($request_id, $conn);
                                 ?>

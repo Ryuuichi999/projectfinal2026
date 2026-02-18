@@ -1,6 +1,7 @@
 <?php
 require '../includes/db.php';
 require_once '../includes/status_helper.php';
+require_once '../includes/log_helper.php';
 
 // อนุญาตให้เข้าถึงได้ถ้ามี Login
 if (!isset($_SESSION['user_id'])) {
@@ -43,6 +44,9 @@ $stmt_docs = $conn->prepare($sql_docs);
 $stmt_docs->bind_param("i", $request_id);
 $stmt_docs->execute();
 $result_docs = $stmt_docs->get_result();
+
+// ดึง Timeline Logs
+$timeline_logs = getRequestLogs($conn, $request_id);
 ?>
 
 <!DOCTYPE html>
@@ -78,6 +82,62 @@ $result_docs = $stmt_docs->get_result();
             border-radius: 5px;
             margin-bottom: 10px;
             background: #f9f9f9;
+        }
+
+        /* Timeline Styles */
+        .timeline {
+            position: relative;
+            padding-left: 30px;
+        }
+
+        .timeline::before {
+            content: '';
+            position: absolute;
+            left: 14px;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            background: #dee2e6;
+        }
+
+        .timeline-item {
+            position: relative;
+            padding-bottom: 20px;
+        }
+
+        .timeline-item:last-child {
+            padding-bottom: 0;
+        }
+
+        .timeline-dot {
+            position: absolute;
+            left: -23px;
+            top: 2px;
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 10px;
+            z-index: 1;
+        }
+
+        .timeline-content {
+            background: #f8f9fa;
+            padding: 10px 14px;
+            border-radius: 8px;
+            border-left: 3px solid #dee2e6;
+        }
+
+        .timeline-content .time {
+            font-size: 0.75rem;
+            color: #6c757d;
+        }
+
+        .timeline-content .actor {
+            font-size: 0.8rem;
+            color: #495057;
         }
     </style>
 </head>
@@ -166,6 +226,45 @@ $result_docs = $stmt_docs->get_result();
 
                 <!-- ไฟล์เอกสาร -->
                 <div class="col-md-4">
+                    <!-- Timeline สถานะ -->
+                    <div class="card p-4 fade-in-up mb-4">
+                        <h4 class="text-primary mb-3">📅 ลำดับขั้นตอน</h4>
+                        <?php if (!empty($timeline_logs)): ?>
+                            <div class="timeline">
+                                <?php foreach ($timeline_logs as $log):
+                                    $icon_data = getTimelineIcon($log['action']);
+                                    $actor_name = $log['first_name']
+                                        ? ($log['title_name'] . $log['first_name'] . ' ' . $log['last_name'])
+                                        : 'ระบบอัตโนมัติ';
+                                    ?>
+                                    <div class="timeline-item">
+                                        <div class="timeline-dot" style="background: <?= $icon_data['color'] ?>; color: white;">
+                                            <?= $icon_data['icon'] ?>
+                                        </div>
+                                        <div class="timeline-content" style="border-left-color: <?= $icon_data['color'] ?>;">
+                                            <div class="fw-bold" style="font-size: 0.9rem;">
+                                                <?= htmlspecialchars($log['action_label']) ?>
+                                            </div>
+                                            <div class="time">
+                                                <?= date('d/m/Y H:i', strtotime($log['created_at'])) ?>
+                                            </div>
+                                            <div class="actor">
+                                                โดย: <?= htmlspecialchars($actor_name) ?>
+                                            </div>
+                                            <?php if (!empty($log['note'])): ?>
+                                                <div class="text-muted" style="font-size: 0.8rem; margin-top: 4px;">
+                                                    <?= htmlspecialchars($log['note']) ?>
+                                                </div>
+                                            <?php endif; ?>
+                                        </div>
+                                    </div>
+                                <?php endforeach; ?>
+                            </div>
+                        <?php else: ?>
+                            <p class="text-muted text-center">ยังไม่มีประวัติ</p>
+                        <?php endif; ?>
+                    </div>
+
                     <!-- เอกสารราชการ (ใบอนุญาต/ใบเสร็จ) -->
                     <?php if ($request['status'] === 'approved'): ?>
                         <div class="card p-4 fade-in-up mb-4 border-success shadow-sm">
@@ -184,6 +283,10 @@ $result_docs = $stmt_docs->get_result();
                                 <a href="view_receipt.php?id=<?= $request['id'] ?>" target="_blank"
                                     class="btn btn-outline-success">
                                     <i class="bi bi-receipt"></i> ดูใบเสร็จรับเงิน
+                                </a>
+                                <hr>
+                                <a href="renew_permit.php?id=<?= $request['id'] ?>" class="btn btn-outline-primary">
+                                    🔄 ต่ออายุใบอนุญาต
                                 </a>
                             </div>
                         </div>

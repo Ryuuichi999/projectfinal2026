@@ -4,6 +4,7 @@ require '../includes/db.php';
 require '../includes/email_helper.php';
 require '../includes/receipt_helper.php';
 require '../includes/settings_helper.php';
+require_once '../includes/log_helper.php';
 
 if (!isset($_SESSION['user_id']) || ($_SESSION['role'] !== 'admin' && $_SESSION['role'] !== 'employee')) {
     header("Location: ../login.php");
@@ -50,6 +51,8 @@ if (isset($_POST['issue_receipt_confirm'])) {
     $stmt_up->bind_param("sssi", $receipt_no, $receipt_date, $receipt_issued_by, $request_id);
 
     if ($stmt_up->execute()) {
+        logRequestAction($conn, $request_id, 'receipt_issued', 'ออกใบเสร็จรับเงิน', $_SESSION['user_id'], 'เลขที่: ' . $receipt_no);
+        logRequestAction($conn, $request_id, 'approved', 'อนุมัติคำร้อง', $_SESSION['user_id']);
         send_status_notification($request_id, $conn);
 
         ?>

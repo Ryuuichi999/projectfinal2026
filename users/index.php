@@ -20,6 +20,7 @@ $stats = [
     'pending' => 0,
     'approved' => 0,
     'rejected' => 0,
+    'waiting_payment' => 0,
     'total' => 0
 ];
 
@@ -48,6 +49,18 @@ $resultRecent = $stmtRecent->get_result();
 while ($row = $resultRecent->fetch_assoc()) {
     $recentRequests[] = $row;
 }
+
+// 4. ป้ายใกล้หมดอายุของผู้ใช้
+$expiring_sql = "SELECT id, sign_type, permit_no, road_name,
+    DATE_ADD(permit_date, INTERVAL duration_days DAY) as expire_date
+    FROM sign_requests
+    WHERE user_id = ? AND status = 'approved' AND permit_date IS NOT NULL
+    AND DATE_ADD(permit_date, INTERVAL duration_days DAY) BETWEEN CURDATE() AND DATE_ADD(CURDATE(), INTERVAL 30 DAY)
+    ORDER BY expire_date ASC LIMIT 5";
+$stmtExp = $conn->prepare($expiring_sql);
+$stmtExp->bind_param("i", $user_id);
+$stmtExp->execute();
+$expiringPermits = $stmtExp->get_result();
 
 function getStatusBadge($status)
 {
@@ -364,7 +377,8 @@ function getStatusBadge($status)
         <!-- Dashboard Header -->
         <div class="dashboard-header">
             <h2>สวัสดี,คุณ <?= htmlspecialchars($userData['first_name'] ?? 'ผู้ใช้') ?>
-                <?= htmlspecialchars($userData['last_name'] ?? '') ?></h2>
+                <?= htmlspecialchars($userData['last_name'] ?? '') ?>
+            </h2>
             <p>ยินดีต้อนรับสู่ระบบยื่นคำร้องขอติดตั้งป้ายชั่วคราว</p>
         </div>
 
@@ -425,19 +439,26 @@ function getStatusBadge($status)
                 <h5>ติดตามสถานะ</h5>
                 <p>ดูสถานะคำร้องของคุณ</p>
             </a>
-            <a href="my_request.php" class="menu-card">
-                <div class="menu-card-icon bg-secondary" style="background: #f7941d !important;">
-                    <i class="bi bi-clock-history"></i>
+            <a href="feedback.php" class="menu-card">
+                <div class="menu-card-icon" style="background: #f59e0b;">
+                    <i class="bi bi-star-fill"></i>
                 </div>
-                <h5>ประวัติคำร้อง</h5>
-                <p>ดูประวัติคำร้องทั้งหมด</p>
+                <h5>ประเมินความพึงพอใจ</h5>
+                <p>ให้คะแนนการบริการ</p>
             </a>
-            <a href="#" class="menu-card">
-                <div class="menu-card-icon bg-info" style="background: #a855f7 !important;">
+            <a href="profile.php" class="menu-card">
+                <div class="menu-card-icon" style="background: #a855f7;">
                     <i class="bi bi-person"></i>
                 </div>
                 <h5>โปรไฟล์</h5>
                 <p>จัดการข้อมูลส่วนตัว</p>
+            </a>
+            <a href="../faq.php" class="menu-card">
+                <div class="menu-card-icon" style="background: #06b6d4;">
+                    <i class="bi bi-question-circle"></i>
+                </div>
+                <h5>คู่มือ & FAQ</h5>
+                <p>คำถามที่พบบ่อย</p>
             </a>
         </div>
 
@@ -481,12 +502,42 @@ function getStatusBadge($status)
             </div>
         </div>
 
+        <!-- Expiring Permits Alert -->
+        <?php if ($expiringPermits->num_rows > 0): ?>
+            <div class="recent-section" style="border-left: 4px solid #f59e0b;">
+                <div class="section-header">
+                    <h4>⏰ ป้ายใกล้หมดอายุ</h4>
+                </div>
+                <?php while ($exp = $expiringPermits->fetch_assoc()):
+                    $days_left = max(0, (int) ((strtotime($exp['expire_date']) - time()) / 86400));
+                    ?>
+                    <a href="request_detail.php?id=<?= $exp['id'] ?>" class="request-item">
+                        <div class="request-item-icon" style="background:#fff7ed; color:#f59e0b;">
+                            <i class="bi bi-exclamation-triangle"></i>
+                        </div>
+                        <div class="request-item-content">
+                            <div class="request-item-title">
+                                <span class="request-item-id">#<?= $exp['id'] ?></span>
+                                <span class="badge <?= $days_left <= 7 ? 'bg-danger' : 'bg-warning text-dark' ?>">
+                                    เหลือ <?= $days_left ?> วัน
+                                </span>
+                            </div>
+                            <div class="request-item-info">
+                                <?= htmlspecialchars($exp['sign_type']) ?> — <?= htmlspecialchars($exp['road_name']) ?>
+                            </div>
+                        </div>
+                        <i class="bi bi-chevron-right text-muted"></i>
+                    </a>
+                <?php endwhile; ?>
+            </div>
+        <?php endif; ?>
+
         <!-- Help Alert -->
         <div class="help-alert mb-5">
             <i class="bi bi-info-circle-fill fs-5"></i>
             <div>
                 <strong>คำแนะนำ:</strong> กรุณาตรวจสอบข้อมูลให้ครบถ้วนก่อนยื่นคำร้อง
-                หากมีข้อสงสัยกรุณาติดต่อเจ้าหน้าที่
+                หากมีข้อสงสัยกรุณาดู <a href="../faq.php">คู่มือ & คำถามที่พบบ่อย</a>
             </div>
         </div>
     </div>
