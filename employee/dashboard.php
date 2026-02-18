@@ -86,49 +86,49 @@ $recent_result = $conn->query($sql_recent);
             </span>
         </p>
 
-        <!-- ===== สถิติการ์ด 5 ช่อง (ไม่มี Users) ===== -->
-        <div class="row g-3 mb-4">
+        <!-- ===== สถิติการ์ด 5 ช่อง ===== -->
+        <div class="row row-cols-2 row-cols-md-5 g-3 mb-4">
             <!-- 1. คำขอทั้งหมด -->
-            <div class="col-md-4 col-sm-6">
+            <div class="col">
                 <div class="card dashboard-card bg-light-primary hover-lift h-100">
-                    <h6 class="text-nowrap">📄 คำขอทั้งหมด</h6>
-                    <div class="count text-primary">
+                    <h6 class="text-nowrap small text-muted mb-2">📄 คำขอทั้งหมด</h6>
+                    <div class="count text-primary fs-3 fw-bold">
                         <?= $total_requests ?>
                     </div>
                 </div>
             </div>
             <!-- 2. รอดำเนินการ -->
-            <div class="col-md-4 col-sm-6">
+            <div class="col">
                 <div class="card dashboard-card bg-light-warning hover-lift h-100">
-                    <h6 class="text-nowrap">⏳ รอดำเนินการ</h6>
-                    <div class="count text-warning">
+                    <h6 class="text-nowrap small text-muted mb-2">⏳ รอดำเนินการ</h6>
+                    <div class="count text-warning fs-3 fw-bold">
                         <?= $pending_requests ?>
                     </div>
                 </div>
             </div>
             <!-- 3. รอชำระเงิน -->
-            <div class="col-md-4 col-sm-6">
+            <div class="col">
                 <div class="card dashboard-card hover-lift h-100" style="background: #fff7ed;">
-                    <h6 class="text-nowrap">💰 รอชำระเงิน</h6>
-                    <div class="count" style="color: #ea580c;">
+                    <h6 class="text-nowrap small text-muted mb-2">💰 รอชำระเงิน</h6>
+                    <div class="count fs-3 fw-bold" style="color: #ea580c;">
                         <?= $waiting_payment ?>
                     </div>
                 </div>
             </div>
             <!-- 4. อนุมัติแล้ว -->
-            <div class="col-md-6 col-sm-6">
+            <div class="col">
                 <div class="card dashboard-card bg-light-success hover-lift h-100">
-                    <h6 class="text-nowrap">✅ อนุมัติแล้ว</h6>
-                    <div class="count text-success">
+                    <h6 class="text-nowrap small text-muted mb-2">✅ อนุมัติแล้ว</h6>
+                    <div class="count text-success fs-3 fw-bold">
                         <?= $approved_requests ?>
                     </div>
                 </div>
             </div>
             <!-- 5. ไม่อนุมัติ -->
-            <div class="col-md-6 col-sm-6">
+            <div class="col">
                 <div class="card dashboard-card hover-lift h-100" style="background: #fef2f2;">
-                    <h6 class="text-nowrap">❌ ไม่อนุมัติ</h6>
-                    <div class="count text-danger">
+                    <h6 class="text-nowrap small text-muted mb-2">❌ ไม่อนุมัติ</h6>
+                    <div class="count text-danger fs-3 fw-bold">
                         <?= $rejected_requests ?>
                     </div>
                 </div>
