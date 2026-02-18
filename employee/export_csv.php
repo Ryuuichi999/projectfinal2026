@@ -8,8 +8,8 @@ if (!isset($_SESSION['user_id']) || ($_SESSION['role'] !== 'admin' && $_SESSION[
 }
 
 // ดึงข้อมูลคำขอทั้งหมด
-$sql = "SELECT r.id, r.sign_type, r.sign_width, r.sign_height, r.sign_qty, r.fee, r.status, r.created_at,
-               r.applicant_name, r.email, r.location_text,
+$sql = "SELECT r.id, r.sign_type, r.width, r.height, r.quantity, r.fee, r.status, r.created_at,
+               r.applicant_name, r.email, r.road_name,
                u.title_name, u.first_name, u.last_name, u.citizen_id, u.phone
         FROM sign_requests r 
         JOIN users u ON r.user_id = u.id 
@@ -61,12 +61,12 @@ while ($row = $result->fetch_assoc()) {
         $row['phone'],
         $row['email'] ?? '',
         $row['sign_type'],
-        $row['sign_width'],
-        $row['sign_height'],
-        $row['sign_qty'],
+        $row['width'],
+        $row['height'],
+        $row['quantity'],
         $row['fee'],
         $status_labels[$row['status']] ?? $row['status'],
-        $row['location_text'] ?? '',
+        $row['road_name'] ?? '',
         date('d/m/Y H:i', strtotime($row['created_at']))
     ]);
 }

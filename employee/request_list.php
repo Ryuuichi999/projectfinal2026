@@ -91,7 +91,7 @@ $result->data_seek(0);
     <div class="content fade-in-up">
         <div class="d-flex justify-content-between align-items-center mb-4">
             <h2 class="mb-0">📝 รายการคำขออนุญาตติดตั้งป้าย</h2>
-            <a href="export_csv.php" class="btn btn-outline-success">
+            <a href="export_csv.php" target="_blank" class="btn btn-outline-success">
                 <i class="bi bi-file-earmark-spreadsheet"></i> Export CSV
             </a>
         </div>
