@@ -503,12 +503,21 @@ if (isset($_POST['submit'])) {
 
             var marker;
 
-            // Load Boundary
+            // Load Boundary (Area Click Handler)
             fetch('../data/sila.geojson')
                 .then(res => res.json())
                 .then(data => {
                     L.geoJSON(data, {
-                        style: { color: 'blue', weight: 2, fillOpacity: 0.05 }
+                        style: { color: 'blue', weight: 2, fillOpacity: 0.05 },
+                        onEachFeature: function (feature, layer) {
+                            layer.on('click', function (e) {
+                                placeMarker(e.latlng);
+                                // Stop propagation so map click doesn't trigger "Outside" alert
+                                L.DomEvent.stopPropagation(e);
+                                var hint = document.getElementById('roadHint');
+                                if (hint) { hint.textContent = "เลือกพิกัดในเขตพื้นที่แล้ว"; hint.className = "badge bg-success"; }
+                            });
+                        }
                     }).addTo(map);
                 });
 
@@ -526,10 +535,9 @@ if (isset($_POST['submit'])) {
                 document.getElementById('lng').value = latlng.lng;
                 document.getElementById('coordDisplay').textContent = "Lat: " + latlng.lat.toFixed(5) + ", Lng: " + latlng.lng.toFixed(5);
                 document.getElementById('coordDisplay').className = "badge bg-success";
-                var hint = document.getElementById('roadHint');
-                if (hint) { hint.textContent = "เลือกพิกัดบนเส้นถนนแล้ว"; hint.className = "badge bg-success"; }
             }
 
+            // Road Layer (Visual only, or also clickable)
             fetch('../data/road_sila.geojson')
                 .then(function (res) { return res.json(); })
                 .then(function (data) {
@@ -538,15 +546,25 @@ if (isset($_POST['submit'])) {
                         onEachFeature: function (feature, layer) {
                             layer.on('click', function (e) {
                                 placeMarker(e.latlng);
+                                L.DomEvent.stopPropagation(e);
                                 var hint = document.getElementById('roadHint');
                                 if (hint) { hint.textContent = "เลือกพิกัดบนเส้นถนนแล้ว"; hint.className = "badge bg-success"; }
                             });
                         }
                     }).addTo(map);
                 });
+
+            // Map Click (Outside Boundary)
             map.on('click', function () {
                 var hint = document.getElementById('roadHint');
-                if (hint) { hint.textContent = "คลิกได้เฉพาะบนเส้นถนน"; hint.className = "badge bg-danger"; }
+                if (hint) { hint.textContent = "อยู่นอกเขตเทศบาล (กรุณาคลิกในขอบเขตสีน้ำเงิน)"; hint.className = "badge bg-danger"; }
+                
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'อยู่นอกเขตพื้นที่',
+                    text: 'จุดที่ท่านเลือกอยู่นอกเขตเทศบาลเมืองศิลา กรุณาเลือกจุดติดตั้งใหม่ภายในขอบเขตสีน้ำเงิน',
+                    confirmButtonText: 'ตกลง'
+                });
             });
         });
     </script>
