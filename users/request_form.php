@@ -405,12 +405,26 @@ if (isset($_POST['submit'])) {
                 <div class="mb-3">
                     <label class="form-label small text-muted">ปักหมุดตำแหน่งหลัก (เพื่อการอ้างอิงพิกัด GPS)</label>
                     <div id="selectMap"></div>
-                    <div class="d-flex justify-content-end mt-2 gap-2">
-                        <span id="coordDisplay" class="badge bg-secondary">ยังไม่ได้เลือกพิกัด</span>
-                        <span id="roadHint" class="badge bg-danger">คลิกได้เฉพาะบนเส้นถนน</span>
+                    <div class="d-flex gap-2 mt-2 align-items-center flex-wrap">
+                        <div class="col-md-5">
+                            <div class="input-group input-group-sm">
+                                <span class="input-group-text">Lat</span>
+                                <input type="number" step="any" class="form-control" name="lat" id="lat"
+                                    placeholder="ละติจูด" required>
+                            </div>
+                        </div>
+                        <div class="flex-fill" style="min-width: 150px;">
+                            <div class="input-group input-group-sm">
+                                <span class="input-group-text">Lng</span>
+                                <input type="number" step="any" class="form-control" name="lng" id="lng"
+                                    placeholder="ลองจิจูด" required>
+                            </div>
+                        </div>
+                        <div class="flex-shrink-0">
+                            <span id="coordDisplay" class="badge bg-secondary d-none"></span>
+                            <span id="roadHint" class="badge bg-secondary w-100">รอระบุพิกัด</span>
+                        </div>
                     </div>
-                    <input type="hidden" name="lat" id="lat">
-                    <input type="hidden" name="lng" id="lng">
                 </div>
 
                 <!-- ระยะเวลา -->
@@ -482,6 +496,9 @@ if (isset($_POST['submit'])) {
 
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script>
+        // Global variable for boundary data
+        var municipalBoundary = null;
+
         document.addEventListener('DOMContentLoaded', function () {
             var map = L.map('selectMap').setView([16.485, 102.835], 13);
 
@@ -507,6 +524,7 @@ if (isset($_POST['submit'])) {
             fetch('../data/sila.geojson')
                 .then(res => res.json())
                 .then(data => {
+                    municipalBoundary = data; // Store globally
                     L.geoJSON(data, {
                         style: { color: 'blue', weight: 2, fillOpacity: 0.05 },
                         onEachFeature: function (feature, layer) {
@@ -531,11 +549,82 @@ if (isset($_POST['submit'])) {
             }
 
             function updateInput(latlng) {
-                document.getElementById('lat').value = latlng.lat;
-                document.getElementById('lng').value = latlng.lng;
-                document.getElementById('coordDisplay').textContent = "Lat: " + latlng.lat.toFixed(5) + ", Lng: " + latlng.lng.toFixed(5);
-                document.getElementById('coordDisplay').className = "badge bg-success";
+                document.getElementById('lat').value = latlng.lat.toFixed(6);
+                document.getElementById('lng').value = latlng.lng.toFixed(6);
+                // document.getElementById('coordDisplay').textContent = "Lat: " + latlng.lat.toFixed(5) + ", Lng: " + latlng.lng.toFixed(5);
+                // document.getElementById('coordDisplay').className = "badge bg-success";
             }
+
+            // Ray-casting algorithm for Point in Polygon
+            function isPointInPolygon(point, vs) {
+                // point = [lng, lat], vs = [[lng, lat], ...] (GeoJSON format)
+                // x = lng, y = lat
+                var x = point[0], y = point[1];
+
+                var inside = false;
+                for (var i = 0, j = vs.length - 1; i < vs.length; j = i++) {
+                    var xi = vs[i][0], yi = vs[i][1];
+                    var xj = vs[j][0], yj = vs[j][1];
+
+                    var intersect = ((yi > y) != (yj > y))
+                        && (x < (xj - xi) * (y - yi) / (yj - yi) + xi);
+                    if (intersect) inside = !inside;
+                }
+                return inside;
+            };
+
+            function checkBoundary(lat, lng) {
+                if (!municipalBoundary) return true; // Data not loaded yet, skip check
+
+                var isInside = false;
+                // GeoJSON can be FeatureCollection -> Feature -> Geometry -> Coordinates
+                // Assuming simple Polygon or MultiPolygon
+                municipalBoundary.features.forEach(function (feature) {
+                    if (feature.geometry.type === 'Polygon') {
+                        // Polygon coordinates: [ [ [lng,lat], ... ] ] (Outer ring is index 0)
+                        if (isPointInPolygon([lng, lat], feature.geometry.coordinates[0])) {
+                            isInside = true;
+                        }
+                    } else if (feature.geometry.type === 'MultiPolygon') {
+                        feature.geometry.coordinates.forEach(function (polygon) {
+                            if (isPointInPolygon([lng, lat], polygon[0])) {
+                                isInside = true;
+                            }
+                        });
+                    }
+                });
+                return isInside;
+            }
+
+            // Sync Inputs to Map
+            function updateMapFromInput() {
+                var lat = parseFloat(document.getElementById('lat').value);
+                var lng = parseFloat(document.getElementById('lng').value);
+                if (!isNaN(lat) && !isNaN(lng)) {
+                    var latlng = new L.LatLng(lat, lng);
+                    placeMarker(latlng);
+                    map.panTo(latlng);
+
+                    // Check Boundary
+                    if (!checkBoundary(lat, lng)) {
+                        var hint = document.getElementById('roadHint');
+                        if (hint) { hint.textContent = "อยู่นอกเขตเทศบาล"; hint.className = "badge bg-danger w-100"; }
+
+                        Swal.fire({
+                            icon: 'warning',
+                            title: 'อยู่นอกเขตพื้นที่',
+                            text: 'พิกัดที่ท่านระบุอยู่นอกเขตเทศบาลเมืองศิลา',
+                            confirmButtonText: 'ตกลง'
+                        });
+                    } else {
+                        var hint = document.getElementById('roadHint');
+                        if (hint) { hint.textContent = "กำหนดพิกัดเอง"; hint.className = "badge bg-info text-dark w-100"; }
+                    }
+                }
+            }
+
+            document.getElementById('lat').addEventListener('change', updateMapFromInput);
+            document.getElementById('lng').addEventListener('change', updateMapFromInput);
 
             // Road Layer (Visual only, or also clickable)
             fetch('../data/road_sila.geojson')
