@@ -254,7 +254,7 @@ if (isset($_GET['export']) && $_GET['export'] === 'csv') {
                     <div class="stat-number text-success">
                         <?= number_format($stats['total_fee']) ?>
                     </div>
-                    <div class="stat-label">ค่าธรรมเนียมรวม (บาท)</div>
+                    <div class="stat-label">ค่าธรรมเนียมรวม</div>
                 </div>
             </div>
         </div>
