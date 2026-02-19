@@ -514,7 +514,7 @@ $result_docs = $stmt_docs->get_result();
                         <?php if (in_array($request['status'], ['pending', 'reviewing', 'need_documents'])): ?>
                             <div class="d-grid gap-2 mt-2">
                                 <a href="approve_form.php?id=<?= $request['id'] ?>" class="btn btn-success py-2">
-                                    <i class="bi bi-check-circle me-2"></i> ยืนยัน / อนุมัติ (ส่งชำระเงิน)
+                                    <i class="bi bi-check-circle me-2"></i> อนุมัติ (ส่งชำระเงิน)
                                 </a>
                             </div>
                         <?php endif; ?>
