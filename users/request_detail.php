@@ -484,6 +484,18 @@ $timeline_logs = getRequestLogs($conn, $request_id);
                                 echo "อยู่ระหว่างการดำเนินการ";
                             ?>
                         </div>
+                        <?php if ($request['status'] == 'approved'): ?>
+                            <div class="mt-3">
+                                <a href="view_receipt.php?id=<?= $request['id'] ?>" target="_blank"
+                                    class="btn btn-outline-primary btn-sm w-100 mb-2">
+                                    <i class="bi bi-receipt"></i> ใบเสร็จรับเงิน
+                                </a>
+                                <a href="view_permission.php?id=<?= $request['id'] ?>" target="_blank"
+                                    class="btn btn-success btn-sm w-100">
+                                    <i class="bi bi-file-earmark-check"></i> ใบอนุญาต
+                                </a>
+                            </div>
+                        <?php endif; ?>
                     </div>
                 </div>
 
@@ -590,7 +602,7 @@ $timeline_logs = getRequestLogs($conn, $request_id);
             var baseMaps = {
                 "OpenStreetMap": openStreetMap,
                 <?php if (defined('MAPTILER_API_KEY')): ?>
-                            "MapTiler Streets": maptilerStreets,
+                                "MapTiler Streets": maptilerStreets,
                     "MapTiler Hybrid": maptilerHybrid
                 <?php endif; ?>
             };
