@@ -89,7 +89,7 @@ if (isset($_POST['submit'])) {
             ];
 
             // สร้างโฟลเดอร์เก็บไฟล์
-            $real_upload_dir = "./uploads/{$request_id}/";
+            $real_upload_dir = "../uploads/{$request_id}/";
             if (!file_exists($real_upload_dir)) {
                 mkdir($real_upload_dir, 0777, true);
             }
@@ -98,7 +98,7 @@ if (isset($_POST['submit'])) {
                 if (isset($_FILES[$input_name]) && $_FILES[$input_name]['error'] == UPLOAD_ERR_OK) {
                     $file_name = time() . '_' . basename($_FILES[$input_name]['name']);
                     $target_path = $real_upload_dir . $file_name;
-                    $db_path = "/uploads/{$request_id}/" . $file_name;
+                    $db_path = "/uploads/{$request_id}/" . $file_name; // Keep leading slash for DB compatibility with .. fix
 
                     if (move_uploaded_file($_FILES[$input_name]['tmp_name'], $target_path)) {
                         $sql_doc = "INSERT INTO sign_documents (request_id, doc_type, file_path) VALUES (?, ?, ?)";
@@ -558,7 +558,7 @@ if (isset($_POST['submit'])) {
             map.on('click', function () {
                 var hint = document.getElementById('roadHint');
                 if (hint) { hint.textContent = "อยู่นอกเขตเทศบาล (กรุณาคลิกในขอบเขตสีน้ำเงิน)"; hint.className = "badge bg-danger"; }
-                
+
                 Swal.fire({
                     icon: 'warning',
                     title: 'อยู่นอกเขตพื้นที่',

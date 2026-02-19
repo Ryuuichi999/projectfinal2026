@@ -43,7 +43,7 @@ if (isset($_POST['submit'])) {
             'file_other' => 'เอกสารอื่นๆ'
         ];
 
-        $real_upload_dir = "./uploads/{$request_id}/";
+        $real_upload_dir = "../uploads/{$request_id}/";
         if (!file_exists($real_upload_dir)) {
             mkdir($real_upload_dir, 0777, true);
         }

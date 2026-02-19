@@ -532,7 +532,7 @@ $timeline_logs = getRequestLogs($conn, $request_id);
                             <ul class="doc-list">
                                 <?php while ($doc = $result_docs->fetch_assoc()): ?>
                                     <li>
-                                        <a href="<?= htmlspecialchars($doc['file_path']) ?>" target="_blank"
+                                        <a href="../<?= ltrim($doc['file_path'], '/') ?>" target="_blank"
                                             class="text-decoration-none">
                                             <div class="doc-item">
                                                 <div class="doc-icon"><i class="bi bi-file-earmark-image"></i></div>
@@ -590,7 +590,7 @@ $timeline_logs = getRequestLogs($conn, $request_id);
             var baseMaps = {
                 "OpenStreetMap": openStreetMap,
                 <?php if (defined('MAPTILER_API_KEY')): ?>
-                        "MapTiler Streets": maptilerStreets,
+                            "MapTiler Streets": maptilerStreets,
                     "MapTiler Hybrid": maptilerHybrid
                 <?php endif; ?>
             };
