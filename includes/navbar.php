@@ -159,7 +159,7 @@ if ($userId && $role === 'user') {
                 <li class="nav-item"><a class="nav-link" href="/Project2026/index.php#steps">ขั้นตอนการยื่น</a></li>
                 <li class="nav-item"><a class="nav-link" href="/Project2026/index.php#services">บริการ</a></li>
                 <li class="nav-item"><a class="nav-link" href="/Project2026/index.php#legal">เอกสารที่ต้องเตรียม</a></li>
-                <li class="nav-item"><a class="nav-link" href="/Project2026/map_public.php"><i class="bi bi-geo-alt me-1"></i>แผนที่ GIS</a></li>
+                <li class="nav-item"><a class="nav-link" href="/Project2026/map_public.php">แผนที่ GIS</a></li>
             </ul>
             <div class="d-flex align-items-center gap-3">
                 <?php if ($userId): ?>
