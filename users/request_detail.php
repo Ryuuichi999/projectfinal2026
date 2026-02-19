@@ -172,6 +172,47 @@ $timeline_logs = getRequestLogs($conn, $request_id);
             line-height: 1.5;
         }
 
+        /* Dynamic Status Box Colors */
+        .status-box.pending {
+            background-color: #eff6ff;
+            border-color: #bfdbfe;
+        }
+
+        .status-box.pending .status-box-title {
+            color: #1e40af;
+        }
+
+        .status-box.pending .status-box-desc {
+            color: #1e3a8a;
+        }
+
+        .status-box.waiting_permit {
+            background-color: #f1f5f9;
+            border-color: #cbd5e1;
+        }
+
+        .status-box.waiting_permit .status-box-title {
+            color: #0f172a;
+        }
+
+        .status-box.waiting_permit .status-box-desc {
+            color: #334155;
+        }
+
+        .status-box.approved {
+            background-color: #f0fdf4;
+            border-color: #bbf7d0;
+        }
+
+        .status-box.approved .status-box-title {
+            color: #166534;
+        }
+
+        .status-box.approved .status-box-desc {
+            color: #14532d;
+        }
+
+
         /* Documents */
         .doc-list {
             list-style: none;
@@ -457,8 +498,8 @@ $timeline_logs = getRequestLogs($conn, $request_id);
                         </a>
                     <?php endif; ?>
 
-                    <!-- Yellow Info Box -->
-                    <div class="status-box">
+                    <!-- Status Info Box -->
+                    <div class="status-box <?= $request['status'] ?>">
                         <div class="status-box-title">
                             <?php if ($request['status'] == 'pending'): ?>
                                 <i class="bi bi-clock-history"></i> รอตรวจสอบคำร้อง
@@ -602,7 +643,7 @@ $timeline_logs = getRequestLogs($conn, $request_id);
             var baseMaps = {
                 "OpenStreetMap": openStreetMap,
                 <?php if (defined('MAPTILER_API_KEY')): ?>
-                                "MapTiler Streets": maptilerStreets,
+                                    "MapTiler Streets": maptilerStreets,
                     "MapTiler Hybrid": maptilerHybrid
                 <?php endif; ?>
             };

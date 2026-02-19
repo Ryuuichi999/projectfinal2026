@@ -9,15 +9,15 @@ if (!function_exists('get_status_badge')) {
     {
         switch ($status) {
             case 'pending':
-                $class = 'warning';
+                $class = 'primary'; // Blue
                 $text = '⏳ รอกำลังพิจารณา';
                 break;
             case 'reviewing':
-                $class = 'primary';
+                $class = 'info';
                 $text = '🔎 กำลังพิจารณา';
                 break;
             case 'need_documents':
-                $class = 'info';
+                $class = 'warning';
                 $text = '📑 ขอเอกสารเพิ่ม';
                 break;
             case 'waiting_payment':
@@ -25,7 +25,7 @@ if (!function_exists('get_status_badge')) {
                 $text = '⚠️ รอชำระเงิน';
                 break;
             case 'waiting_permit':
-                $class = 'primary';
+                $class = 'dark'; // Dark/Black for distinction
                 $text = '📜 รอออกใบอนุญาต';
                 break;
             case 'waiting_receipt':
