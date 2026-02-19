@@ -103,26 +103,14 @@ $avg_stats = $avg_result->fetch_assoc();
     <div class="container fade-in-up mt-4 mb-5">
         <div class="row justify-content-center">
             <div class="col-md-8">
-                <!-- สถิติภาพรวม -->
-                <div class="card p-4 mb-4 text-center">
-                    <h5 class="text-primary">📊 ความพึงพอใจภาพรวม</h5>
-                    <div class="avg-display">
-                        <?= $avg_stats['total'] > 0 ? number_format($avg_stats['avg_rating'], 1) : '-' ?>
-                    </div>
-                    <div class="text-muted">
-                        จาก
-                        <?= number_format($avg_stats['total']) ?> ความคิดเห็น
-                        <?php if ($avg_stats['total'] > 0): ?>
-                            <div class="satisfaction-bar mt-2 mx-auto" style="max-width:200px;">
-                                <div class="satisfaction-fill bg-warning"
-                                    style="width:<?= ($avg_stats['avg_rating'] / 5) * 100 ?>%"></div>
-                            </div>
-                        <?php endif; ?>
-                    </div>
+                <!-- Back Button -->
+                <div class="mb-3">
+                    <a href="index.php" class="btn-back d-inline-flex align-items-center"><i
+                            class="bi bi-chevron-left me-1"></i> ย้อนกลับ</a>
                 </div>
 
                 <!-- ฟอร์มประเมิน -->
-                <div class="card p-4 feedback-card">
+                <div class="card p-4 feedback-card mb-4">
                     <h4 class="text-center mb-3">⭐ ให้คะแนนความพึงพอใจ</h4>
                     <p class="text-center text-muted">กรุณาให้คะแนนการใช้บริการของเรา</p>
 
@@ -177,6 +165,24 @@ $avg_stats = $avg_result->fetch_assoc();
                             📝 ส่งความคิดเห็น
                         </button>
                     </form>
+                </div>
+
+                <!-- สถิติภาพรวม -->
+                <div class="card p-4 text-center">
+                    <h5 class="text-primary">📊 ความพึงพอใจภาพรวม</h5>
+                    <div class="avg-display">
+                        <?= $avg_stats['total'] > 0 ? number_format($avg_stats['avg_rating'], 1) : '-' ?>
+                    </div>
+                    <div class="text-muted">
+                        จาก
+                        <?= number_format($avg_stats['total']) ?> ความคิดเห็น
+                        <?php if ($avg_stats['total'] > 0): ?>
+                            <div class="satisfaction-bar mt-2 mx-auto" style="max-width:200px;">
+                                <div class="satisfaction-fill bg-warning"
+                                    style="width:<?= ($avg_stats['avg_rating'] / 5) * 100 ?>%"></div>
+                            </div>
+                        <?php endif; ?>
+                    </div>
                 </div>
             </div>
         </div>
