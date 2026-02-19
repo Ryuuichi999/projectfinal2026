@@ -467,11 +467,11 @@ if (isset($_POST['submit'])) {
                                 </label>
                             </div>
                         </div>
-                        <a href="index.php" class="btn btn-action btn-cancel me-3">
+                        <a href="index.php" class="btn btn-action-cancel me-3">
                             ยกเลิก
                         </a>
 
-                        <button type="submit" name="submit" class="btn btn-action btn-submit-main">
+                        <button type="submit" name="submit" class="btn btn-action-confirm">
                             ยื่นคำร้อง
                         </button>
 

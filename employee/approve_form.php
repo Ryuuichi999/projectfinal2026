@@ -96,9 +96,9 @@ if (isset($_POST['approve_confirm'])) {
 
     <div class="content fade-in-up">
         <div class="container py-4">
-            <div class="d-flex mb-3">
-                <h4 class="mb-0"></h4> <!-- Spacer or Title if needed -->
-                <a href="request_list.php" class="btn btn-secondary"><i class="bi bi-arrow-left"></i> กลับหน้ารายงาน</a>
+            <div class="mb-3">
+                <a href="request_list.php" class="btn-back d-inline-flex align-items-center"><i
+                        class="bi bi-chevron-left me-1"></i> ย้อนกลับ</a>
             </div>
 
             <?php if (isset($error)): ?>
@@ -159,8 +159,8 @@ if (isset($_POST['approve_confirm'])) {
                                     required>
                             </div>
                             <div class="col-md-4">
-                                <button type="button" class="btn btn-success w-100" onclick="confirmApprove()">
-                                    <i class="bi bi-save"></i> บันทึกและอนุมัติ
+                                <button type="button" class="btn btn-action-confirm w-100" onclick="confirmApprove()">
+                                    บันทึกและอนุมัติ
                                 </button>
                                 <input type="hidden" name="approve_confirm" value="1">
                             </div>

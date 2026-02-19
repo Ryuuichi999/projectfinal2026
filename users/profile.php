@@ -209,9 +209,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                                     <small class="text-muted">ไม่สามารถเปลี่ยนได้</small>
                                 </div>
                             </div>
-                            <div class="mt-4">
-                                <button type="submit" name="update_profile" class="btn btn-primary">
-                                    <i class="bi bi-check-lg"></i> บันทึกข้อมูล
+                            <div class="mt-4 d-flex justify-content-end gap-2">
+                                <a href="index.php" class="btn btn-action-cancel">
+                                    ยกเลิก
+                                </a>
+                                <button type="submit" name="update_profile" class="btn btn-action-confirm">
+                                    บันทึกข้อมูล
                                 </button>
                             </div>
                         </form>
@@ -236,9 +239,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                                     <input type="password" name="confirm_password" class="form-control" required>
                                 </div>
                             </div>
-                            <div class="mt-4">
-                                <button type="submit" name="change_password" class="btn btn-warning">
-                                    <i class="bi bi-key"></i> เปลี่ยนรหัสผ่าน
+                            <div class="mt-4 d-flex justify-content-end gap-2">
+                                <a href="index.php" class="btn btn-action-cancel">
+                                    ยกเลิก
+                                </a>
+                                <button type="submit" name="change_password" class="btn btn-action-confirm">
+                                    เปลี่ยนรหัสผ่าน
                                 </button>
                             </div>
                         </form>

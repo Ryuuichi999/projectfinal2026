@@ -150,9 +150,9 @@ if (isset($_POST['submit'])) {
                     </div>
                 </div>
                 <div class="mt-3 d-flex gap-2">
-                    <button type="submit" name="submit" class="btn btn-primary"><i class="bi bi-upload"></i>
+                    <button type="submit" name="submit" class="btn btn-action-confirm"><i class="bi bi-upload"></i>
                         ส่งเอกสาร</button>
-                    <a href="request_detail.php?id=<?= $request['id'] ?>" class="btn btn-secondary">ยกเลิก</a>
+                    <a href="request_detail.php?id=<?= $request['id'] ?>" class="btn btn-action-cancel">ยกเลิก</a>
                 </div>
             </form>
         </div>

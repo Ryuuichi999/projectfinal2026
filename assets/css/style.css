@@ -281,3 +281,67 @@ body {
 .sidebar-collapsed .content {
     margin-left: 0;
 }
+
+/* ===== GLOBAL BUTTON STANDARDS ===== */
+
+/* Back Button — matches request_detail.php style */
+.btn-back {
+    color: #64748b;
+    font-weight: 500;
+    font-size: 0.9rem;
+    text-decoration: none;
+    padding: 6px 12px;
+    border-radius: 6px;
+    transition: all 0.2s;
+    display: inline-flex;
+    align-items: center;
+}
+.btn-back:hover {
+    background: #e2e8f0;
+    color: #334155;
+}
+
+/* Cancel / Secondary Action — matches register.php .btn-cancel */
+.btn-action-cancel {
+    background-color: #f8fafc !important;
+    color: #475569 !important;
+    border: 1px solid #e2e8f0 !important;
+    padding: 10px 20px;
+    border-radius: 6px;
+    font-weight: 600;
+    font-size: 0.95rem;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s;
+    line-height: 1.5;
+}
+.btn-action-cancel:hover {
+    background-color: #e2e8f0 !important;
+    color: #1e293b !important;
+    border-color: #cbd5e1 !important;
+}
+
+/* Confirm / Primary Action — matches register.php .btn-register */
+.btn-action-confirm {
+    background-color: #1a56db !important;
+    color: #ffffff !important;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 6px;
+    font-weight: 600;
+    font-size: 0.95rem;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s;
+    line-height: 1.5;
+}
+.btn-action-confirm:hover {
+    background-color: #1648c5 !important;
+    color: #ffffff !important;
+}

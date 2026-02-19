@@ -172,7 +172,7 @@ $avg_stats = $avg_result->fetch_assoc();
                                 placeholder="แสดงความคิดเห็นหรือข้อเสนอแนะ..."></textarea>
                         </div>
 
-                        <button type="submit" name="submit_feedback" class="btn btn-warning w-100 fw-bold"
+                        <button type="submit" name="submit_feedback" class="btn btn-action-confirm w-100 fw-bold"
                             id="submitBtn" disabled>
                             📝 ส่งความคิดเห็น
                         </button>

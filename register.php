@@ -282,15 +282,15 @@ if (isset($_POST['submit'])) {
 
             <div class="row g-2">
                 <div class="col-6">
-                    <button type="submit" name="submit" class="btn btn-register">
-                        ลงทะเบียน
-                    </button>
-                </div>
-                <div class="col-6">
                     <a href="index.php" class="btn btn-cancel text-center text-decoration-none">
                         ย้อนกลับ
                     </a>
                 </div>
+                <div class="col-6">
+                    <button type="submit" name="submit" class="btn btn-register">
+                        ลงทะเบียน
+                    </button>
+                </div>         
             </div>
 
         </form>
