@@ -564,6 +564,15 @@ if (session_status() === PHP_SESSION_NONE) {
                                     <p>กรณีติดตั้งในที่ดินผู้อื่น ต้องมีเอกสารอนุญาตจากเจ้าของที่ดิน</p>
                                 </div>
                             </div>
+                            <div class="doc-item">
+                                <div class="doc-icon-box">
+                                    <i class="bi bi-folder-plus"></i>
+                                </div>
+                                <div class="doc-content">
+                                    <h6>เอกสารอื่นๆ</h6>
+                                    <p>เช่น หนังสือรับรองนิติบุคคล (กรณีบริษัท) หรือเอกสารที่เกี่ยวข้อง</p>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
