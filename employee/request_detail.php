@@ -670,7 +670,7 @@ $result_docs = $stmt_docs->get_result();
                 var baseMaps = {
                     "OpenStreetMap": openStreetMap,
                     <?php if (defined('MAPTILER_API_KEY')): ?>
-                            "MapTiler Streets": maptilerStreets,
+                                "MapTiler Streets": maptilerStreets,
                         "MapTiler Hybrid": maptilerHybrid
                     <?php endif; ?>
                 };
@@ -706,7 +706,7 @@ $result_docs = $stmt_docs->get_result();
     </script>
 
     <div class="modal fade" id="requestDocsModal" tabindex="-1" aria-hidden="true">
-        <div class="modal-dialog">
+        <div class="modal-dialog modal-dialog-centered">
             <form method="post" class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title">ขอเอกสารเพิ่มเติม</h5>
@@ -730,7 +730,7 @@ $result_docs = $stmt_docs->get_result();
     </div>
 
     <div class="modal fade" id="rejectModal" tabindex="-1" aria-hidden="true">
-        <div class="modal-dialog">
+        <div class="modal-dialog modal-dialog-centered">
             <form method="post" class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title">ปฏิเสธคำขอ</h5>
