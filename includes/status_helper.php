@@ -24,6 +24,10 @@ if (!function_exists('get_status_badge')) {
                 $class = 'danger';
                 $text = '⚠️ รอชำระเงิน';
                 break;
+            case 'waiting_permit':
+                $class = 'primary';
+                $text = '📜 รอออกใบอนุญาต';
+                break;
             case 'waiting_receipt':
                 $class = 'info';
                 $text = '🧾 รอออกใบเสร็จ';

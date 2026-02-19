@@ -194,6 +194,11 @@ $result->data_seek(0);
                                                 class="btn btn-sm btn-warning text-dark action-btn" title="ออกใบเสร็จรับเงิน">
                                                 <i class="bi bi-receipt"></i> ออกใบเสร็จ
                                             </a>
+                                        <?php elseif ($row['status'] == 'waiting_permit'): ?>
+                                            <a href="issue_receipt.php?id=<?= $row['id'] ?>"
+                                                class="btn btn-sm btn-primary action-btn" title="ออกใบอนุญาต">
+                                                <i class="bi bi-file-earmark-text"></i> ออกใบอนุญาต
+                                            </a>
                                         <?php endif; ?>
                                     </div>
                                 </td>

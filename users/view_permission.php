@@ -272,38 +272,31 @@ function toThaiNum($number)
         <div class="signature-section">
             <br><br>
             <?php
-            // Fetch Approver Name
-            $sql_approver = "SELECT title_name, first_name, last_name FROM users WHERE id = ?";
-            $stmt_app = $conn->prepare($sql_approver);
-            if ($request['approved_by']) {
-                $stmt_app->bind_param("i", $request['approved_by']);
-                $stmt_app->execute();
-                $res_app = $stmt_app->get_result();
-                $approver = $res_app->fetch_assoc();
-                $approver_name = $approver['title_name'] . $approver['first_name'] . ' ' . $approver['last_name'];
-            } else {
-                $approver_name = "(................................................................)";
-            }
+            require_once '../includes/settings_helper.php';
 
-            // Signature Image (Check if exists)
-            $sig_path = "../image/signatures/" . $request['approved_by'] . ".png";
+            // 1. Name and Position (Snapshot > Settings)
+            $signer_name = !empty($request['permit_signer_name'])
+                ? $request['permit_signer_name']
+                : getSetting($conn, 'permit_signer_name', '................................................................');
 
-            // Specific mapping for Employee (ID 2)
-            if ($request['approved_by'] == 2) {
-                $sig_path = "../image/ลายเซ็น.png";
-            }
+            $signer_pos = !empty($request['permit_signer_position'])
+                ? $request['permit_signer_position']
+                : getSetting($conn, 'permit_signer_position', 'นายกเทศมนตรีเมืองศิลา');
 
-            if ($request['approved_by'] && file_exists($sig_path)) {
-                echo "<img src='$sig_path' style='height: 80px; display: block; margin: 0 auto 0 auto;'>";
+            // 2. Signature Image (Settings only, we don't snapshot image file path usually)
+            // But if we wanted to be perfect we would have copied the file. 
+            // For now, use current setting.
+            $p_sig_path = getSetting($conn, 'permit_signature_path', '');
+
+            // Check existence
+            if ($p_sig_path && file_exists("../" . $p_sig_path)) {
+                echo "<img src='../$p_sig_path' style='height: 80px; display: block; margin: 0 auto 0 auto;'>";
             }
             ?>
 
-
-            <div>(
-                <?= $approver_name ?>)
-            </div>
-
-            <div style="margin-top: 20px;">เจ้าพนักงานท้องถิ่น</div>
+            <div>(<?= htmlspecialchars($signer_name) ?>)</div>
+            <div style="margin-top: 5px; white-space: pre-wrap;"><?= htmlspecialchars($signer_pos) ?></div>
+            
             <div>หรือพนักงานเจ้าหน้าที่ผู้ออกหนังสืออนุญาต</div>
         </div>
 
@@ -311,7 +304,7 @@ function toThaiNum($number)
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
+        document.addEventListener('DOMContentLoaded', function () {
             var permitUrl = "http://" + window.location.host + "/Project2026/check_permit.php?id=<?= $request['id'] ?>";
             new QRCode(document.getElementById("qrcode"), {
                 text: permitUrl,
@@ -343,7 +336,7 @@ function toThaiNum($number)
                 jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
             };
 
-            html2pdf().set(opt).from(element).save().then(function() {
+            html2pdf().set(opt).from(element).save().then(function () {
                 element.style.margin = origMargin;
                 element.style.height = '';
                 element.style.overflow = '';

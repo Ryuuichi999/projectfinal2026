@@ -289,11 +289,17 @@ function getThaiDate($date)
                 <div
                     style="display: flex; align-items: flex-end; justify-content: center; gap: 15px; margin-bottom: 5px;">
                     <span>(ลงชื่อ)</span>
-                    <img src="../image/ลายเซ็น2.png" style="height: 70px;">
+                    <?php
+                    require_once '../includes/settings_helper.php';
+                    $r_sig_path = getSetting($conn, 'receipt_signature_path', 'image/ลายเซ็น2.png');
+                    if (file_exists("../" . $r_sig_path)) {
+                        echo '<img src="../' . $r_sig_path . '" style="height: 70px;">';
+                    }
+                    ?>
                     <span>ผู้รับเงิน</span>
                 </div>
-                (<?= htmlspecialchars($request['receipt_issued_by'] ?? '........................................................') ?>)<br>
-                ตำแหน่ง เจ้าพนักงานธุรการ
+                (<?= htmlspecialchars(getSetting($conn, 'receipt_signer_name', '........................................................')) ?>)<br>
+                ตำแหน่ง <?= htmlspecialchars(getSetting($conn, 'receipt_signer_position', 'เจ้าพนักงานธุรการ')) ?>
             </div>
         </div>
     </div>
@@ -324,7 +330,7 @@ function getThaiDate($date)
                 jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
             };
 
-            html2pdf().set(opt).from(element).save().then(function() {
+            html2pdf().set(opt).from(element).save().then(function () {
                 // Restore
                 element.style.margin = origMargin;
                 element.style.minHeight = origMinHeight;

@@ -2,290 +2,216 @@
 session_start();
 require '../includes/db.php';
 require '../includes/email_helper.php';
-require '../includes/receipt_helper.php';
 require '../includes/settings_helper.php';
+require '../includes/permit_helper.php'; 
 require_once '../includes/log_helper.php';
 
 if (!isset($_SESSION['user_id']) || ($_SESSION['role'] !== 'admin' && $_SESSION['role'] !== 'employee')) {
     header("Location: ../login.php");
     exit;
 }
-// ... (lines 9-47 skipped)
-// Ensure columns exist (via helper)
-ensureReceiptColumnsExist($conn);
-ensureSettingsTable($conn); // Lazy init
 
-// ดึงชื่อผู้ลงนาม (Official Signer) จากการตั้งค่า
-$issuer_name_default = getSetting($conn, 'receipt_signer_name', '');
-
-// ถ้าไม่ได้ตั้งค่าไว้ ให้ใช้ชื่อพนักงานที่ login อยู่
-if (empty($issuer_name_default)) {
-    $stmt_emp = $conn->prepare("SELECT title_name, first_name, last_name FROM users WHERE id = ? LIMIT 1");
-    $stmt_emp->bind_param("i", $_SESSION['user_id']);
-    $stmt_emp->execute();
-    $emp = $stmt_emp->get_result()->fetch_assoc();
-    if ($emp) {
-        $issuer_name_default = trim(($emp['title_name'] ?? '') . ($emp['first_name'] ?? '') . ' ' . ($emp['last_name'] ?? ''));
-    }
-}
-
-// ตรวจสอบว่าสถานะเป็น waiting_receipt
-if ($request['status'] !== 'waiting_receipt') {
-    echo "<script>alert('คำขอนี้ไม่ได้อยู่ในสถานะรอออกใบเสร็จ (สถานะปัจจุบัน: {$request['status']})'); window.location.href='request_list.php';</script>";
+if (!isset($_GET['id'])) {
+    header("Location: request_list.php");
     exit;
 }
 
-// Auto-generate Receipt Number
-$receipt_number = generateNextReceiptNumber($conn);
+$request_id = $_GET['id'];
+$sql = "SELECT * FROM sign_requests WHERE id = ?";
+$stmt = $conn->prepare($sql);
+$stmt->bind_param("i", $request_id);
+$stmt->execute();
+$request = $stmt->get_result()->fetch_assoc();
 
-if (isset($_POST['issue_receipt_confirm'])) {
-    $receipt_no = $_POST['receipt_no'];
-    $receipt_date = $_POST['receipt_date']; // วันที่ออกใบเสร็จ
-    $receipt_issued_by = trim($_POST['receipt_issued_by'] ?? '');
+if (!$request) {
+    die("Error: Request not found.");
+}
 
-    // Update DB: status -> approved และบันทึก receipt_no, receipt_date
-    $sql_update = "UPDATE sign_requests 
-                   SET status = 'approved', receipt_no = ?, receipt_date = ?, receipt_issued_by = ?
+// Check Status
+if ($request['status'] !== 'waiting_permit' && $request['status'] !== 'waiting_receipt') {
+    echo "<script>alert('ผิดพลาด: คำขอนี้ไม่ได้อยู่ในสถานะรอออกใบอนุญาต (สถานะปัจจุบัน: " . htmlspecialchars($request['status']) . ")'); window.location.href='request_list.php';</script>";
+    exit;
+}
+
+// 1. Ensure Columns Exist (Autofix DB)
+ensurePermitColumnsExist($conn);
+ensureSettingsTable($conn);
+
+// 2. Prepare Defaults
+// Use Request ID as Permit No (per user request)
+$thYear = date('Y') + 543;
+$next_permit_no = $request['id'] . '/' . $thYear;
+// $next_permit_no = generateNextPermitNumber($conn); // Disabled: User prefers Request ID match
+$permit_date_default = date('Y-m-d');
+
+// Load Signer from Settings
+$setting_signer_name = getSetting($conn, 'permit_signer_name', '');
+$setting_signer_pos = getSetting($conn, 'permit_signer_position', '');
+$setting_sig_path = getSetting($conn, 'permit_signature_path', '');
+
+// 3. Handle Form Submission
+if (isset($_POST['issue_permit_confirm'])) {
+    $permit_no = $_POST['permit_no'];
+    $permit_date = $_POST['permit_date'];
+    $p_signer_name = $_POST['permit_signer_name'];
+    $p_signer_pos = $_POST['permit_signer_position'];
+    
+    // Update DB
+    $update_sql = "UPDATE sign_requests 
+                   SET status = 'approved', 
+                       permit_no = ?, 
+                       permit_date = ?,
+                       permit_signer_name = ?,
+                       permit_signer_position = ?,
+                       approved_by = ?
                    WHERE id = ?";
-    $stmt_up = $conn->prepare($sql_update);
-    $stmt_up->bind_param("sssi", $receipt_no, $receipt_date, $receipt_issued_by, $request_id);
-
+    $stmt_up = $conn->prepare($update_sql);
+    $stmt_up->bind_param("ssssii", $permit_no, $permit_date, $p_signer_name, $p_signer_pos, $_SESSION['user_id'], $request_id);
+    
     if ($stmt_up->execute()) {
-        logRequestAction($conn, $request_id, 'receipt_issued', 'ออกใบเสร็จรับเงิน', $_SESSION['user_id'], 'เลขที่: ' . $receipt_no);
-        logRequestAction($conn, $request_id, 'approved', 'อนุมัติคำร้อง', $_SESSION['user_id']);
+        // Log
+        logRequestAction($conn, $request_id, 'approved', 'ออกใบอนุญาตและอนุมัติ', $_SESSION['user_id'], "เลขที่ใบอนุญาต: $permit_no");
+        
+        // Send Email
         send_status_notification($request_id, $conn);
-
-        ?>
-        <!DOCTYPE html>
-        <html lang="th">
-
-        <head>
-            <meta charset="UTF-8">
-            <title>ออกใบเสร็จสำเร็จ</title>
-            <?php include '../includes/header.php'; ?>
-        </head>
-
-        <body>
-            <?php include '../includes/scripts.php'; ?>
-            <script>
-                document.addEventListener('DOMContentLoaded', function () {
-                    Swal.fire({
-                        icon: 'success',
-                        title: 'สำเร็จ',
-                        text: 'ออกใบเสร็จเรียบร้อยแล้ว! ผู้ใช้สามารถดาวน์โหลดใบเสร็จและหนังสืออนุญาตได้แล้ว',
-                        showConfirmButton: false,
-                        timer: 2000
-                    }).then(() => {
-                        window.location.href = 'request_list.php';
-                    });
-                });
-            </script>
-        </body>
-
-        </html>
-        <?php
+        
+        // Redirect
+        echo "<script>
+            alert('บันทึกข้อมูลและออกใบอนุญาตเรียบร้อยแล้ว');
+            window.location.href = 'request_list.php';
+        </script>";
         exit;
     } else {
-        $error = "เกิดข้อผิดพลาด: " . $conn->error;
+        $error = "Error updating record: " . $conn->error;
     }
 }
-?>
 
+?>
 <!DOCTYPE html>
 <html lang="th">
-
 <head>
     <meta charset="UTF-8">
-    <title>ออกใบเสร็จรับเงิน</title>
+    <title>ออกใบอนุญาต (Issue Permit)</title>
     <?php include '../includes/header.php'; ?>
     <link rel="stylesheet" href="../assets/css/style.css">
+    
+    <!-- SweetAlert2 -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 </head>
+<body>
 
-<body class="bg-light">
     <?php include '../includes/sidebar.php'; ?>
     <?php include '../includes/topbar.php'; ?>
 
     <div class="content fade-in-up">
-        <div class="container py-4">
-            <a href="request_list.php" class="btn btn-secondary mb-3"><i class="bi bi-arrow-left"></i>
-                กลับหน้ารายงาน</a>
-
-            <?php if (isset($error)): ?>
-                <div class="alert alert-danger">
-                    <?= $error ?>
+        <div class="container-fluid px-4 mt-4">
+            <div class="card shadow-sm border-0">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0"><i class="bi bi-file-earmark-medical me-2"></i>ออกใบอนุญาต (Issue Permit)</h5>
                 </div>
-            <?php endif; ?>
-
-            <div class="card shadow-sm">
-                <div class="card-header bg-warning text-dark">
-                    <h5 class="mb-0"><i class="bi bi-receipt"></i> ออกใบเสร็จรับเงิน คำขอ #
-                        <?= $request['id'] ?>
-                    </h5>
-                </div>
+                
                 <div class="card-body">
-                    <div class="alert alert-info">
-                        <i class="bi bi-info-circle-fill"></i> <strong>คำชี้แจง:</strong>
-                        ในขั้นตอนนี้ ท่านจะต้องระบุ <strong>"เลขที่ใบเสร็จ"</strong> และ
-                        <strong>"วันที่ออกใบเสร็จ"</strong>
-                        เพื่อระบบจะนำข้อมูลนี้ไปสร้างใบเสร็จรับเงินให้กับประชาชน
-                        <br>เมื่อกดปุ่ม "บันทึกและออกใบเสร็จ" สถานะจะเปลี่ยนเป็น <strong>"อนุมัติแล้ว"</strong>
-                        และผู้ใช้สามารถดาวน์โหลดใบเสร็จและหนังสืออนุญาตได้ทันที
-                    </div>
-
-                    <div class="row mb-4">
-                        <div class="col-md-6">
-                            <strong>ผู้ยื่นคำขอ:</strong>
-                            <?= $request['title_name'] . $request['first_name'] . ' ' . $request['last_name'] ?><br>
-                            <strong>ประเภทป้าย:</strong>
-                            <?= $request['sign_type'] ?><br>
-                            <strong>ขนาด:</strong>
-                            <?= $request['width'] ?> x
-                            <?= $request['height'] ?> เมตร<br>
-                            <strong>จำนวน:</strong>
-                            <?= $request['quantity'] ?> ป้าย
-                        </div>
-                        <div class="col-md-6">
-                            <strong>ค่าธรรมเนียม:</strong> <span class="text-success h5">
-                                <?= number_format($request['fee'], 2) ?>
-                            </span> บาท<br>
-                            <strong>สถานที่:</strong>
-                            <?= $request['road_name'] ?><br>
-                            <strong>ข้อความ:</strong>
-                            <?= $request['description'] ?>
-                        </div>
-                    </div>
-
-                    <!-- แสดงสลิปการชำระเงิน (ถ้ามี) -->
-                    <?php
-                    $sql_slip = "SELECT * FROM sign_documents WHERE request_id = ? AND doc_type = 'Payment Slip' ORDER BY id DESC LIMIT 1";
-                    $stmt_slip = $conn->prepare($sql_slip);
-                    $stmt_slip->bind_param("i", $request_id);
-                    $stmt_slip->execute();
-                    $slip_result = $stmt_slip->get_result();
-                    if ($slip_result->num_rows > 0):
-                        $slip = $slip_result->fetch_assoc();
-                        ?>
-                        <div class="alert alert-success">
-                            <strong>หลักฐานการชำระเงิน:</strong><br>
-                            <a href="../<?= htmlspecialchars($slip['file_path']) ?>" target="_blank"
-                                class="btn btn-sm btn-outline-primary mt-2">
-                                <i class="bi bi-file-earmark-image"></i> ดูสลิปการชำระเงิน
-                            </a>
-                            <button type="button" onclick="checkSlipDetails(<?= $slip['id'] ?>)"
-                                class="btn btn-sm btn-info mt-2 text-white">
-                                <i class="bi bi-shield-check"></i> ตรวจสอบข้อมูลสลิป
-                            </button>
-                        </div>
+                    <?php if (isset($error)): ?>
+                        <div class="alert alert-danger"><?= $error ?></div>
                     <?php endif; ?>
 
-                    <!-- Slip Check Script -->
-                    <script>
-                        function checkSlipDetails(docId) {
-                            Swal.fire({
-                                title: 'กำลังตรวจสอบ...',
-                                text: 'กำลังเชื่อมต่อกับธนาคารเพื่อตรวจสอบข้อมูลสลิป',
-                                allowOutsideClick: false,
-                                didOpen: () => {
-                                    Swal.showLoading();
-                                }
-                            });
+                    <!-- Info Alert -->
+                    <div class="alert alert-light border d-flex align-items-center mb-4">
+                        <i class="bi bi-info-circle-fill text-primary me-3 fs-4"></i>
+                        <div>
+                            <span class="text-muted small">อ้างอิงการชำระเงิน</span><br>
+                            <strong>ใบเสร็จเลขที่: <?= htmlspecialchars($request['receipt_no'] ?? '-') ?></strong> 
+                            <span class="ms-2 text-muted">(<?= htmlspecialchars($request['receipt_date'] ?? '-') ?>)</span>
+                        </div>
+                    </div>
 
-                            $.ajax({
-                                url: 'check_slip_ajax.php',
-                                type: 'POST',
-                                data: { doc_id: docId },
-                                dataType: 'json',
-                                success: function (response) {
-                                    if (response.status === 'success') {
-                                        Swal.fire({
-                                            icon: 'success',
-                                            title: 'ข้อมูลสลิปถูกต้อง',
-                                            html: `
-                                                <div class="text-start">
-                                                    <table class="table table-bordered table-sm">
-                                                        <tr><th width="35%">รหัสธุรกรรม</th><td class="text-primary font-monospace">${response.transRef}</td></tr>
-                                                        <tr><th>ผู้โอน</th><td>${response.sender}</td></tr>
-                                                        <tr><th>ธนาคาร</th><td>${response.bank}</td></tr>
-                                                        <tr><th>จำนวนเงิน</th><td class="text-success fw-bold">${parseFloat(response.amount).toFixed(2)} บาท</td></tr>
-                                                        <tr><th>ผู้รับ</th><td>${response.receiver}</td></tr>
-                                                        <tr><th>วันที่โอน</th><td>${response.date}</td></tr>
-                                                    </table>
-                                                </div>
-                                            `,
-                                            confirmButtonText: 'ปิด'
-                                        });
-                                    } else {
-                                        Swal.fire({
-                                            icon: 'error',
-                                            title: 'ตรวจสอบล้มเหลว',
-                                            text: response.message
-                                        });
-                                    }
-                                },
-                                error: function () {
-                                    Swal.fire({
-                                        icon: 'error',
-                                        title: 'เกิดข้อผิดพลาด',
-                                        text: 'ไม่สามารถเชื่อมต่อกับ Server ได้'
-                                    });
-                                }
-                            });
-                        }
-                    </script>
-
-                    <form method="post" id="issueReceiptForm">
-                        <div class="row g-3 align-items-end">
-                            <div class="col-md-4">
-                                <label class="form-label">เลขที่ใบเสร็จ</label>
-                                <input type="text" name="receipt_no" class="form-control"
-                                    value="<?= htmlspecialchars($receipt_number) ?>" required>
+                    <form method="post" id="issuePermitForm">
+                        
+                        <!-- Section 1: Permit Details -->
+                        <h6 class="border-bottom pb-2 mb-3 text-secondary"><i class="bi bi-1-circle me-1"></i>ข้อมูลใบอนุญาต</h6>
+                        <div class="row g-4 mb-4">
+                            <div class="col-md-6">
+                                <label class="form-label text-muted">เลขที่ใบอนุญาต <span class="text-danger">*</span></label>
+                                <div class="input-group">
+                                    <span class="input-group-text bg-light border-end-0">
+                                        <i class="bi bi-hash"></i>
+                                    </span>
+                                    <input type="text" name="permit_no" class="form-control fw-bold fs-5 text-primary border-start-0 ps-0" 
+                                           value="<?= htmlspecialchars($next_permit_no) ?>" required>
+                                </div>
+                                <div class="form-text">รูปแบบ: ลำดับที่/ปีพ.ศ. (เช่น 34/2568)</div>
                             </div>
-                            <div class="col-md-4">
-                                <label class="form-label">วันที่ออกใบเสร็จ</label>
-                                <input type="date" name="receipt_date" class="form-control" value="<?= date('Y-m-d') ?>"
-                                    required>
-                            </div>
-                            <div class="col-md-4">
-                                <label class="form-label">ชื่อผู้รับเงิน/ผู้ออกใบเสร็จ</label>
-                                <input type="text" name="receipt_issued_by" class="form-control"
-                                    value="<?= htmlspecialchars($issuer_name_default ?: '................................') ?>"
-                                    required>
-                            </div>
-                            <div class="col-md-12">
-                                <button type="button" class="btn btn-warning w-100 mt-2"
-                                    onclick="confirmIssueReceipt()">
-                                    <i class="bi bi-save"></i> บันทึกและออกใบเสร็จ
-                                </button>
-                                <!-- Hidden input to simulate button click for PHP check -->
-                                <input type="hidden" name="issue_receipt_confirm" value="1">
+                            
+                            <div class="col-md-6">
+                                <label class="form-label text-muted">วันที่ออกใบอนุญาต <span class="text-danger">*</span></label>
+                                <input type="date" name="permit_date" class="form-control" 
+                                       value="<?= $permit_date_default ?>" required>
                             </div>
                         </div>
-                    </form>
 
-                    <script>
-                        function confirmIssueReceipt() {
-                            Swal.fire({
-                                title: 'ยืนยันการออกใบเสร็จ?',
-                                text: "กรุณาตรวจสอบความถูกต้องก่อนบันทึก",
-                                icon: 'warning',
-                                showCancelButton: true,
-                                confirmButtonColor: '#3085d6',
-                                cancelButtonColor: '#d33',
-                                confirmButtonText: 'ยืนยัน',
-                                cancelButtonText: 'ยกเลิก'
-                            }).then((result) => {
-                                if (result.isConfirmed) {
-                                    document.getElementById('issueReceiptForm').submit();
-                                }
-                            });
-                        }
-                    </script>
+                        <!-- Section 2: Signer Details -->
+                        <h6 class="border-bottom pb-2 mb-3 text-secondary"><i class="bi bi-2-circle me-1"></i>ข้อมูลผู้ลงนาม (ปรากฏท้ายใบอนุญาต)</h6>
+                        <div class="row g-4 mb-4">
+                            <div class="col-md-4">
+                                <label class="form-label text-muted">ชื่อผู้ลงนาม <span class="text-danger">*</span></label>
+                                <input type="text" name="permit_signer_name" class="form-control" 
+                                       value="<?= htmlspecialchars($setting_signer_name) ?>" required>
+                            </div>
+
+                            <div class="col-md-4">
+                                <label class="form-label text-muted">ตำแหน่ง <span class="text-danger">*</span></label>
+                                <input type="text" name="permit_signer_position" class="form-control" 
+                                       value="<?= htmlspecialchars($setting_signer_pos) ?>" required>
+                            </div>
+
+                            <div class="col-md-4">
+                                <label class="form-label text-muted">ตัวอย่างลายเซ็น</label>
+                                <div class="border p-2 bg-light rounded text-center position-relative" style="height: 80px; display: flex; align-items: center; justify-content: center;">
+                                    <?php if ($setting_sig_path && file_exists("../" . $setting_sig_path)): ?>
+                                        <img src="../<?= $setting_sig_path ?>" style="max-height: 60px; max-width: 100%;" alt="Signature">
+                                    <?php else: ?>
+                                        <span class="text-muted small">ยังไม่มีลายเซ็น</span>
+                                    <?php endif; ?>
+                                    <a href="settings.php" target="_blank" class="position-absolute top-0 end-0 p-1 text-decoration-none" title="ไปที่ตั้งค่า">
+                                        <i class="bi bi-gear-fill text-secondary"></i>
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row mt-5 pt-3 border-top bg-light py-3 rounded">
+                            <div class="col-12 text-end">
+                                <a href="request_list.php" class="btn btn-secondary me-2">ยกเลิก</a>
+                                <button type="button" class="btn btn-success px-4" onclick="confirmIssue()">
+                                    <i class="bi bi-check-circle-fill"></i> ยืนยันและออกใบอนุญาต
+                                </button>
+                            </div>
+                        </div>
+                        <input type="hidden" name="issue_permit_confirm" value="1">
+                    </form>
                 </div>
             </div>
         </div>
     </div>
 
     <?php include '../includes/scripts.php'; ?>
+    <script>
+        function confirmIssue() {
+            Swal.fire({
+                title: 'ยืนยันการออกใบอนุญาต?',
+                html: "เมื่อบันทึกแล้ว สถานะจะเปลี่ยนเป็น <b>'อนุมัติแล้ว'</b><br>และระบบจะส่งอีเมลแจ้งผู้ยื่นคำขอทันที",
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonColor: '#198754',
+                cancelButtonColor: '#6c757d',
+                confirmButtonText: 'ยืนยันการอนุมัติ',
+                cancelButtonText: 'ยกเลิก'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    document.getElementById('issuePermitForm').submit();
+                }
+            });
+        }
+    </script>
 </body>
-
 </html>

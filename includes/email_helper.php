@@ -18,6 +18,8 @@ if (!function_exists('get_status_label')) {
                 return 'รอชำระเงิน';
             case 'waiting_receipt':
                 return 'รอออกใบเสร็จ';
+            case 'waiting_permit':
+                return 'รอออกใบอนุญาต';
             case 'approved':
                 return 'อนุมัติเรียบร้อย';
             case 'rejected':
@@ -42,6 +44,8 @@ if (!function_exists('get_status_color')) {
                 return '#fd7e14'; // Orange
             case 'waiting_receipt':
                 return '#6610f2'; // Purple
+            case 'waiting_permit':
+                return '#0d6efd'; // Primary Blue
             case 'approved':
                 return '#198754'; // Success Green
             case 'rejected':

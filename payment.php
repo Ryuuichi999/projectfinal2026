@@ -94,7 +94,7 @@ if (isset($_POST['upload_slip'])) {
                         $stmt_doc->bind_param("isss", $request_id, $doc_type, $dest_path, $transRef);
 
                         if ($stmt_doc->execute()) {
-                            // Auto-generate Receipt Number & Approve immediately
+                            // Auto-generate Receipt Number BUT Status -> Waiting Permit
                             // Ensure Settings Table exists (lazy init)
                             ensureSettingsTable($conn);
 
@@ -103,7 +103,7 @@ if (isset($_POST['upload_slip'])) {
                             $receipt_issued_by = getSetting($conn, 'receipt_signer_name', 'ระบบอัตโนมัติ (ชำระเงินออนไลน์)');
 
                             $update_sql = "UPDATE sign_requests 
-                                           SET status = 'approved', receipt_no = ?, receipt_date = ?, receipt_issued_by = ? 
+                                           SET status = 'waiting_permit', receipt_no = ?, receipt_date = ?, receipt_issued_by = ? 
                                            WHERE id = ?";
                             $stmt_update = $conn->prepare($update_sql);
                             $stmt_update->bind_param("sssi", $receipt_no, $receipt_date, $receipt_issued_by, $request_id);
@@ -112,7 +112,7 @@ if (isset($_POST['upload_slip'])) {
                                 // บันทึก Log
                                 logRequestAction($conn, $request_id, 'paid', 'ชำระเงินสำเร็จ', $user_id, 'จำนวน: ' . number_format($amount) . ' บาท');
                                 logRequestAction($conn, $request_id, 'receipt_issued', 'ออกใบเสร็จอัตโนมัติ', null, 'เลขที่: ' . $receipt_no);
-                                logRequestAction($conn, $request_id, 'approved', 'อนุมัติคำร้อง', null, 'อนุมัติอัตโนมัติหลังชำระเงิน');
+                                logRequestAction($conn, $request_id, 'waiting_permit', 'รอออกใบอนุญาต', null, 'ชำระเงินแล้ว รอเจ้าหน้าที่ออกใบอนุญาต');
                                 // ส่ง email แจ้งเตือนสถานะ
                                 send_status_notification($request_id, $conn);
                                 ?>
@@ -131,7 +131,7 @@ if (isset($_POST['upload_slip'])) {
                                             Swal.fire({
                                                 icon: 'success',
                                                 title: 'ชำระเงินสำเร็จ!',
-                                                html: 'ระบบตรวจสอบยอดเงินเรียบร้อยแล้ว<br>ออกใบเสร็จเลขที่: <strong><?= $receipt_no ?></strong><br>คุณสามารถดาวน์โหลดใบเสร็จได้ที่หน้ารายละเอียด',
+                                                html: 'ระบบตรวจสอบยอดเงินเรียบร้อยแล้ว<br>ออกใบเสร็จเลขที่: <strong><?= $receipt_no ?></strong><br>สถานะ: <strong>รอเจ้าหน้าที่ออกใบอนุญาต</strong>',
                                                 showConfirmButton: true,
                                                 confirmButtonText: 'ตกลง'
                                             }).then(() => {

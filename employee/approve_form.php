@@ -31,26 +31,20 @@ if ($result->num_rows === 0) {
 
 $request = $result->fetch_assoc();
 
-// Auto-generate Permission Number (Example: Wait/2569)
-$current_year_th = date('Y') + 543;
-$permit_number = "Wait/" . $current_year_th;
-
 if (isset($_POST['approve_confirm'])) {
-    $permit_no = $_POST['permit_no'];
-    $permit_date = $_POST['permit_date']; // วันที่ออกหนังสือ
-
-    // Update DB: status -> waiting_payment, save approver
-    $sql_update = "UPDATE sign_requests SET status = 'waiting_payment', permit_no = ?, permit_date = ?, approved_by = ? WHERE id = ?";
+    // Update DB: status -> waiting_payment
+    // Note: permit_no/permit_date will be set later in issue_receipt.php
+    $sql_update = "UPDATE sign_requests SET status = 'waiting_payment', approved_by = ? WHERE id = ?";
     $stmt_up = $conn->prepare($sql_update);
     $approver_id = $_SESSION['user_id'];
-    $stmt_up->bind_param("ssii", $permit_no, $permit_date, $approver_id, $request_id);
+    $stmt_up->bind_param("ii", $approver_id, $request_id);
 
     if ($stmt_up->execute()) {
         send_status_notification($request_id, $conn);
-        logRequestAction($conn, $request_id, 'waiting_payment', 'อนุมัติคำร้อง — รอชำระค่าธรรมเนียม', $approver_id, 'เลขที่ใบอนุญาต: ' . $permit_no);
+        logRequestAction($conn, $request_id, 'waiting_payment', 'อนุมัติคำร้อง — รอชำระค่าธรรมเนียม', $approver_id, 'ตรวจสอบเอกสารเบื้องต้นผ่านแล้ว');
 
         require_once '../includes/audit_helper.php';
-        logAudit($conn, 'approve', 'sign_requests', $request_id, 'อนุมัติคำร้อง permit_no: ' . $permit_no);
+        logAudit($conn, 'approve', 'sign_requests', $request_id, 'อนุมัติคำร้องให้รอชำระเงิน');
 
         echo '<!DOCTYPE html>
 <html lang="th">
@@ -86,7 +80,7 @@ if (isset($_POST['approve_confirm'])) {
 
 <head>
     <meta charset="UTF-8">
-    <title>ออกหนังสืออนุญาต</title>
+    <title>อนุมัติคำขอเบื้องต้น</title>
     <?php include '../includes/header.php'; ?>
 </head>
 
@@ -114,13 +108,11 @@ if (isset($_POST['approve_confirm'])) {
                     </h5>
                 </div>
                 <div class="card-body">
-                    <div class="alert alert-warning">
+                    <div class="alert alert-info">
                         <i class="bi bi-info-circle-fill"></i> <strong>คำชี้แจง:</strong>
-                        ในขั้นตอนนี้ ท่านจะต้องระบุ <strong>"เลขที่หนังสืออนุญาต"</strong> และ
-                        <strong>"วันที่ออกหนังสือ"</strong>
-                        เพื่อระบบจะนำข้อมูลนี้ไปสร้างหนังสืออนุญาต (แบบ ร.ส. ๒) ให้กับประชาชน
-                        <br>เมื่อกดปุ่ม "บันทึกและอนุมัติ" สถานะจะเปลี่ยนเป็น <strong>"รอชำระเงิน"</strong>
-                        เพื่อให้ประชาชนดำเนินการชำระค่าธรรมเนียมต่อไป
+                        กรุณาตรวจสอบรายละเอียดคำขอให้ถูกต้องครบถ้วน
+                        <br>เมื่อกดปุ่ม <strong>"อนุมัติและแจ้งให้ชำระเงิน"</strong> สถานะจะเปลี่ยนเป็น <strong>"รอชำระเงิน"</strong>
+                        เพื่อให้ประชาชนดำเนินการชำระค่าธรรมเนียมต่อไป (ใบอนุญาตจะออกให้หลังจากชำระเงินแล้ว)
                     </div>
 
                     <div class="row mb-4">
@@ -147,20 +139,13 @@ if (isset($_POST['approve_confirm'])) {
                     </div>
 
                     <form method="post" id="approveForm">
-                        <div class="row g-3 align-items-end">
-                            <div class="col-md-4">
-                                <label class="form-label">เลขที่หนังสืออนุญาต</label>
-                                <input type="text" name="permit_no" class="form-control"
-                                    value="<?= htmlspecialchars($permit_number) ?>" required>
-                            </div>
-                            <div class="col-md-4">
-                                <label class="form-label">วันที่ออกหนังสือ</label>
-                                <input type="date" name="permit_date" class="form-control" value="<?= date('Y-m-d') ?>"
-                                    required>
-                            </div>
-                            <div class="col-md-4">
-                                <button type="button" class="btn btn-action-confirm w-100" onclick="confirmApprove()">
-                                    บันทึกและอนุมัติ
+                        <div class="row g-3 justify-content-center mt-4">
+                            <div class="col-md-8 text-center">
+                                <div class="alert alert-secondary">
+                                    <i class="bi bi-question-circle"></i> ยืนยันการตรวจสอบเอกสารและส่งต่อให้ผู้ชำระเงิน?
+                                </div>
+                                <button type="button" class="btn btn-success btn-lg w-100 py-3" onclick="confirmApprove()">
+                                    <i class="bi bi-check-circle-fill me-2"></i> อนุมัติและแจ้งให้ชำระเงิน
                                 </button>
                                 <input type="hidden" name="approve_confirm" value="1">
                             </div>
@@ -179,7 +164,7 @@ if (isset($_POST['approve_confirm'])) {
                 text: "สถานะจะเปลี่ยนเป็น 'รอชำระเงิน'",
                 icon: 'warning',
                 showCancelButton: true,
-                confirmButtonColor: '#3085d6',
+                confirmButtonColor: '#198754',
                 cancelButtonColor: '#d33',
                 confirmButtonText: 'ยืนยัน',
                 cancelButtonText: 'ยกเลิก'

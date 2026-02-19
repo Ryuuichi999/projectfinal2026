@@ -474,7 +474,8 @@ $result_docs = $stmt_docs->get_result();
                                     <div class="detail-item">
                                         <div class="detail-label">ข้อความ/รายละเอียดป้าย</div>
                                         <div class="detail-value">
-                                            <?= nl2br(htmlspecialchars($request['description'])) ?></div>
+                                            <?= nl2br(htmlspecialchars($request['description'])) ?>
+                                        </div>
                                     </div>
                                 </div>
                                 <div class="col-12">
@@ -513,7 +514,15 @@ $result_docs = $stmt_docs->get_result();
                         <?php if (in_array($request['status'], ['pending', 'reviewing', 'need_documents'])): ?>
                             <div class="d-grid gap-2 mt-2">
                                 <a href="approve_form.php?id=<?= $request['id'] ?>" class="btn btn-success py-2">
-                                    <i class="bi bi-check-circle me-2"></i> ยืนยัน / อนุมัติ
+                                    <i class="bi bi-check-circle me-2"></i> ยืนยัน / อนุมัติ (ส่งชำระเงิน)
+                                </a>
+                            </div>
+                        <?php endif; ?>
+
+                        <?php if ($request['status'] === 'waiting_permit'): ?>
+                            <div class="d-grid gap-2 mt-2">
+                                <a href="issue_receipt.php?id=<?= $request['id'] ?>" class="btn btn-primary py-2 fw-bold">
+                                    <i class="bi bi-file-earmark-check-fill me-2"></i> ออกใบอนุญาต
                                 </a>
                             </div>
                         <?php endif; ?>
@@ -661,7 +670,7 @@ $result_docs = $stmt_docs->get_result();
                 var baseMaps = {
                     "OpenStreetMap": openStreetMap,
                     <?php if (defined('MAPTILER_API_KEY')): ?>
-                        "MapTiler Streets": maptilerStreets,
+                            "MapTiler Streets": maptilerStreets,
                         "MapTiler Hybrid": maptilerHybrid
                     <?php endif; ?>
                 };
