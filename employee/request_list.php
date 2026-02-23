@@ -135,7 +135,7 @@ $result->data_seek(0);
                 <table id="requestsTable" class="table table-hover align-middle">
                     <thead class="table-light">
                         <tr>
-                            <th>ID</th>
+                            <th>เลขที่คำร้อง</th>
                             <th>ผู้ยื่นคำขอ</th>
                             <th>ประเภทป้าย</th>
                             <th>วันที่ยื่น</th>
@@ -146,12 +146,14 @@ $result->data_seek(0);
                     <tbody>
                         <?php while ($row = $result->fetch_assoc()): ?>
                             <tr>
-                                <td><?= $row['id'] ?></td>
+                                <td>
+                                    <div class="fw-bold text-primary"><?= htmlspecialchars($row['request_no'] ?: '#' . $row['id']) ?></div>
+                                    <small class="text-muted">#<?= $row['id'] ?></small>
+                                </td>
                                 <td>
                                     <div class="fw-bold">
                                         <?= htmlspecialchars($row['title_name'] . $row['first_name'] . ' ' . $row['last_name']) ?>
                                     </div>
-                                    <!-- <small class="text-muted">ID: <?= $row['user_id'] ?></small> -->
                                 </td>
                                 <td>
                                     <?= htmlspecialchars($row['sign_type']) ?>

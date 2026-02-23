@@ -8,7 +8,7 @@ if (!isset($_GET['id'])) {
 }
 
 $request_id = $_GET['id'];
-$sql = "SELECT r.*, u.citizen_id 
+$sql = "SELECT r.*, u.citizen_id, u.title_name, u.first_name, u.last_name, u.address as user_address 
         FROM sign_requests r 
         JOIN users u ON r.user_id = u.id 
         WHERE r.id = ?";
@@ -218,12 +218,8 @@ function getThaiDate($date)
             </div>
 
             <div class="receipt-no">
-                <div>เลขที่
-                    <?= htmlspecialchars($request['receipt_no'] ?? 'Wait') ?>
-                </div>
-                <div>วันที่
-                    <?= getThaiDate($request['receipt_date'] ?? date('Y-m-d')) ?>
-                </div>
+                <div><strong>เลขที่</strong> <?= htmlspecialchars($request['receipt_no'] ?? '-') ?></div>
+                <div><strong>วันที่</strong> <?= getThaiDate($request['receipt_date'] ?? date('Y-m-d')) ?></div>
             </div>
 
             <div class="header">
@@ -232,9 +228,10 @@ function getThaiDate($date)
             </div>
 
             <div class="info-row">
-                ได้รับเงินจาก: <strong>
-                    <?= htmlspecialchars($request['applicant_name']) ?>
-                </strong>
+                ได้รับเงินจาก <strong><?= htmlspecialchars($request['applicant_name']) ?></strong>
+            </div>
+            <div class="info-row" style="font-size:12pt;">
+                ที่อยู่ <?= htmlspecialchars($request['applicant_address'] ?: $request['user_address']) ?>
             </div>
         </div>
 
@@ -252,6 +249,7 @@ function getThaiDate($date)
                     <td style="text-align: center;">1</td>
                     <td>
                         ค่าธรรมเนียมปิด โปรย ติดตั้งแผ่นประกาศหรือแผ่นปลิว เพื่อการโฆษณา
+                        (<?= htmlspecialchars($request['sign_type']) ?> ขนาด <?= $request['width'] ?> x <?= $request['height'] ?> ม. จำนวน <?= $request['quantity'] ?> ป้าย)
                     </td>
                     <td style="text-align: right;">
                         <?= number_format($request['fee'], 2) ?>

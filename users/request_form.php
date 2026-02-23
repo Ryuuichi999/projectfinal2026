@@ -1,6 +1,7 @@
 <?php
 require '../includes/db.php';
 require_once '../includes/log_helper.php';
+require_once '../includes/receipt_helper.php';
 
 if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'user') {
     header("Location: login.php");
@@ -79,6 +80,10 @@ if (isset($_POST['submit'])) {
             );
             $stmt->execute();
             $request_id = $conn->insert_id;
+
+            // 3.5 กำหนดเลขที่คำร้องแบบทางการ
+            $request_no = generateNextRequestNumber($conn);
+            $conn->query("UPDATE sign_requests SET request_no = '$request_no' WHERE id = $request_id");
 
             // 4. จัดการไฟล์
             $uploaded_files = [

@@ -78,7 +78,7 @@ if ($res_rows && $res_rows->num_rows > 0) {
 
     <?php include '../includes/header.php'; ?>
 
-    <link rel="stylesheet" href="assets/css/style.css">
+    <link rel="stylesheet" href="../assets/css/style.css">
 
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
 

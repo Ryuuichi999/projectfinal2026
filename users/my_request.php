@@ -76,13 +76,13 @@ if (!isset($_SESSION['user_id'])) {
                             <table id="myRequestsTable" class="table table-hover align-middle">
                                 <thead class="table-light">
                                     <tr>
-                                        <th class="text-center" width="5%">#</th>
+                                        <th width="18%">เลขที่คำร้อง</th>
                                         <th width="15%">ประเภทป้าย</th>
-                                        <th width="15%">ขนาด (ม.)</th>
+                                        <th width="12%">ขนาด (ม.)</th>
                                         <th class="text-center" width="10%">ค่าธรรมเนียม</th>
                                         <th class="text-center" width="15%">สถานะ</th>
-                                        <th width="15%">วันที่ยื่น</th>
-                                        <th class="text-center" width="15%">จัดการ</th>
+                                        <th width="12%">วันที่ยื่น</th>
+                                        <th class="text-center" width="18%">จัดการ</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -100,8 +100,9 @@ if (!isset($_SESSION['user_id'])) {
                                             $size = "{$row['width']} x {$row['height']}";
                                             $fee = number_format($row['fee']);
 
+                                            $req_no = !empty($row['request_no']) ? $row['request_no'] : '#' . $row['id'];
                                             echo "<tr>";
-                                            echo "<td class='text-center text-muted'>{$row['id']}</td>";
+                                            echo "<td><div class='fw-bold text-primary small'>" . htmlspecialchars($req_no) . "</div><small class='text-muted'>#{$row['id']}</small></td>";
                                             echo "<td class='fw-bold text-primary'>{$row['sign_type']}</td>";
                                             echo "<td><span class='badge bg-light text-dark border'>{$size}</span></td>";
                                             echo "<td class='text-center'>{$fee}</td>";

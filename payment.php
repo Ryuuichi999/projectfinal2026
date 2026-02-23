@@ -34,23 +34,25 @@ if ($result->num_rows === 0) {
 $request = $result->fetch_assoc();
 $amount = $request['fee'];
 
-// หากสถานะไม่ใช่รอชำระเงิน ให้เด้งกลับ (หรือถ้าเป็น pending แล้วก็บอกว่าจ่ายแล้ว)
+// Block: หากสถานะไม่ใช่รอชำระเงิน ให้เด้งกลับทันที
 if ($request['status'] !== 'waiting_payment') {
-    $alert_message = "รายการนี้ไม่ได้อยู่ในสถานะรอชำระเงิน (สถานะปัจจุบัน: {$request['status']})";
-    // echo "<script>
-    //     document.addEventListener('DOMContentLoaded', function() {
-    //         Swal.fire({
-    //             icon: 'info',
-    //             title: 'แจ้งเตือน',
-    //             text: '$alert_message',
-    //             confirmButtonText: 'ตกลง'
-    //         }).then(() => {
-    //             window.location.href='users/my_request.php';
-    //         });
-    //     });
-    // </script>";
-    // exit;
-    // ปล่อยผ่านเผื่อ user อยากจ่ายซ้ำ หรือ logic อื่นๆ แต่ปกติควร block
+    $status_labels = [
+        'pending'        => 'รอพิจารณา',
+        'reviewing'      => 'กำลังพิจารณา',
+        'need_documents' => 'ขอเอกสารเพิ่มเติม',
+        'waiting_permit' => 'รอออกใบอนุญาต',
+        'approved'       => 'อนุมัติแล้ว',
+        'rejected'       => 'ไม่อนุมัติ',
+    ];
+    $status_th = $status_labels[$request['status']] ?? $request['status'];
+    echo '<!DOCTYPE html><html lang="th"><head><meta charset="UTF-8">';
+    echo '<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script></head><body>';
+    echo '<script>document.addEventListener("DOMContentLoaded",function(){';
+    echo 'Swal.fire({icon:"info",title:"ไม่สามารถชำระเงินได้",';
+    echo 'text:"คำร้องนี้อยู่ในสถานะ: ' . $status_th . ' ไม่ได้รอชำระเงิน",';
+    echo 'confirmButtonText:"ตกลง"}).then(()=>{window.location.href="users/my_request.php";});';
+    echo '});</script></body></html>';
+    exit;
 }
 
 // Handle Slip Upload
@@ -69,13 +71,12 @@ if (isset($_POST['upload_slip'])) {
 
             if ($apiResult['status'] === 'success') {
                 $transRef = $apiResult['transRef'];
+                $slipAmount = (float) $apiResult['amount'];
+                $requiredAmount = (float) $amount;
 
-                // Check duplicate in Database
-                $checkDup = $conn->prepare("SELECT id FROM sign_documents WHERE trans_ref = ?");
-                $checkDup->bind_param("s", $transRef);
-                $checkDup->execute();
-                if ($checkDup->get_result()->num_rows > 0) {
-                    $error = "สลิปนี้ถูกใช้งานไปแล้ว กรุณาตรวจสอบอีกครั้ง";
+                // ตรวจสอบจำนวนเงินในสลิปต้องตรงกับค่าธรรมเนียม
+                if (abs($slipAmount - $requiredAmount) > 0.01) {
+                    $error = "จำนวนเงินในสลิปไม่ตรง: สลิประบุ " . number_format($slipAmount, 2) . " บาท แต่ต้องชำระ " . number_format($requiredAmount, 2) . " บาท กรุณาตรวจสอบอีกครั้ง";
                 } else {
                     // Valid and Unique -> Proceed to Upload
                     $upload_dir = "uploads/slips/";
@@ -232,52 +233,140 @@ $qr_url = "https://promptpay.io/{$promptpay_id}/{$amount}.png";
 
     <?php include './includes/user_navbar.php'; ?>
 
-    <div class="container fade-in-up mt-5" style="max-width: 900px;">
-        <div class="card p-4 shadow-sm">
-            <h2 class="text-center mb-4">💳 ชำระค่าธรรมเนียมคำขอ #
-                <?= $request_id ?>
-            </h2>
+    <div class="container fade-in-up mt-4 mb-5" style="max-width: 960px;">
 
-            <?php if (isset($error)): ?>
-                <div class="alert alert-danger">
-                    <?= $error ?>
-                </div>
-            <?php endif; ?>
+        <!-- Header -->
+        <div class="d-flex align-items-center mb-3">
+            <a href="users/my_request.php" class="btn btn-outline-secondary btn-sm me-3">
+                <i class="bi bi-arrow-left"></i> กลับ
+            </a>
+            <div>
+                <h4 class="mb-0 fw-bold"><i class="bi bi-credit-card-2-front-fill text-primary me-2"></i>ชำระค่าธรรมเนียม</h4>
+                <small class="text-muted">คำร้องเลขที่ #<?= $request_id ?> — <?= htmlspecialchars($request['sign_type']) ?></small>
+            </div>
+        </div>
 
-            <div class="row">
-                <div class="col-md-6 text-center border-end">
-                    <h5 class="text-muted">สแกน QR Code เพื่อจ่ายเงิน</h5>
-                    <img src="<?= $qr_url ?>" alt="PromptPay QR" class="img-fluid my-3"
-                        style="max-width: 300px; border: 1px solid #ddd; border-radius: 8px;">
-                    <h3 class="text-primary">
-                        <?= number_format($amount, 2) ?> บาท
-                    </h3>
-                    <p class="text-muted small">PromptPay ID:
-                        <?= $promptpay_id ?>
-                    </p>
-                </div>
+        <?php if (isset($error)): ?>
+            <div class="alert alert-danger d-flex align-items-center gap-2">
+                <i class="bi bi-exclamation-triangle-fill fs-5"></i>
+                <div><?= $error ?></div>
+            </div>
+        <?php endif; ?>
 
-                <div class="col-md-6 d-flex flex-column justify-content-center p-4">
-                    <h5 class="mb-3">📢 แจ้งโอนเงิน (Upload Slip)</h5>
-                    <form method="post" enctype="multipart/form-data">
-                        <div class="mb-3">
-                            <label class="form-label">อัปโหลดหลักฐานการโอนเงิน</label>
-                            <input type="file" name="slip_file" class="form-control" required accept="image/*, .pdf">
-                            <div class="form-text">รองรับไฟล์ .jpg, .png, .pdf</div>
+        <div class="row g-3">
+            <!-- ซ้าย: ข้อมูลคำร้อง + QR -->
+            <div class="col-md-5">
+                <!-- ข้อมูลคำร้อง -->
+                <div class="card border-0 shadow-sm mb-3">
+                    <div class="card-header bg-primary text-white py-2 px-3">
+                        <i class="bi bi-file-earmark-text me-1"></i> รายละเอียดคำร้อง
+                    </div>
+                    <div class="card-body p-3">
+                        <table class="table table-sm table-borderless mb-0">
+                            <tr>
+                                <td class="text-muted" style="width:45%">ประเภทป้าย</td>
+                                <td class="fw-bold"><?= htmlspecialchars($request['sign_type']) ?></td>
+                            </tr>
+                            <tr>
+                                <td class="text-muted">ขนาด</td>
+                                <td class="fw-bold"><?= $request['width'] ?> × <?= $request['height'] ?> ม.</td>
+                            </tr>
+                            <tr>
+                                <td class="text-muted">จำนวน</td>
+                                <td class="fw-bold"><?= $request['quantity'] ?> ป้าย</td>
+                            </tr>
+                            <tr>
+                                <td class="text-muted">ถนน</td>
+                                <td class="fw-bold"><?= htmlspecialchars($request['road_name']) ?></td>
+                            </tr>
+                        </table>
+                        <hr class="my-2">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <span class="text-muted">ยอดที่ต้องชำระ</span>
+                            <span class="fs-4 fw-bold text-danger"><?= number_format($amount, 2) ?> <small class="fs-6">บาท</small></span>
                         </div>
-                        <div class="d-grid gap-2">
-                            <button type="submit" name="upload_slip" class="btn btn-success btn-lg">
-                                ✅ ยืนยันการชำระเงิน
-                            </button>
-                            <a href="users/my_request.php" class="btn btn-outline-secondary">กลับไปหน้ารายการ</a>
+                    </div>
+                </div>
+
+                <!-- QR Code -->
+                <div class="card border-0 shadow-sm text-center">
+                    <div class="card-header bg-success text-white py-2 px-3">
+                        <i class="bi bi-qr-code me-1"></i> สแกน QR PromptPay
+                    </div>
+                    <div class="card-body p-3">
+                        <img src="<?= $qr_url ?>" alt="PromptPay QR" class="img-fluid"
+                            style="max-width: 220px; border: 1px solid #ddd; border-radius: 8px; padding: 6px;">
+                        <div class="mt-2">
+                            <span class="badge bg-success fs-6 px-3 py-2"><?= number_format($amount, 2) ?> บาท</span>
                         </div>
-                    </form>
+                        <p class="text-muted small mt-2 mb-0">PromptPay: <?= $promptpay_id ?></p>
+                        <p class="text-muted small">เทศบาลเมืองศิลา</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ขวา: Upload Slip -->
+            <div class="col-md-7">
+                <div class="card border-0 shadow-sm h-100">
+                    <div class="card-header bg-warning text-dark py-2 px-3">
+                        <i class="bi bi-upload me-1"></i> แนบหลักฐานการโอนเงิน
+                    </div>
+                    <div class="card-body p-4">
+                        <div class="alert alert-info d-flex gap-2 align-items-start mb-3">
+                            <i class="bi bi-info-circle-fill mt-1 flex-shrink-0"></i>
+                            <div>
+                                <strong>ข้อควรทราบ:</strong>
+                                <ul class="mb-0 mt-1 ps-3">
+                                    <li>ระบบจะตรวจสอบยอดเงินในสลิปอัตโนมัติ</li>
+                                    <li>ยอดในสลิปต้องตรงกับ <strong><?= number_format($amount, 2) ?> บาท</strong></li>
+                                    <li>ห้ามใช้สลิปซ้ำหรือสลิปปลอม</li>
+                                    <li>รองรับไฟล์ .jpg, .jpeg, .png เท่านั้น</li>
+                                </ul>
+                            </div>
+                        </div>
+
+                        <form method="post" enctype="multipart/form-data" id="slipForm">
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">เลือกไฟล์สลิปการโอนเงิน <span class="text-danger">*</span></label>
+                                <input type="file" name="slip_file" id="slip_file" class="form-control form-control-lg"
+                                    required accept=".jpg,.jpeg,.png">
+                                <div class="form-text">รองรับ JPG, PNG เท่านั้น (ขนาดไม่เกิน 5MB)</div>
+                            </div>
+
+                            <!-- Preview -->
+                            <div id="slip_preview_wrap" class="mb-3 d-none">
+                                <label class="form-label text-muted small">ตัวอย่างสลิปที่เลือก:</label>
+                                <img id="slip_preview" src="#" alt="preview"
+                                    class="img-fluid rounded border" style="max-height: 200px;">
+                            </div>
+
+                            <div class="d-grid gap-2 mt-3">
+                                <button type="submit" name="upload_slip" class="btn btn-success btn-lg fw-bold">
+                                    <i class="bi bi-check-circle-fill me-2"></i>ยืนยันการชำระเงิน
+                                </button>
+                            </div>
+                        </form>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
 
     <?php include './includes/scripts.php'; ?>
+    <script>
+        // Preview slip image before upload
+        document.getElementById('slip_file').addEventListener('change', function (e) {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function (ev) {
+                    document.getElementById('slip_preview').src = ev.target.result;
+                    document.getElementById('slip_preview_wrap').classList.remove('d-none');
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+    </script>
 </body>
 
 </html>

@@ -39,10 +39,8 @@ if (isset($_POST['submit_renew'])) {
     $install_date = $_POST['install_date'];
     $end_date = date('Y-m-d', strtotime($install_date . " + $duration_days days"));
 
-    // คำนวณค่าธรรมเนียมเหมือนเดิม
-    $area = $old_request['width'] * $old_request['height'];
-    $rate = ($area >= 50) ? 400 : 200;
-    $fee = $rate * $old_request['quantity'];
+    // คำนวณค่าธรรมเนียม: เหมาป้ายละ 200 บาท (ตรงกับ request_form.php)
+    $fee = 200 * $old_request['quantity'];
 
     $sql = "INSERT INTO sign_requests 
             (user_id, applicant_name, applicant_address, sign_type, width, height, quantity, 
@@ -174,10 +172,8 @@ $days_left = (int) ((strtotime($expire_date) - time()) / 86400);
                         <div class="mb-3">
                             <label class="form-label fw-bold">ค่าธรรมเนียม (ประเมิน)</label>
                             <input type="text" id="estimated_fee" class="form-control"
-                                value="<?= number_format($old_request['fee']) ?> บาท" disabled>
-                            <small class="text-muted">อัตราวันละ
-                                <?= number_format(($old_request['width'] * $old_request['height'] >= 50 ? 400 : 200) * $old_request['quantity']) ?>
-                                บาท</small>
+                                value="<?= number_format(200 * $old_request['quantity']) ?> บาท" disabled>
+                            <small class="text-muted">อัตราเหมาป้ายละ 200 บาท (จำนวน <?= $old_request['quantity'] ?> ป้าย)</small>
                         </div>
                         <button type="submit" name="submit_renew" class="btn btn-success w-100">
                             🔄 ยื่นต่ออายุ
@@ -193,15 +189,13 @@ $days_left = (int) ((strtotime($expire_date) - time()) / 86400);
     <?php include '../includes/scripts.php'; ?>
     <script>
         const quantity = <?= $old_request['quantity'] ?>;
-        const area = <?= $old_request['width'] * $old_request['height'] ?>;
-        const ratePerDay = (area >= 50 ? 400 : 200) * quantity;
+        const feePerSign = 200;
+        const totalFee = feePerSign * quantity;
 
         const durationInput = document.getElementById('duration_days');
         const feeInput = document.getElementById('estimated_fee');
 
         function updateFee() {
-            const days = parseInt(durationInput.value) || 0;
-            const totalFee = days * ratePerDay;
             feeInput.value = new Intl.NumberFormat('th-TH').format(totalFee) + ' บาท';
         }
 

@@ -24,8 +24,9 @@ if (!$request) {
 $status_badge = '';
 $is_valid = false;
 if ($request['status'] == 'approved') {
-    // Check expiry? (Based on duration)
-    $expire_date = date('Y-m-d', strtotime($request['created_at'] . ' + ' . $request['duration_days'] . ' days'));
+    // Check expiry based on permit_date (official issue date)
+    $base_date = !empty($request['permit_date']) ? $request['permit_date'] : $request['created_at'];
+    $expire_date = date('Y-m-d', strtotime($base_date . ' + ' . $request['duration_days'] . ' days'));
     if (date('Y-m-d') <= $expire_date) {
         $status_badge = '<span class="badge bg-success fs-5"><i class="bi bi-check-circle-fill"></i> ใบอนุญาตถูกต้อง</span>';
         $is_valid = true;
@@ -36,8 +37,8 @@ if ($request['status'] == 'approved') {
     $status_badge = '<span class="badge bg-secondary fs-5">สถานะ: ' . htmlspecialchars($request['status']) . '</span>';
 }
 
-$lat = $request['latitude'] ?? '16.482780';
-$lng = $request['longitude'] ?? '102.812704';
+$lat = $request['location_lat'] ?? '16.482780';
+$lng = $request['location_lng'] ?? '102.812704';
 
 function getThaiDate($date)
 {

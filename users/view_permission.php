@@ -238,11 +238,14 @@ function toThaiNum($number)
             </div>
 
             <!-- ข้อ 3 -->
+            <?php
+                $permit_start = !empty($request['permit_date']) ? $request['permit_date'] : $request['created_at'];
+                $permit_end   = date('Y-m-d', strtotime($permit_start . ' + ' . ($request['duration_days'] - 1) . ' days'));
+            ?>
             <div class="item-block">
                 <p class="indent">
-                    ๓. ตั้งแต่วันที่ <span class="bold"><?= getThaiDate($request['created_at']) ?></span>
-                    ถึง วันที่ <span
-                        class="bold"><?= getThaiDate(date('Y-m-d', strtotime($request['created_at'] . ' + ' . $request['duration_days'] . ' days'))) ?></span>
+                    ๓. ตั้งแต่วันที่ <span class="bold"><?= getThaiDate($permit_start) ?></span>
+                    ถึง วันที่ <span class="bold"><?= getThaiDate($permit_end) ?></span>
                 </p>
                 <div class="indent-2">
                     รวมกำหนดเวลาอนุญาต <span class="bold"><?= toThaiNum($request['duration_days']) ?></span> วัน

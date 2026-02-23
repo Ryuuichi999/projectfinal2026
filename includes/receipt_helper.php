@@ -76,4 +76,50 @@ function generateNextReceiptNumber($conn)
 
     return "RCPT-{$paddedNo}/{$shortYear}";
 }
+
+function ensureRequestNumberColumn($conn)
+{
+    $dbRes = $conn->query("SELECT DATABASE() AS db_name");
+    $dbRow = $dbRes ? $dbRes->fetch_assoc() : null;
+    $dbName = $dbRow ? $dbRow['db_name'] : null;
+    if (!$dbName) return;
+
+    $sql = "SELECT COUNT(*) AS cnt FROM INFORMATION_SCHEMA.COLUMNS
+            WHERE TABLE_SCHEMA = ? AND TABLE_NAME = 'sign_requests' AND COLUMN_NAME = 'request_no'";
+    $stmt = $conn->prepare($sql);
+    $stmt->bind_param("s", $dbName);
+    $stmt->execute();
+    $cnt = (int) ($stmt->get_result()->fetch_assoc()['cnt'] ?? 0);
+    if ($cnt === 0) {
+        $conn->query("ALTER TABLE `sign_requests` ADD COLUMN `request_no` VARCHAR(30) NULL AFTER `id`");
+    }
+}
+
+function generateNextRequestNumber($conn)
+{
+    ensureRequestNumberColumn($conn);
+
+    // รูปแบบ: REQ-6802-00001 (ปีพ.ศ.2หลัก + เดือน2หลัก + ลำดับ5หลัก)
+    $thYear = substr((string)(date('Y') + 543), -2);
+    $month  = date('m');
+    $prefix = "REQ-{$thYear}{$month}-";
+
+    $sql = "SELECT request_no FROM sign_requests
+            WHERE request_no LIKE ?
+            ORDER BY id DESC LIMIT 1";
+    $stmt = $conn->prepare($sql);
+    $likeParam = $prefix . '%';
+    $stmt->bind_param("s", $likeParam);
+    $stmt->execute();
+    $result = $stmt->get_result();
+
+    $lastNo = 0;
+    if ($row = $result->fetch_assoc()) {
+        if (preg_match('/REQ-\d{4}-(\d+)/', $row['request_no'], $matches)) {
+            $lastNo = (int) $matches[1];
+        }
+    }
+
+    return $prefix . str_pad($lastNo + 1, 5, '0', STR_PAD_LEFT);
+}
 ?>
