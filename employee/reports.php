@@ -31,6 +31,7 @@ $stats_sql = "SELECT
     COUNT(*) as total,
     SUM(CASE WHEN r.status = 'pending' THEN 1 ELSE 0 END) as pending,
     SUM(CASE WHEN r.status = 'waiting_payment' THEN 1 ELSE 0 END) as waiting_payment,
+    SUM(CASE WHEN r.status = 'waiting_permit' THEN 1 ELSE 0 END) as waiting_permit,
     SUM(CASE WHEN r.status = 'approved' THEN 1 ELSE 0 END) as approved,
     SUM(CASE WHEN r.status = 'rejected' THEN 1 ELSE 0 END) as rejected,
     SUM(CASE WHEN r.status = 'approved' THEN r.fee ELSE 0 END) as total_fee,
@@ -247,6 +248,14 @@ if (isset($_GET['export']) && $_GET['export'] === 'csv') {
                         <?= number_format($stats['rejected']) ?>
                     </div>
                     <div class="stat-label">ปฏิเสธ</div>
+                </div>
+            </div>
+            <div class="col-md-2 col-6">
+                <div class="stat-card">
+                    <div class="stat-number text-dark">
+                        <?= number_format($stats['waiting_permit']) ?>
+                    </div>
+                    <div class="stat-label">รอใบอนุญาต</div>
                 </div>
             </div>
             <div class="col-md-2 col-6">

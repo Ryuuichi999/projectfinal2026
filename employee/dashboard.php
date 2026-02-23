@@ -27,10 +27,13 @@ if ($result_user->num_rows === 1) {
 
 // ==== สถิติภาพรวม (ตัดส่วน Users ออก) ====
 $pending_requests = $conn->query("SELECT COUNT(*) as t FROM sign_requests WHERE status = 'pending'")->fetch_assoc()['t'];
+$reviewing_requests = $conn->query("SELECT COUNT(*) as t FROM sign_requests WHERE status = 'reviewing'")->fetch_assoc()['t'];
+$waiting_docs_requests = $conn->query("SELECT COUNT(*) as t FROM sign_requests WHERE status = 'need_documents'")->fetch_assoc()['t'];
 $total_requests = $conn->query("SELECT COUNT(*) as t FROM sign_requests")->fetch_assoc()['t'];
 $approved_requests = $conn->query("SELECT COUNT(*) as t FROM sign_requests WHERE status = 'approved'")->fetch_assoc()['t'];
 $rejected_requests = $conn->query("SELECT COUNT(*) as t FROM sign_requests WHERE status = 'rejected'")->fetch_assoc()['t'];
 $waiting_payment = $conn->query("SELECT COUNT(*) as t FROM sign_requests WHERE status = 'waiting_payment'")->fetch_assoc()['t'];
+$waiting_permit = $conn->query("SELECT COUNT(*) as t FROM sign_requests WHERE status = 'waiting_permit'")->fetch_assoc()['t'];
 
 // สถิติรายเดือน (6 เดือนล่าสุด)
 $monthly_data = [];
@@ -86,8 +89,8 @@ $recent_result = $conn->query($sql_recent);
             </span>
         </p>
 
-        <!-- ===== สถิติการ์ด 5 ช่อง ===== -->
-        <div class="row row-cols-2 row-cols-md-5 g-3 mb-4">
+        <!-- ===== สถิติการ์ด 6 ช่อง ===== -->
+        <div class="row row-cols-2 row-cols-md-3 row-cols-lg-6 g-3 mb-4">
             <!-- 1. คำขอทั้งหมด -->
             <div class="col">
                 <div class="card dashboard-card bg-light-primary hover-lift h-100">
@@ -97,16 +100,25 @@ $recent_result = $conn->query($sql_recent);
                     </div>
                 </div>
             </div>
-            <!-- 2. รอดำเนินการ -->
+            <!-- 2. รอพิจารณา (Pending + Reviewing) -->
             <div class="col">
                 <div class="card dashboard-card bg-light-warning hover-lift h-100">
-                    <h6 class="text-nowrap small text-muted mb-2">⏳ รอดำเนินการ</h6>
+                    <h6 class="text-nowrap small text-muted mb-2">⏳ รอพิจารณา</h6>
                     <div class="count text-warning fs-3 fw-bold">
-                        <?= $pending_requests ?>
+                        <?= $pending_requests + $reviewing_requests ?>
                     </div>
                 </div>
             </div>
-            <!-- 3. รอชำระเงิน -->
+            <!-- 3. รอเอกสาร -->
+            <div class="col">
+                <div class="card dashboard-card bg-light-info hover-lift h-100">
+                    <h6 class="text-nowrap small text-muted mb-2">📂 รอเอกสาร</h6>
+                    <div class="count text-info fs-3 fw-bold">
+                        <?= $waiting_docs_requests ?>
+                    </div>
+                </div>
+            </div>
+            <!-- 4. รอชำระเงิน -->
             <div class="col">
                 <div class="card dashboard-card hover-lift h-100" style="background: #fff7ed;">
                     <h6 class="text-nowrap small text-muted mb-2">💰 รอชำระเงิน</h6>
@@ -115,21 +127,21 @@ $recent_result = $conn->query($sql_recent);
                     </div>
                 </div>
             </div>
-            <!-- 4. อนุมัติแล้ว -->
+            <!-- 5. รอออกใบอนุญาต (NEW) -->
+            <div class="col">
+                <div class="card dashboard-card hover-lift h-100" style="background: #fdf2f8;">
+                    <h6 class="text-nowrap small text-muted mb-2">📜 รอใบอนุญาต</h6>
+                    <div class="count fs-3 fw-bold" style="color: #db2777;">
+                        <?= $waiting_permit ?>
+                    </div>
+                </div>
+            </div>
+            <!-- 6. อนุมัติแล้ว -->
             <div class="col">
                 <div class="card dashboard-card bg-light-success hover-lift h-100">
                     <h6 class="text-nowrap small text-muted mb-2">✅ อนุมัติแล้ว</h6>
                     <div class="count text-success fs-3 fw-bold">
                         <?= $approved_requests ?>
-                    </div>
-                </div>
-            </div>
-            <!-- 5. ไม่อนุมัติ -->
-            <div class="col">
-                <div class="card dashboard-card hover-lift h-100" style="background: #fef2f2;">
-                    <h6 class="text-nowrap small text-muted mb-2">❌ ไม่อนุมัติ</h6>
-                    <div class="count text-danger fs-3 fw-bold">
-                        <?= $rejected_requests ?>
                     </div>
                 </div>
             </div>
@@ -172,21 +184,11 @@ $recent_result = $conn->query($sql_recent);
                     <tbody>
                         <?php while ($r = $recent_result->fetch_assoc()): ?>
                             <tr>
-                                <td><strong>#
-                                        <?= $r['id'] ?>
-                                    </strong></td>
-                                <td>
-                                    <?= htmlspecialchars($r['first_name'] . ' ' . $r['last_name']) ?>
-                                </td>
-                                <td>
-                                    <?= htmlspecialchars($r['sign_type']) ?>
-                                </td>
-                                <td>
-                                    <?= get_status_badge($r['status']) ?>
-                                </td>
-                                <td>
-                                    <?= date('d/m/Y H:i', strtotime($r['created_at'])) ?>
-                                </td>
+                                <td><strong>#<?= $r['id'] ?></strong></td>
+                                <td><?= htmlspecialchars($r['first_name'] . ' ' . $r['last_name']) ?></td>
+                                <td><?= htmlspecialchars($r['sign_type']) ?></td>
+                                <td><?= get_status_badge($r['status']) ?></td>
+                                <td><?= date('d/m/Y H:i', strtotime($r['created_at'])) ?></td>
                                 <td>
                                     <a href="request_detail.php?id=<?= $r['id'] ?>" class="btn btn-sm btn-outline-primary">
                                         <i class="bi bi-eye"></i>
@@ -262,7 +264,7 @@ $recent_result = $conn->query($sql_recent);
             'reviewing': 'กำลังพิจารณา',
             'need_documents': 'ขอเอกสารเพิ่ม',
             'waiting_payment': 'รอชำระเงิน',
-            'waiting_receipt': 'รอออกใบเสร็จ',
+            'waiting_permit': 'รอออกใบอนุญาต',
             'approved': 'อนุมัติ',
             'rejected': 'ไม่อนุมัติ'
         };
@@ -271,7 +273,7 @@ $recent_result = $conn->query($sql_recent);
             'reviewing': '#3b82f6',
             'need_documents': '#06b6d4',
             'waiting_payment': '#ef4444',
-            'waiting_receipt': '#8b5cf6',
+            'waiting_permit': '#db2777', // New color for waiting permit (Pink/Magenta) or Dark
             'approved': '#22c55e',
             'rejected': '#6b7280'
         };
