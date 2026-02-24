@@ -102,12 +102,12 @@ if (!isset($_SESSION['user_id'])) {
 
                                             $req_no = !empty($row['request_no']) ? $row['request_no'] : '#' . $row['id'];
                                             echo "<tr>";
-                                            echo "<td><div class='fw-bold text-primary small'>" . htmlspecialchars($req_no) . "</div><small class='text-muted'>#{$row['id']}</small></td>";
-                                            echo "<td class='fw-bold text-primary'>{$row['sign_type']}</td>";
+                                            echo "<td class='req-no-cell'><div class='req-no-main'>" . htmlspecialchars($req_no) . "</div><div class='req-no-sub'>#{$row['id']}</div></td>";
+                                            echo "<td class='fw-bold'>{$row['sign_type']}</td>";
                                             echo "<td><span class='badge bg-light text-dark border'>{$size}</span></td>";
                                             echo "<td class='text-center'>{$fee}</td>";
                                             echo "<td class='text-center'>{$badge}</td>";
-                                            echo "<td class='text-secondary small'><i class='bi bi-calendar-event me-1'></i>{$date}</td>";
+                                            echo "<td class='small'><i class='bi bi-calendar-event me-1'></i>{$date}</td>";
                                             echo "<td class='text-center'>";
                                             echo "<div class='btn-group shadow-sm' role='group'>";
                                             // Eye Icon (Details)

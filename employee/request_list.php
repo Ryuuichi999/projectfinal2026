@@ -146,9 +146,9 @@ $result->data_seek(0);
                     <tbody>
                         <?php while ($row = $result->fetch_assoc()): ?>
                             <tr>
-                                <td>
-                                    <div class="fw-bold text-primary"><?= htmlspecialchars($row['request_no'] ?: '#' . $row['id']) ?></div>
-                                    <small class="text-muted">#<?= $row['id'] ?></small>
+                                <td class="req-no-cell">
+                                    <div class="req-no-main"><?= htmlspecialchars($row['request_no'] ?: '#' . $row['id']) ?></div>
+                                    <div class="req-no-sub">#<?= $row['id'] ?></div>
                                 </td>
                                 <td>
                                     <div class="fw-bold">
