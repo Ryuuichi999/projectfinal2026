@@ -21,8 +21,9 @@ if (!$request || $request['status'] != 'approved') {
     die("เอกสารไม่พร้อมใช้งาน หรือยังไม่ได้รับการอนุมัติ");
 }
 
-// Calculate Expiry
-$expire_date = date('Y-m-d', strtotime($request['created_at'] . ' + ' . $request['duration_days'] . ' days'));
+// Calculate Expiry (use permit_date as official start date, fall back to created_at)
+$base_date = !empty($request['permit_date']) ? $request['permit_date'] : $request['created_at'];
+$expire_date = date('Y-m-d', strtotime($base_date . ' + ' . $request['duration_days'] . ' days'));
 function getThaiDateShort($date)
 {
     if (!$date)

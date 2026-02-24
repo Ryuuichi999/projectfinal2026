@@ -532,8 +532,12 @@ $timeline_logs = getRequestLogs($conn, $request_id);
                                     <i class="bi bi-receipt"></i> ใบเสร็จรับเงิน
                                 </a>
                                 <a href="view_permission.php?id=<?= $request['id'] ?>" target="_blank"
-                                    class="btn btn-success btn-sm w-100">
+                                    class="btn btn-success btn-sm w-100 mb-2">
                                     <i class="bi bi-file-earmark-check"></i> ใบอนุญาต
+                                </a>
+                                <a href="view_sticker.php?id=<?= $request['id'] ?>" target="_blank"
+                                    class="btn btn-warning btn-sm w-100">
+                                    <i class="bi bi-patch-check-fill"></i> สติกเกอร์ใบอนุญาต
                                 </a>
                             </div>
                         <?php endif; ?>

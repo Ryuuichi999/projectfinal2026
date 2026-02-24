@@ -123,6 +123,9 @@ if (!isset($_SESSION['user_id'])) {
                                                 echo "<a href='view_permission.php?id={$row['id']}' target='_blank' class='btn btn-light btn-sm text-info border' data-bs-toggle='tooltip' title='ใบอนุญาต'>";
                                                 echo "<i class='bi bi-file-earmark-check-fill'></i>";
                                                 echo "</a>";
+                                                echo "<a href='view_sticker.php?id={$row['id']}' target='_blank' class='btn btn-light btn-sm text-warning border' data-bs-toggle='tooltip' title='สติกเกอร์ใบอนุญาต'>";
+                                                echo "<i class='bi bi-patch-check-fill'></i>";
+                                                echo "</a>";
                                             }
                                             echo "</div>";
                                             echo "</td>";
