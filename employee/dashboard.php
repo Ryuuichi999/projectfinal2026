@@ -55,7 +55,7 @@ while ($s = $status_query->fetch_assoc()) {
 }
 
 // คำร้องล่าสุด 5 รายการ
-$sql_recent = "SELECT r.id, r.sign_type, r.status, r.created_at, u.first_name, u.last_name 
+$sql_recent = "SELECT r.id, r.request_no, r.sign_type, r.status, r.created_at, u.first_name, u.last_name 
                FROM sign_requests r JOIN users u ON r.user_id = u.id 
                ORDER BY r.id DESC LIMIT 5";
 $recent_result = $conn->query($sql_recent);
@@ -169,7 +169,7 @@ $recent_result = $conn->query($sql_recent);
                 <table class="table table-hover align-middle mb-0">
                     <thead class="table-light">
                         <tr>
-                            <th>#</th>
+                            <th>เลขที่คำร้อง</th>
                             <th>ผู้ยื่น</th>
                             <th>ประเภทป้าย</th>
                             <th>สถานะ</th>
@@ -180,7 +180,7 @@ $recent_result = $conn->query($sql_recent);
                     <tbody>
                         <?php while ($r = $recent_result->fetch_assoc()): ?>
                             <tr>
-                                <td><strong>#<?= $r['id'] ?></strong></td>
+                                <td><strong><?= htmlspecialchars($r['request_no']) ?></strong></td>
                                 <td><?= htmlspecialchars($r['first_name'] . ' ' . $r['last_name']) ?></td>
                                 <td><?= htmlspecialchars($r['sign_type']) ?></td>
                                 <td><?= get_status_badge($r['status']) ?></td>
