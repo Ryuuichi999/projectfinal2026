@@ -83,7 +83,9 @@ if (isset($_POST['submit'])) {
 
             // 3.5 กำหนดเลขที่คำร้องแบบทางการ
             $request_no = generateNextRequestNumber($conn);
-            $conn->query("UPDATE sign_requests SET request_no = '$request_no' WHERE id = $request_id");
+            $stmt_rn = $conn->prepare("UPDATE sign_requests SET request_no = ? WHERE id = ?");
+            $stmt_rn->bind_param("si", $request_no, $request_id);
+            $stmt_rn->execute();
 
             // 4. จัดการไฟล์
             $uploaded_files = [

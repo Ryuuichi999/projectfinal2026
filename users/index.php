@@ -1,5 +1,6 @@
 <?php
 require '../includes/db.php';
+require_once '../includes/status_helper.php';
 
 if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'user') {
     header("Location: ../login.php");
@@ -52,33 +53,16 @@ while ($row = $resultRecent->fetch_assoc()) {
 
 // 4. ป้ายใกล้หมดอายุของผู้ใช้
 $expiring_sql = "SELECT id, sign_type, permit_no, road_name,
-    DATE_ADD(permit_date, INTERVAL duration_days DAY) as expire_date
+    DATE_ADD(COALESCE(permit_date, created_at), INTERVAL duration_days DAY) as expire_date
     FROM sign_requests
-    WHERE user_id = ? AND status = 'approved' AND permit_date IS NOT NULL
-    AND DATE_ADD(permit_date, INTERVAL duration_days DAY) BETWEEN CURDATE() AND DATE_ADD(CURDATE(), INTERVAL 30 DAY)
+    WHERE user_id = ? AND status = 'approved'
+    AND DATE_ADD(COALESCE(permit_date, created_at), INTERVAL duration_days DAY) BETWEEN CURDATE() AND DATE_ADD(CURDATE(), INTERVAL 30 DAY)
     ORDER BY expire_date ASC LIMIT 5";
 $stmtExp = $conn->prepare($expiring_sql);
 $stmtExp->bind_param("i", $user_id);
 $stmtExp->execute();
 $expiringPermits = $stmtExp->get_result();
 
-function getStatusBadge($status)
-{
-    switch ($status) {
-        case 'pending':
-            return '<span class="badge bg-warning text-dark px-2 py-1">รอดำเนินการ</span>';
-        case 'approved':
-            return '<span class="badge bg-success px-2 py-1">อนุมัติแล้ว</span>';
-        case 'rejected':
-            return '<span class="badge bg-danger px-2 py-1">ปฏิเสธ</span>';
-        case 'need_documents':
-            return '<span class="badge bg-info text-dark px-2 py-1">รอเอกสารเพิ่ม</span>';
-        case 'reviewing':
-            return '<span class="badge bg-primary px-2 py-1">กำลังตรวจสอบ</span>';
-        default:
-            return '<span class="badge bg-secondary px-2 py-1">' . htmlspecialchars($status) . '</span>';
-    }
-}
 ?>
 
 <!DOCTYPE html>
@@ -474,7 +458,7 @@ function getStatusBadge($status)
                             <div class="request-item-content">
                                 <div class="request-item-title">
                                     <span class="request-item-id">#<?= $req['id'] ?></span>
-                                    <?= getStatusBadge($req['status']) ?>
+                                    <?= get_status_badge($req['status']) ?>
                                 </div>
                                 <div class="request-item-info">
                                     <?= htmlspecialchars($req['sign_type']) ?> - <?= $req['width'] ?>x<?= $req['height'] ?> ม.

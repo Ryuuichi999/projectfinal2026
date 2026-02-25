@@ -72,7 +72,9 @@ if (isset($_POST['submit_renew'])) {
         // Assign request_no
         ensureRequestNumberColumn($conn);
         $new_req_no = generateNextRequestNumber($conn);
-        $conn->query("UPDATE sign_requests SET request_no = '$new_req_no' WHERE id = $new_id");
+        $stmt_rn = $conn->prepare("UPDATE sign_requests SET request_no = ? WHERE id = ?");
+        $stmt_rn->bind_param("si", $new_req_no, $new_id);
+        $stmt_rn->execute();
 
         // บันทึก Log
         require_once '../includes/log_helper.php';

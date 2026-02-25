@@ -1,5 +1,4 @@
 <?php
-session_start();
 require '../includes/db.php';
 require '../includes/email_helper.php';
 require '../includes/settings_helper.php';

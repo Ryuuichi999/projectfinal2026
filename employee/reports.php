@@ -61,13 +61,23 @@ $type_result = $conn->query($type_sql);
 
 // 4. ป้ายใกล้หมดอายุ (30 วัน)
 $expiring_sql = "SELECT r.*, u.first_name, u.last_name,
-    DATE_ADD(r.permit_date, INTERVAL r.duration_days DAY) as expire_date
+    DATE_ADD(COALESCE(r.permit_date, r.created_at), INTERVAL r.duration_days DAY) as expire_date
     FROM sign_requests r
     JOIN users u ON r.user_id = u.id
-    WHERE r.status = 'approved' AND r.permit_date IS NOT NULL
-    AND DATE_ADD(r.permit_date, INTERVAL r.duration_days DAY) BETWEEN CURDATE() AND DATE_ADD(CURDATE(), INTERVAL 30 DAY)
+    WHERE r.status = 'approved'
+    AND DATE_ADD(COALESCE(r.permit_date, r.created_at), INTERVAL r.duration_days DAY) BETWEEN CURDATE() AND DATE_ADD(CURDATE(), INTERVAL 30 DAY)
     ORDER BY expire_date ASC";
 $expiring_result = $conn->query($expiring_sql);
+
+// 5. ป้ายที่หมดอายุแล้ว
+$expired_sql = "SELECT r.*, u.first_name, u.last_name,
+    DATE_ADD(COALESCE(r.permit_date, r.created_at), INTERVAL r.duration_days DAY) as expire_date
+    FROM sign_requests r
+    JOIN users u ON r.user_id = u.id
+    WHERE r.status = 'approved'
+    AND DATE_ADD(COALESCE(r.permit_date, r.created_at), INTERVAL r.duration_days DAY) < CURDATE()
+    ORDER BY expire_date DESC";
+$expired_result = $conn->query($expired_sql);
 
 // Thai month names
 $thai_months = ['', 'ม.ค.', 'ก.พ.', 'มี.ค.', 'เม.ย.', 'พ.ค.', 'มิ.ย.', 'ก.ค.', 'ส.ค.', 'ก.ย.', 'ต.ค.', 'พ.ย.', 'ธ.ค.'];
@@ -309,9 +319,7 @@ if (isset($_GET['export']) && $_GET['export'] === 'csv') {
         <?php if ($expiring_result->num_rows > 0): ?>
             <div class="card p-4 mt-4">
                 <h5 class="mb-3">⏰ ป้ายใกล้หมดอายุ (30 วันข้างหน้า)
-                    <span class="badge bg-danger">
-                        <?= $expiring_result->num_rows ?>
-                    </span>
+                    <span class="badge bg-danger"><?= $expiring_result->num_rows ?></span>
                 </h5>
                 <div class="table-responsive">
                     <table class="table table-hover align-middle">
@@ -329,26 +337,49 @@ if (isset($_GET['export']) && $_GET['export'] === 'csv') {
                             <?php while ($exp = $expiring_result->fetch_assoc()):
                                 $days_left = ceil((strtotime($exp['expire_date']) - time()) / 86400);
                                 $badge_class = $days_left <= 7 ? 'expiring-danger' : 'expiring-warning';
-                                ?>
+                            ?>
                                 <tr>
-                                    <td>#
-                                        <?= $exp['id'] ?>
-                                    </td>
-                                    <td>
-                                        <?= htmlspecialchars($exp['first_name'] . ' ' . $exp['last_name']) ?>
-                                    </td>
-                                    <td>
-                                        <?= htmlspecialchars($exp['sign_type']) ?>
-                                    </td>
-                                    <td>
-                                        <?= htmlspecialchars($exp['permit_no']) ?>
-                                    </td>
-                                    <td>
-                                        <?= date('d/m/Y', strtotime($exp['expire_date'])) ?>
-                                    </td>
-                                    <td><span class="expiring-badge <?= $badge_class ?>">
-                                            <?= $days_left ?> วัน
-                                        </span></td>
+                                    <td>#<?= $exp['id'] ?></td>
+                                    <td><?= htmlspecialchars($exp['first_name'] . ' ' . $exp['last_name']) ?></td>
+                                    <td><?= htmlspecialchars($exp['sign_type']) ?></td>
+                                    <td><?= htmlspecialchars($exp['permit_no'] ?? '-') ?></td>
+                                    <td><?= date('d/m/Y', strtotime($exp['expire_date'])) ?></td>
+                                    <td><span class="expiring-badge <?= $badge_class ?>"><?= $days_left ?> วัน</span></td>
+                                </tr>
+                            <?php endwhile; ?>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        <?php endif; ?>
+
+        <!-- ─── ป้ายที่หมดอายุแล้ว ─── -->
+        <?php if ($expired_result && $expired_result->num_rows > 0): ?>
+            <div class="card p-4 mt-4">
+                <h5 class="mb-3 text-danger"><i class="bi bi-x-circle-fill me-2"></i>ป้ายที่หมดอายุแล้ว (<?= $expired_result->num_rows ?> รายการ)</h5>
+                <div class="table-responsive">
+                    <table class="table table-sm table-hover align-middle">
+                        <thead class="table-light">
+                            <tr>
+                                <th>ID</th>
+                                <th>ผู้ขอ</th>
+                                <th>ประเภท</th>
+                                <th>เลขที่ใบอนุญาต</th>
+                                <th>วันหมดอายุ</th>
+                                <th>หมดมาแล้ว</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <?php while ($exd = $expired_result->fetch_assoc()):
+                                $days_over = abs(ceil((strtotime($exd['expire_date']) - time()) / 86400));
+                            ?>
+                                <tr>
+                                    <td>#<?= $exd['id'] ?></td>
+                                    <td><?= htmlspecialchars($exd['first_name'] . ' ' . $exd['last_name']) ?></td>
+                                    <td><?= htmlspecialchars($exd['sign_type']) ?></td>
+                                    <td><?= htmlspecialchars($exd['permit_no'] ?? '-') ?></td>
+                                    <td><?= date('d/m/Y', strtotime($exd['expire_date'])) ?></td>
+                                    <td><span class="expiring-badge expiring-danger"><?= $days_over ?> วัน</span></td>
                                 </tr>
                             <?php endwhile; ?>
                         </tbody>
@@ -362,10 +393,8 @@ if (isset($_GET['export']) && $_GET['export'] === 'csv') {
     <script>
         // Monthly Chart
         <?php if ($month == 0): ?>
-            const monthlyLabels = [<?php for ($m = 1; $m <= 12; $m++)
-                echo "'" . $thai_months[$m] . "',"; ?>];
-            const monthlyTotal = [<?php for ($m = 1; $m <= 12; $m++)
-                echo ($monthly_data[$m]['total'] ?? 0) . ','; ?>];
+            const monthlyLabels = [<?php for ($m = 1; $m <= 12; $m++) echo "'" . $thai_months[$m] . "',"; ?>];
+            const monthlyTotal = [<?php for ($m = 1; $m <= 12; $m++) echo ($monthly_data[$m]['total'] ?? 0) . ','; ?>];
             const monthlyApproved = [<?php for ($m = 1; $m <= 12; $m++)
                 echo ($monthly_data[$m]['approved_count'] ?? 0) . ','; ?>];
             const monthlyFee = [<?php for ($m = 1; $m <= 12; $m++)

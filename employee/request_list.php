@@ -244,24 +244,6 @@ $result->data_seek(0);
     <!-- jQuery UI for Autocomplete -->
     <script src="https://code.jquery.com/ui/1.13.2/jquery-ui.min.js"></script>
     <script>
-        function confirmReject(event, form) {
-            event.preventDefault(); // Stop default submission
-            Swal.fire({
-                title: 'ยืนยันการปฏิเสธ?',
-                text: "คุณแน่ใจหรือไม่ที่จะปฏิเสธคำขอนี้? เมื่อปฏิเสธแล้วจะไม่สามารถแก้ไขได้",
-                icon: 'warning',
-                showCancelButton: true,
-                confirmButtonColor: '#3085d6',
-                cancelButtonColor: '#d33',
-                confirmButtonText: 'ยืนยัน, ปฏิเสธ!',
-                cancelButtonText: 'ยกเลิก'
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    form.submit(); // Submit the form
-                }
-            });
-        }
-
         $(document).ready(function () {
             var table = $('#requestsTable').DataTable({
                 "language": {
