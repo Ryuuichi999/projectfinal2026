@@ -46,7 +46,8 @@ if (isset($_POST['action']) && isset($_POST['request_id'])) {
 }
 
 // ดึงข้อมูลคำขอทั้งหมด
-$sql = "SELECT r.*, u.title_name, u.first_name, u.last_name 
+$sql = "SELECT r.*, u.title_name, u.first_name, u.last_name,
+        DATE_ADD(COALESCE(r.permit_date, r.created_at), INTERVAL r.duration_days DAY) as expire_date
         FROM sign_requests r 
         JOIN users u ON r.user_id = u.id 
         ORDER BY r.id ASC";
@@ -144,7 +145,19 @@ $result->data_seek(0);
                         </tr>
                     </thead>
                     <tbody>
-                        <?php while ($row = $result->fetch_assoc()): ?>
+                        <?php while ($row = $result->fetch_assoc()):
+                            // Expiry logic
+                            $emp_expire = $row['expire_date'];
+                            $emp_days_left = $emp_expire ? (int)((strtotime($emp_expire) - time()) / 86400) : null;
+                            $emp_expiry_html = '';
+                            if ($row['status'] == 'approved' && $emp_days_left !== null) {
+                                if ($emp_days_left < 0) {
+                                    $emp_expiry_html = "<div class='mt-1'><span class='badge bg-danger bg-opacity-90 px-2'><i class='bi bi-x-circle-fill me-1'></i>หมดอายุแล้ว</span></div>";
+                                } elseif ($emp_days_left <= 30) {
+                                    $emp_expiry_html = "<div class='mt-1'><span class='badge bg-warning text-dark px-2'><i class='bi bi-clock-fill me-1'></i>เหลือ {$emp_days_left} วัน</span></div>";
+                                }
+                            }
+                        ?>
                             <tr>
                                 <td class="req-no-cell">
                                     <div class="req-no-main"><?= htmlspecialchars($row['request_no'] ?: '#' . $row['id']) ?></div>
@@ -159,26 +172,26 @@ $result->data_seek(0);
                                     <?= htmlspecialchars($row['sign_type']) ?>
                                     <div class="small text-muted"><?= $row['width'] ?>x<?= $row['height'] ?> ม.</div>
                                 </td>
-                                <td><?= date('d/m/Y H:i', strtotime($row['created_at'])) ?></td>
-                                <td><?= get_status_badge($row['status']) ?></td>
+                                <td><?= date('d/m/Y', strtotime($row['created_at'])) ?></td>
+                                <td><?= get_status_badge($row['status']) ?><?= $emp_expiry_html ?></td>
                                 <td>
-                                    <div class="d-flex gap-1 align-items-center flex-nowrap"
-                                        style="min-width: fit-content; white-space: nowrap;">
+                                    <div class="d-flex gap-1 align-items-center flex-nowrap">
                                         <a href="request_detail.php?id=<?= $row['id'] ?>"
-                                            class="btn btn-sm btn-outline-primary action-btn" title="ดูรายละเอียด">
-                                            <i class="bi bi-search"></i> รายละเอียด
+                                            class="btn btn-sm btn-outline-primary px-2" title="ดูรายละเอียด"
+                                            data-bs-toggle="tooltip">
+                                            <i class="bi bi-eye-fill"></i>
                                         </a>
 
                                         <?php if ($row['status'] == 'pending'): ?>
-                                            <!-- Approve Button -->
                                             <a href="approve_form.php?id=<?= $row['id'] ?>"
-                                                class="btn btn-sm btn-success action-btn" title="อนุมัติ">
-                                                <i class="bi bi-check-circle"></i> อนุมัติ
+                                                class="btn btn-sm btn-success px-2" title="อนุมัติ"
+                                                data-bs-toggle="tooltip">
+                                                <i class="bi bi-check-circle-fill"></i>
                                             </a>
-                                            <!-- Reject Button -->
-                                            <button type="button" class="btn btn-sm btn-danger action-btn" title="ปฏิเสธ"
+                                            <button type="button" class="btn btn-sm btn-danger px-2" title="ปฏิเสธ"
+                                                data-bs-toggle="tooltip"
                                                 onclick="confirmReject(<?= $row['id'] ?>)">
-                                                <i class="bi bi-x-circle"></i> ปฏิเสธ
+                                                <i class="bi bi-x-circle-fill"></i>
                                             </button>
                                             <form id="rejectForm<?= $row['id'] ?>" method="post" class="d-none">
                                                 <input type="hidden" name="request_id" value="<?= $row['id'] ?>">
@@ -186,20 +199,29 @@ $result->data_seek(0);
                                             </form>
 
                                         <?php elseif ($row['status'] == 'waiting_payment'): ?>
-                                            <button class="btn btn-sm btn-outline-secondary action-btn" disabled
-                                                title="รอผู้ใช้ชำระเงิน">
-                                                <i class="bi bi-hourglass-split"></i> รอชำระเงิน
-                                            </button>
+                                            <span class="badge bg-secondary px-2 py-2">
+                                                <i class="bi bi-hourglass-split"></i> รอชำระ
+                                            </span>
 
                                         <?php elseif ($row['status'] == 'waiting_receipt'): ?>
                                             <a href="issue_receipt.php?id=<?= $row['id'] ?>"
-                                                class="btn btn-sm btn-warning text-dark action-btn" title="ออกใบเสร็จรับเงิน">
-                                                <i class="bi bi-receipt"></i> ออกใบเสร็จ
+                                                class="btn btn-sm btn-warning text-dark px-2" title="ออกใบเสร็จ"
+                                                data-bs-toggle="tooltip">
+                                                <i class="bi bi-receipt"></i>
                                             </a>
+
                                         <?php elseif ($row['status'] == 'waiting_permit'): ?>
                                             <a href="issue_receipt.php?id=<?= $row['id'] ?>"
-                                                class="btn btn-sm btn-primary action-btn" title="ออกใบอนุญาต">
-                                                <i class="bi bi-file-earmark-text"></i> ออกใบอนุญาต
+                                                class="btn btn-sm btn-primary px-2" title="ออกใบอนุญาต"
+                                                data-bs-toggle="tooltip">
+                                                <i class="bi bi-file-earmark-check-fill"></i>
+                                            </a>
+
+                                        <?php elseif ($row['status'] == 'approved'): ?>
+                                            <a href="../users/view_permission.php?id=<?= $row['id'] ?>" target="_blank"
+                                                class="btn btn-sm btn-outline-success px-2" title="ใบอนุญาต"
+                                                data-bs-toggle="tooltip">
+                                                <i class="bi bi-file-earmark-check-fill"></i>
                                             </a>
                                         <?php endif; ?>
                                     </div>
@@ -254,13 +276,16 @@ $result->data_seek(0);
                     // Initialize Bootstrap dropdowns หลังจาก DataTables draw
                     var dropdownElementList = [].slice.call(document.querySelectorAll('.dropdown-toggle'));
                     dropdownElementList.forEach(function (dropdownToggleEl) {
-                        // ลบ dropdown instance เก่าถ้ามี
                         var existingDropdown = bootstrap.Dropdown.getInstance(dropdownToggleEl);
-                        if (existingDropdown) {
-                            existingDropdown.dispose();
-                        }
-                        // สร้าง dropdown ใหม่
+                        if (existingDropdown) { existingDropdown.dispose(); }
                         new bootstrap.Dropdown(dropdownToggleEl);
+                    });
+
+                    // Re-init tooltips after each draw
+                    document.querySelectorAll('[data-bs-toggle="tooltip"]').forEach(function(el) {
+                        var existing = bootstrap.Tooltip.getInstance(el);
+                        if (existing) existing.dispose();
+                        new bootstrap.Tooltip(el);
                     });
 
                     // Re-initialize autocomplete หลังจาก draw

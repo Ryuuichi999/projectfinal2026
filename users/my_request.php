@@ -87,7 +87,7 @@ if (!isset($_SESSION['user_id'])) {
                                 </thead>
                                 <tbody>
                                     <?php
-                                    $sql = "SELECT * FROM sign_requests WHERE user_id=? ORDER BY id DESC";
+                                    $sql = "SELECT *, DATE_ADD(COALESCE(permit_date, created_at), INTERVAL duration_days DAY) as expire_date FROM sign_requests WHERE user_id=? ORDER BY id DESC";
                                     $stmt = $conn->prepare($sql);
                                     $stmt->bind_param("i", $_SESSION['user_id']);
                                     $stmt->execute();
@@ -99,33 +99,52 @@ if (!isset($_SESSION['user_id'])) {
                                             $date = date('d/m/Y', strtotime($row['created_at']));
                                             $size = "{$row['width']} x {$row['height']}";
                                             $fee = number_format($row['fee']);
-
                                             $req_no = !empty($row['request_no']) ? $row['request_no'] : '#' . $row['id'];
+
+                                            // Expiry logic
+                                            $expire_date = $row['expire_date'];
+                                            $days_left = $expire_date ? (int)((strtotime($expire_date) - time()) / 86400) : null;
+                                            $can_renew = false;
+                                            $expiry_html = '';
+                                            if ($row['status'] == 'approved' && $days_left !== null) {
+                                                if ($days_left < 0) {
+                                                    $expiry_html = "<div class='mt-1'><span class='badge bg-danger bg-opacity-90 px-2'><i class='bi bi-x-circle-fill me-1'></i>หมดอายุแล้ว</span></div>";
+                                                    $can_renew = true;
+                                                } elseif ($days_left <= 30) {
+                                                    $expiry_html = "<div class='mt-1'><span class='badge bg-warning text-dark px-2'><i class='bi bi-clock-fill me-1'></i>เหลือ {$days_left} วัน</span></div>";
+                                                    $can_renew = true;
+                                                }
+                                            }
+
                                             echo "<tr>";
                                             echo "<td class='req-no-cell'><div class='req-no-main'>" . htmlspecialchars($req_no) . "</div><div class='req-no-sub'>#{$row['id']}</div></td>";
                                             echo "<td class='fw-bold'>{$row['sign_type']}</td>";
                                             echo "<td><span class='badge bg-light text-dark border'>{$size}</span></td>";
                                             echo "<td class='text-center'>{$fee}</td>";
-                                            echo "<td class='text-center'>{$badge}</td>";
+                                            echo "<td class='text-center'>{$badge}{$expiry_html}</td>";
                                             echo "<td class='small'><i class='bi bi-calendar-event me-1'></i>{$date}</td>";
                                             echo "<td class='text-center'>";
-                                            echo "<div class='btn-group shadow-sm' role='group'>";
-                                            // Eye Icon (Details)
-                                            echo "<a href='request_detail.php?id={$row['id']}' class='btn btn-light btn-sm text-primary border' data-bs-toggle='tooltip' title='ดูรายละเอียด'>";
-                                            echo "<i class='bi bi-eye-fill'></i>";
-                                            echo "</a>";
-
-                                            // Receipt & Permission Buttons
+                                            echo "<div class='d-flex gap-1 justify-content-center flex-nowrap align-items-center'>";
+                                            // ปุ่มดูรายละเอียด (เสมอ)
+                                            echo "<a href='request_detail.php?id={$row['id']}' class='btn btn-outline-primary btn-sm px-2' data-bs-toggle='tooltip' title='ดูรายละเอียด'><i class='bi bi-eye-fill'></i></a>";
                                             if ($row['status'] == 'approved') {
-                                                echo "<a href='view_receipt.php?id={$row['id']}' target='_blank' class='btn btn-light btn-sm text-success border' data-bs-toggle='tooltip' title='ใบเสร็จ'>";
-                                                echo "<i class='bi bi-receipt'></i>";
-                                                echo "</a>";
-                                                echo "<a href='view_permission.php?id={$row['id']}' target='_blank' class='btn btn-light btn-sm text-info border' data-bs-toggle='tooltip' title='ใบอนุญาต'>";
-                                                echo "<i class='bi bi-file-earmark-check-fill'></i>";
-                                                echo "</a>";
-                                                echo "<a href='view_sticker.php?id={$row['id']}' target='_blank' class='btn btn-light btn-sm text-warning border' data-bs-toggle='tooltip' title='สติกเกอร์ใบอนุญาต'>";
-                                                echo "<i class='bi bi-patch-check-fill'></i>";
-                                                echo "</a>";
+                                                // Dropdown รวมเอกสาร 3 ปุ่ม
+                                                echo "<div class='dropdown'>
+                                                    <button class='btn btn-outline-secondary btn-sm px-2 dropdown-toggle' type='button' data-bs-toggle='dropdown' aria-expanded='false' title='เอกสาร'>
+                                                        <i class='bi bi-file-earmark-text'></i>
+                                                    </button>
+                                                    <ul class='dropdown-menu dropdown-menu-end shadow-sm'>
+                                                        <li><a class='dropdown-item' href='view_receipt.php?id={$row['id']}' target='_blank'><i class='bi bi-receipt text-success me-2'></i>ใบเสร็จรับเงิน</a></li>
+                                                        <li><a class='dropdown-item' href='view_permission.php?id={$row['id']}' target='_blank'><i class='bi bi-file-earmark-check-fill text-info me-2'></i>ใบอนุญาต</a></li>
+                                                        <li><a class='dropdown-item' href='view_sticker.php?id={$row['id']}' target='_blank'><i class='bi bi-patch-check-fill text-warning me-2'></i>สติกเกอร์</a></li>
+                                                    </ul>
+                                                </div>";
+                                                if ($can_renew) {
+                                                    echo "<a href='renew_permit.php?id={$row['id']}' class='btn btn-danger btn-sm px-2' data-bs-toggle='tooltip' title='ต่ออายุ'><i class='bi bi-arrow-clockwise'></i></a>";
+                                                }
+                                            }
+                                            if ($row['status'] == 'waiting_payment') {
+                                                echo "<a href='../payment.php?id={$row['id']}' class='btn btn-primary btn-sm px-2' data-bs-toggle='tooltip' title='ชำระเงิน'><i class='bi bi-qr-code'></i></a>";
                                             }
                                             echo "</div>";
                                             echo "</td>";

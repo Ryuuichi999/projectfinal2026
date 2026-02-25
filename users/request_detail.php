@@ -20,14 +20,16 @@ $role = $_SESSION['role'];
 
 // ดึงข้อมูลคำขอ
 if ($role === 'admin' || $role === 'employee') {
-    $sql = "SELECT r.*, u.title_name, u.first_name, u.last_name, u.phone, u.email 
+    $sql = "SELECT r.*, u.title_name, u.first_name, u.last_name, u.phone, u.email,
+            DATE_ADD(COALESCE(r.permit_date, r.created_at), INTERVAL r.duration_days DAY) as expire_date
             FROM sign_requests r
             LEFT JOIN users u ON r.user_id = u.id
             WHERE r.id = ?";
     $stmt = $conn->prepare($sql);
     $stmt->bind_param("i", $request_id);
 } else {
-    $sql = "SELECT r.*, u.title_name, u.first_name, u.last_name, u.phone, u.email 
+    $sql = "SELECT r.*, u.title_name, u.first_name, u.last_name, u.phone, u.email,
+            DATE_ADD(COALESCE(r.permit_date, r.created_at), INTERVAL r.duration_days DAY) as expire_date
             FROM sign_requests r
             LEFT JOIN users u ON r.user_id = u.id
             WHERE r.id = ? AND r.user_id = ?";
@@ -448,8 +450,9 @@ $timeline_logs = getRequestLogs($conn, $request_id);
                                 <div class="detail-item">
                                     <div class="detail-label">ระยะเวลาติดตั้ง</div>
                                     <div class="detail-value text-primary">
-                                        <?= date('d M Y', strtotime($request['created_at'])) ?> -
-                                        <?= date('d M Y', strtotime($request['created_at'] . " + {$request['duration_days']} days")) ?>
+                                        <?php $base_dt = !empty($request['permit_date']) ? $request['permit_date'] : $request['created_at']; ?>
+                                        <?= date('d M Y', strtotime($base_dt)) ?> -
+                                        <?= date('d M Y', strtotime($base_dt . " + {$request['duration_days']} days")) ?>
                                         (<?= $request['duration_days'] ?> วัน)
                                     </div>
                                 </div>
@@ -525,7 +528,11 @@ $timeline_logs = getRequestLogs($conn, $request_id);
                                 echo "อยู่ระหว่างการดำเนินการ";
                             ?>
                         </div>
-                        <?php if ($request['status'] == 'approved'): ?>
+                        <?php if ($request['status'] == 'approved'):
+                            $det_expire = $request['expire_date'];
+                            $det_days_left = $det_expire ? (int)((strtotime($det_expire) - time()) / 86400) : null;
+                            $det_can_renew = ($det_days_left !== null && $det_days_left <= 30);
+                        ?>
                             <div class="mt-3">
                                 <a href="view_receipt.php?id=<?= $request['id'] ?>" target="_blank"
                                     class="btn btn-outline-primary btn-sm w-100 mb-2">
@@ -536,9 +543,25 @@ $timeline_logs = getRequestLogs($conn, $request_id);
                                     <i class="bi bi-file-earmark-check"></i> ใบอนุญาต
                                 </a>
                                 <a href="view_sticker.php?id=<?= $request['id'] ?>" target="_blank"
-                                    class="btn btn-warning btn-sm w-100">
+                                    class="btn btn-warning btn-sm w-100 mb-2">
                                     <i class="bi bi-patch-check-fill"></i> สติกเกอร์ใบอนุญาต
                                 </a>
+                                <?php if ($det_can_renew): ?>
+                                <hr class="my-2">
+                                <?php if ($det_days_left < 0): ?>
+                                <div class="alert alert-danger py-2 px-3 mb-2 small">
+                                    <i class="bi bi-exclamation-triangle-fill"></i> ใบอนุญาตหมดอายุแล้ว
+                                </div>
+                                <?php else: ?>
+                                <div class="alert alert-warning py-2 px-3 mb-2 small">
+                                    <i class="bi bi-clock-fill"></i> เหลือ <?= $det_days_left ?> วัน
+                                </div>
+                                <?php endif; ?>
+                                <a href="renew_permit.php?id=<?= $request['id'] ?>"
+                                    class="btn btn-danger btn-sm w-100">
+                                    <i class="bi bi-arrow-clockwise"></i> ต่ออายุใบอนุญาต
+                                </a>
+                                <?php endif; ?>
                             </div>
                         <?php endif; ?>
                     </div>

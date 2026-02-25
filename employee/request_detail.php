@@ -464,8 +464,9 @@ $result_docs = $stmt_docs->get_result();
                                     <div class="detail-item">
                                         <div class="detail-label">ระยะเวลาติดตั้ง</div>
                                         <div class="detail-value text-primary">
-                                            <?= date('d M Y', strtotime($request['created_at'])) ?> -
-                                            <?= date('d M Y', strtotime($request['created_at'] . " + {$request['duration_days']} days")) ?>
+                                            <?php $base = !empty($request['permit_date']) ? $request['permit_date'] : $request['created_at']; ?>
+                                            <?= date('d M Y', strtotime($base)) ?> -
+                                            <?= date('d M Y', strtotime($base . " + {$request['duration_days']} days")) ?>
                                             (<?= $request['duration_days'] ?> วัน)
                                         </div>
                                     </div>

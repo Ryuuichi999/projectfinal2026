@@ -1,5 +1,6 @@
 <?php
 require '../includes/db.php';
+require_once '../includes/receipt_helper.php';
 
 if (!isset($_SESSION['user_id'])) {
     header("Location: ../login.php");
@@ -12,7 +13,7 @@ $request_id = isset($_GET['id']) ? (int) $_GET['id'] : 0;
 // ตรวจสอบว่าเป็นคำร้องของผู้ใช้ และสถานะเป็น approved + ป้ายหมดอายุแล้วหรือภายใน 30 วัน
 $stmt = $conn->prepare(
     "SELECT r.*, 
-        DATE_ADD(r.permit_date, INTERVAL r.duration_days DAY) as expire_date
+        DATE_ADD(COALESCE(r.permit_date, r.created_at), INTERVAL r.duration_days DAY) as expire_date
      FROM sign_requests r 
      WHERE r.id = ? AND r.user_id = ? AND r.status = 'approved'"
 );
@@ -67,6 +68,11 @@ if (isset($_POST['submit_renew'])) {
 
     if ($stmt->execute()) {
         $new_id = $conn->insert_id;
+
+        // Assign request_no
+        ensureRequestNumberColumn($conn);
+        $new_req_no = generateNextRequestNumber($conn);
+        $conn->query("UPDATE sign_requests SET request_no = '$new_req_no' WHERE id = $new_id");
 
         // บันทึก Log
         require_once '../includes/log_helper.php';
