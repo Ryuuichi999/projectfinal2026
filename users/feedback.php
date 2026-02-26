@@ -34,9 +34,10 @@ if (isset($_POST['submit_feedback'])) {
 }
 
 // ดึงคำร้องที่ approved (ถ้ามี) สำหรับ dropdown
-$requests_result = $conn->query(
-    "SELECT id, sign_type, created_at FROM sign_requests WHERE user_id = $user_id AND status = 'approved' ORDER BY id DESC"
-);
+$stmt_req = $conn->prepare("SELECT id, sign_type, created_at FROM sign_requests WHERE user_id = ? AND status = 'approved' ORDER BY id DESC");
+$stmt_req->bind_param("i", $user_id);
+$stmt_req->execute();
+$requests_result = $stmt_req->get_result();
 
 // สถิติรวม
 $avg_result = $conn->query("SELECT AVG(rating) as avg_rating, COUNT(*) as total FROM feedback");
