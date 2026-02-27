@@ -29,7 +29,9 @@ if (isset($_POST['send_otp'])) {
         $expires_at = date('Y-m-d H:i:s', strtotime('+15 minutes'));
 
         // ลบ OTP เก่าที่ยังไม่ได้ใช้
-        $conn->query("DELETE FROM password_resets WHERE citizen_id = '$citizen_id' AND used = 0");
+        $stmt_del = $conn->prepare("DELETE FROM password_resets WHERE citizen_id = ? AND used = 0");
+        $stmt_del->bind_param("s", $citizen_id);
+        $stmt_del->execute();
 
         // บันทึก OTP ใหม่
         $stmt2 = $conn->prepare("INSERT INTO password_resets (citizen_id, otp, expires_at) VALUES (?, ?, ?)");
@@ -133,7 +135,9 @@ if (isset($_POST['reset_password'])) {
 
         if ($stmt->execute()) {
             // Mark OTP as used
-            $conn->query("UPDATE password_resets SET used = 1 WHERE id = $reset_id");
+            $stmt_used = $conn->prepare("UPDATE password_resets SET used = 1 WHERE id = ?");
+            $stmt_used->bind_param("i", $reset_id);
+            $stmt_used->execute();
 
             // Clear session
             unset($_SESSION['reset_citizen_id'], $_SESSION['reset_email_masked'], $_SESSION['reset_verified_id']);

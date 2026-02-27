@@ -148,7 +148,7 @@ if (isset($_POST['submit'])) {
 
         } catch (Exception $e) {
             $conn->rollback();
-            $message = "เกิดข้อผิดพลาด: " . $e->getMessage();
+            $message = "เกิดข้อผิดพลาดในการบันทึกข้อมูล กรุณาลองใหม่อีกครั้ง";
             $message_type = 'danger';
         }
     }

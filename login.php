@@ -179,7 +179,8 @@ if (isset($_POST['login'])) {
             display: flex;
             align-items: flex-start;
             margin-bottom: 30px;
-            position: z-index 2;
+            position: relative;
+            z-index: 2;
         }
 
         .feature-icon-box {

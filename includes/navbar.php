@@ -206,7 +206,7 @@ if ($userId && $role === 'user') {
                             <div class="avatar-circle"><?= $initials ?></div>
                             <div class="d-none d-md-block text-start">
                                 <div class="fw-bold small lh-1"><?= htmlspecialchars($displayName) ?></div>
-                                <div class="text-muted" style="font-size: 0.7rem;">Dashboard</div>
+                                <div class="text-muted" style="font-size: 0.7rem;"><?= $role === 'user' ? 'ผู้ใช้งาน' : ($role === 'employee' ? 'เจ้าหน้าที่' : 'ผู้ดูแลระบบ') ?></div>
                             </div>
                             <i class="bi bi-chevron-down small text-muted"></i>
                         </div>

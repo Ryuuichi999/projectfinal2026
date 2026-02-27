@@ -24,7 +24,7 @@ $stmt->execute();
 $result = $stmt->get_result();
 
 if ($result->num_rows === 0) {
-    echo "ไม่พบข้อมูลคำขอ";
+    echo '<!DOCTYPE html><html lang="th"><head><meta charset="UTF-8"><script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script></head><body><script>Swal.fire({icon:"error",title:"ไม่พบข้อมูลคำขอ",text:"กรุณาตรวจสอบหมายเลขคำขออีกครั้ง",confirmButtonText:"กลับ"}).then(()=>{window.location.href="request_list.php";});</script></body></html>';
     exit;
 }
 
@@ -66,7 +66,7 @@ if (isset($_POST['approve_confirm'])) {
 </html>';
         exit;
     } else {
-        $error = "เกิดข้อผิดพลาด: " . $conn->error;
+        $error = "เกิดข้อผิดพลาด กรุณาลองใหม่อีกครั้ง";
     }
 }
 ?>

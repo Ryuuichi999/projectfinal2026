@@ -50,7 +50,7 @@ if (isset($_POST['submit'])) {
                 });
             </script>";
         } else {
-            $message = "เกิดข้อผิดพลาด: " . $conn->error;
+            $message = "เกิดข้อผิดพลาด เลขบัตรประชาชนอาจซ้ำหรือข้อมูลไม่ถูกต้อง";
             $message_type = "danger";
         }
     }

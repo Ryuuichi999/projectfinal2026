@@ -4,7 +4,6 @@ require '../includes/email_helper.php';
 require_once '../includes/status_helper.php';
 require_once '../includes/log_helper.php';
 
-// ตรวจสอบสิทธิ์ Admin
 // ตรวจสอบสิทธิ์ Admin หรือ Employee
 if (!isset($_SESSION['user_id']) || ($_SESSION['role'] !== 'admin' && $_SESSION['role'] !== 'employee')) {
     header("Location: ../login.php");
@@ -40,7 +39,7 @@ if (isset($_POST['action']) && isset($_POST['request_id'])) {
 
             $success = $msg;
         } else {
-            $error = "เกิดข้อผิดพลาด: " . $conn->error;
+            $error = "เกิดข้อผิดพลาด กรุณาลองใหม่อีกครั้ง";
         }
     }
 }
@@ -350,4 +349,4 @@ $result->data_seek(0);
     </script>
 </body>
 
-</html>⚓,Complexity:2,Description:
+</html>

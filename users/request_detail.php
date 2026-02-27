@@ -40,7 +40,7 @@ $stmt->execute();
 $result = $stmt->get_result();
 
 if ($result->num_rows === 0) {
-    echo "ไม่พบข้อมูลคำขอ หรือคุณไม่มีสิทธิ์เข้าถึง";
+    echo '<!DOCTYPE html><html lang="th"><head><meta charset="UTF-8"><script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script></head><body><script>Swal.fire({icon:"warning",title:"ไม่พบข้อมูลคำขอ",text:"ไม่พบข้อมูลหรือคุณไม่มีสิทธิ์เข้าถึง",confirmButtonText:"กลับ"}).then(()=>{window.location.href="my_request.php";});</script></body></html>';
     exit;
 }
 
@@ -451,8 +451,14 @@ $timeline_logs = getRequestLogs($conn, $request_id);
                                     <div class="detail-label">ระยะเวลาติดตั้ง</div>
                                     <div class="detail-value text-primary">
                                         <?php $base_dt = !empty($request['permit_date']) ? $request['permit_date'] : $request['created_at']; ?>
-                                        <?= date('d M Y', strtotime($base_dt)) ?> -
-                                        <?= date('d M Y', strtotime($base_dt . " + {$request['duration_days']} days")) ?>
+                                        <?php
+                                        $thMonths = [1=>'ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'];
+                                        $ts1 = strtotime($base_dt);
+                                        $ts2 = strtotime($base_dt . " + {$request['duration_days']} days");
+                                        echo date('j', $ts1) . ' ' . $thMonths[(int)date('n', $ts1)] . ' ' . (date('Y', $ts1)+543);
+                                        echo ' - ';
+                                        echo date('j', $ts2) . ' ' . $thMonths[(int)date('n', $ts2)] . ' ' . (date('Y', $ts2)+543);
+                                        ?>
                                         (<?= $request['duration_days'] ?> วัน)
                                     </div>
                                 </div>

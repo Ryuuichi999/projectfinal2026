@@ -265,7 +265,7 @@ if ($res_rows && $res_rows->num_rows > 0) {
                 "แผนที่หลัก": baseStyle,
                 "แผนที่ Dataviz": datavizStyle
             };
-            var overlays = { "Heatmap": heat, "Approved Markers": markers };
+            var overlays = { "แผนที่ความร้อน": heat, "หมุดตำแหน่งป้าย": markers };
             var layerControl = L.control.layers(baseLayers, overlays, { collapsed: true, position: 'topright' }).addTo(mymap);
             approvedSigns.forEach(function (sign) {
                 if (sign.lat && sign.lng) {
@@ -349,7 +349,7 @@ if ($res_rows && $res_rows->num_rows > 0) {
                             }
                         }
                     }).addTo(mymap);
-                    layerControl.addOverlay(boundaryLayer, "Boundary");
+                    layerControl.addOverlay(boundaryLayer, "ขอบเขตเทศบาล");
 
                     console.log("GeoJSON loaded successfully:", geojson_data);
 
@@ -373,7 +373,7 @@ if ($res_rows && $res_rows->num_rows > 0) {
                     roadLayer = L.geoJSON(roads, {
                         style: { color: '#f59e0b', weight: 3 }
                     }).addTo(mymap);
-                    layerControl.addOverlay(roadLayer, "Roads");
+                    layerControl.addOverlay(roadLayer, "เส้นทางถนน");
                 })
                 .catch(function (err) {
                     console.error(err);

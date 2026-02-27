@@ -180,7 +180,7 @@ if (!isset($_SESSION['user_id'])) {
                         <div class="d-flex align-items-center">
                             <label class="me-2 fw-bold text-muted"><i class="bi bi-funnel"></i> สถานะ:</label>
                             <select id="statusFilter" class="form-select form-select-sm w-auto shadow-sm border-primary">
-                                <option value="">ทั่งหมด</option>
+                                <option value="">ทั้งหมด</option>
                                 <option value="รอชำระเงิน">รอชำระเงิน</option>
                                 <option value="รอตรวจสอบ">รอตรวจสอบ</option>
                                 <option value="อนุมัติแล้ว">อนุมัติแล้ว</option>

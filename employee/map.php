@@ -430,4 +430,3 @@ if ($res_rows && $res_rows->num_rows > 0) {
 </body>
 
 </html>
-⚓,Complexity:2,Description:

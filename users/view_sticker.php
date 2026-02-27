@@ -4,7 +4,8 @@ require '../includes/db.php';
 require '../includes/thaibaht.php';
 
 if (!isset($_GET['id'])) {
-    die("Invalid Request ID");
+    echo '<!DOCTYPE html><html lang="th"><head><meta charset="UTF-8"><script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script></head><body><script>Swal.fire({icon:"error",title:"ไม่พบข้อมูล",text:"กรุณาระบุเลขที่คำขอ",confirmButtonText:"กลับ"}).then(()=>{history.back();});</script></body></html>';
+    exit;
 }
 
 $request_id = $_GET['id'];
@@ -18,7 +19,8 @@ $stmt->execute();
 $request = $stmt->get_result()->fetch_assoc();
 
 if (!$request || $request['status'] != 'approved') {
-    die("เอกสารไม่พร้อมใช้งาน หรือยังไม่ได้รับการอนุมัติ");
+    echo '<!DOCTYPE html><html lang="th"><head><meta charset="UTF-8"><script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script></head><body><script>Swal.fire({icon:"warning",title:"เอกสารไม่พร้อมใช้งาน",text:"คำขอยังไม่ได้รับการอนุมัติ",confirmButtonText:"กลับ"}).then(()=>{history.back();});</script></body></html>';
+    exit;
 }
 
 // Calculate Expiry (use permit_date as official start date, fall back to created_at)

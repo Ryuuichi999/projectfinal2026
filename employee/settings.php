@@ -147,7 +147,7 @@ $permit_sig = getSetting($conn, 'permit_signature_path', '');
             <!-- Receipt Settings -->
             <div class="card shadow-sm mb-4">
                 <div class="card-header bg-primary text-white">
-                    <h5 class="mb-0"><i class="bi bi-receipt me-2"></i>ข้อมูลผู้ออกใบเสร็จ (Receipt)</h5>
+                    <h5 class="mb-0"><i class="bi bi-receipt me-2"></i>ข้อมูลผู้ออกใบเสร็จ</h5>
                 </div>
                 <div class="card-body">
                     <form method="post" enctype="multipart/form-data">
@@ -200,7 +200,7 @@ $permit_sig = getSetting($conn, 'permit_signature_path', '');
             <!-- Permit Settings -->
             <div class="card shadow-sm">
                 <div class="card-header bg-success text-white">
-                    <h5 class="mb-0"><i class="bi bi-file-earmark-medical me-2"></i>ข้อมูลผู้ออกใบอนุญาต (Permit)</h5>
+                    <h5 class="mb-0"><i class="bi bi-file-earmark-medical me-2"></i>ข้อมูลผู้ออกใบอนุญาต</h5>
                 </div>
                 <div class="card-body">
                     <form method="post" enctype="multipart/form-data">

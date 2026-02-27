@@ -16,7 +16,7 @@
             <!-- เมนูสำหรับเจ้าหน้าที่ (Employee) -->
             <a href="/Project2026/employee/dashboard.php"
                 class="<?= basename($_SERVER['PHP_SELF']) == 'dashboard.php' ? 'active' : '' ?>">
-                � ภาพรวมระบบ
+                📊 ภาพรวมระบบ
             </a>
             <a href="/Project2026/employee/request_list.php"
                 class="<?= (strpos($_SERVER['PHP_SELF'], 'employee/request_list.php') !== false) ? 'active' : '' ?>">

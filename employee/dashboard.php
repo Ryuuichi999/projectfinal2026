@@ -32,11 +32,12 @@ $waiting_payment = $conn->query("SELECT COUNT(*) as t FROM sign_requests WHERE s
 $waiting_permit = $conn->query("SELECT COUNT(*) as t FROM sign_requests WHERE status = 'waiting_permit'")->fetch_assoc()['t'];
 
 // สถิติรายเดือน (6 เดือนล่าสุด)
+$thaiMonthsShort = [1=>'ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'];
 $monthly_data = [];
 for ($i = 5; $i >= 0; $i--) {
     $month_start = date('Y-m-01', strtotime("-$i months"));
     $month_end = date('Y-m-t', strtotime("-$i months"));
-    $month_label = date('M Y', strtotime("-$i months"));
+    $month_label = $thaiMonthsShort[(int)date('n', strtotime("-$i months"))] . ' ' . (date('Y', strtotime("-$i months")) + 543);
 
     $sql_m = "SELECT COUNT(*) as c FROM sign_requests WHERE created_at BETWEEN ? AND ?";
     $stmt_m = $conn->prepare($sql_m);

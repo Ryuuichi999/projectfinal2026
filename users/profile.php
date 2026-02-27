@@ -17,7 +17,7 @@ $stmt->execute();
 $user = $stmt->get_result()->fetch_assoc();
 
 if (!$user) {
-    echo "ไม่พบข้อมูลผู้ใช้";
+    echo '<!DOCTYPE html><html lang="th"><head><meta charset="UTF-8"><script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script></head><body><script>Swal.fire({icon:"error",title:"ไม่พบข้อมูลผู้ใช้",text:"กรุณาเข้าสู่ระบบใหม่",confirmButtonText:"ตกลง"}).then(()=>{window.location.href="../login.php";});</script></body></html>';
     exit;
 }
 
@@ -49,7 +49,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $stmt2->execute();
                 $user = $stmt2->get_result()->fetch_assoc();
             } else {
-                $message = "เกิดข้อผิดพลาด: " . $conn->error;
+                $message = "เกิดข้อผิดพลาด กรุณาลองใหม่อีกครั้ง";
                 $message_type = 'danger';
             }
         }

@@ -2,6 +2,8 @@
 require '../includes/db.php';
 require '../includes/email_helper.php';
 require_once '../includes/status_helper.php';
+require_once '../includes/log_helper.php';
+require_once '../includes/audit_helper.php';
 
 if (!isset($_SESSION['user_id']) || ($_SESSION['role'] !== 'admin' && $_SESSION['role'] !== 'employee')) {
     header("Location: ../login.php");
@@ -57,7 +59,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
                 $success = "เริ่มตรวจสอบคำขอแล้ว";
                 $request['status'] = 'reviewing';
             } else {
-                $error = "ไม่สามารถอัปเดตสถานะ: " . $conn->error;
+                $error = "ไม่สามารถอัปเดตสถานะ กรุณาลองใหม่";
             }
         } else {
             $error = "สถานะปัจจุบันไม่ใช่รอพิจารณา";
@@ -72,7 +74,24 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
             $request['status'] = 'need_documents';
             $request['decision_note'] = $note;
         } else {
-            $error = "ไม่สามารถบันทึกคำขอเอกสารเพิ่ม: " . $conn->error;
+            $error = "ไม่สามารถบันทึกคำขอเอกสารเพิ่ม กรุณาลองใหม่";
+        }
+    } elseif ($action === 'approve') {
+        if (in_array($request['status'], ['pending', 'reviewing', 'need_documents'])) {
+            $stmt2 = $conn->prepare("UPDATE sign_requests SET status = 'waiting_payment', approved_by = ? WHERE id = ?");
+            $approver_id = $_SESSION['user_id'];
+            $stmt2->bind_param("ii", $approver_id, $request_id);
+            if ($stmt2->execute()) {
+                send_status_notification($request_id, $conn);
+                logRequestAction($conn, $request_id, 'waiting_payment', 'อนุมัติคำร้อง — รอชำระค่าธรรมเนียม', $approver_id, 'ตรวจสอบเอกสารเบื้องต้นผ่านแล้ว');
+                logAudit($conn, 'approve', 'sign_requests', $request_id, 'อนุมัติคำร้องให้รอชำระเงิน');
+                $success = "อนุมัติคำขอเรียบร้อย สถานะเปลี่ยนเป็นรอชำระเงิน";
+                $request['status'] = 'waiting_payment';
+            } else {
+                $error = "ไม่สามารถอนุมัติคำขอได้ กรุณาลองใหม่";
+            }
+        } else {
+            $error = "สถานะปัจจุบันไม่สามารถอนุมัติได้";
         }
     } elseif ($action === 'reject') {
         $note = trim($_POST['note'] ?? '');
@@ -84,7 +103,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
             $request['status'] = 'rejected';
             $request['decision_note'] = $note;
         } else {
-            $error = "ไม่สามารถบันทึกการปฏิเสธ: " . $conn->error;
+            $error = "ไม่สามารถบันทึกการปฏิเสธ กรุณาลองใหม่";
         }
     }
 }
@@ -513,11 +532,12 @@ $result_docs = $stmt_docs->get_result();
                         <?php endif; ?>
 
                         <?php if (in_array($request['status'], ['pending', 'reviewing', 'need_documents'])): ?>
-                            <div class="d-grid gap-2 mt-2">
-                                <a href="approve_form.php?id=<?= $request['id'] ?>" class="btn btn-success py-2">
+                            <form method="post" id="approveForm" class="d-grid gap-2 mt-2">
+                                <input type="hidden" name="action" value="approve">
+                                <button type="button" class="btn btn-success py-2" onclick="confirmApprove()">
                                     <i class="bi bi-check-circle me-2"></i> อนุมัติ (ส่งชำระเงิน)
-                                </a>
-                            </div>
+                                </button>
+                            </form>
                         <?php endif; ?>
 
                         <?php if ($request['status'] === 'waiting_permit'): ?>
@@ -704,6 +724,25 @@ $result_docs = $stmt_docs->get_result();
                 L.marker([lat, lng]).addTo(map).bindPopup("จุดที่ติดตั้งป้าย").openPopup();
             }
         });
+    </script>
+
+    <script>
+        function confirmApprove() {
+            Swal.fire({
+                title: 'ยืนยันการอนุมัติ?',
+                text: "สถานะจะเปลี่ยนเป็น 'รอชำระเงิน'",
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonColor: '#10b981',
+                cancelButtonColor: '#94a3b8',
+                confirmButtonText: 'ยืนยัน อนุมัติ',
+                cancelButtonText: 'ยกเลิก'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    document.getElementById('approveForm').submit();
+                }
+            });
+        }
     </script>
 
     <div class="modal fade" id="requestDocsModal" tabindex="-1" aria-hidden="true">

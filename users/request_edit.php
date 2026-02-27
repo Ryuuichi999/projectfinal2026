@@ -20,7 +20,7 @@ $stmt->bind_param("ii", $request_id, $user_id);
 $stmt->execute();
 $result = $stmt->get_result();
 if ($result->num_rows === 0) {
-    echo "ไม่พบคำขอของคุณ";
+    echo '<!DOCTYPE html><html lang="th"><head><meta charset="UTF-8"><script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script></head><body><script>Swal.fire({icon:"warning",title:"ไม่พบคำขอ",text:"ไม่พบคำขอของคุณหรือคุณไม่มีสิทธิ์เข้าถึง",confirmButtonText:"กลับ"}).then(()=>{window.location.href="my_request.php";});</script></body></html>';
     exit;
 }
 $request = $result->fetch_assoc();
@@ -100,7 +100,7 @@ if (isset($_POST['submit'])) {
         exit;
     } catch (Exception $e) {
         $conn->rollback();
-        $message = "เกิดข้อผิดพลาด: " . $e->getMessage();
+        $message = "เกิดข้อผิดพลาดในการบันทึกข้อมูล กรุณาลองใหม่อีกครั้ง";
         $message_type = 'danger';
     }
 }

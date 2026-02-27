@@ -87,7 +87,7 @@ if (isset($_POST['submit_renew'])) {
             });
         </script>";
     } else {
-        $message = 'เกิดข้อผิดพลาด: ' . $conn->error;
+        $message = 'เกิดข้อผิดพลาด กรุณาลองใหม่อีกครั้ง';
         $message_type = 'danger';
     }
 }

@@ -83,7 +83,7 @@ function get_role_badge_admin($role)
             </div>
             <div class="col-md-3 col-6">
                 <div class="card dashboard-card bg-light-primary hover-lift h-100">
-                    <h6 class="text-nowrap">� เจ้าหน้าที่</h6>
+                    <h6 class="text-nowrap">🟣 เจ้าหน้าที่</h6>
                     <div class="count text-primary"><?= $total_employees ?></div>
                 </div>
             </div>
@@ -98,7 +98,7 @@ function get_role_badge_admin($role)
         <!-- ===== ผู้ใช้ล่าสุด ===== -->
         <div class="card shadow-sm p-4 mb-4">
             <div class="d-flex justify-content-between align-items-center mb-3">
-                <h5 class="mb-0">� ผู้ใช้ล่าสุด</h5>
+                <h5 class="mb-0">👥 ผู้ใช้ล่าสุด</h5>
                 <div class="d-flex gap-2">
                     <a href="add_user.php" class="btn btn-sm btn-success">
                         <i class="bi bi-person-plus-fill"></i> เพิ่มผู้ใช้

@@ -63,6 +63,13 @@ $stmtExp->bind_param("i", $user_id);
 $stmtExp->execute();
 $expiringPermits = $stmtExp->get_result();
 
+// Thai short month names
+$thaiMonths = [1 => 'ม.ค.', 'ก.พ.', 'มี.ค.', 'เม.ย.', 'พ.ค.', 'มิ.ย.', 'ก.ค.', 'ส.ค.', 'ก.ย.', 'ต.ค.', 'พ.ย.', 'ธ.ค.'];
+function thaiDateShort($dateStr, $months) {
+    $ts = strtotime($dateStr);
+    return date('j', $ts) . ' ' . $months[(int)date('n', $ts)] . ' ' . (date('Y', $ts) + 543);
+}
+
 ?>
 
 <!DOCTYPE html>
@@ -465,7 +472,7 @@ $expiringPermits = $stmtExp->get_result();
                                 </div>
                                 <div class="request-item-meta">
                                     <div class="meta-unit">
-                                        <i class="bi bi-calendar3"></i> <?= date('j M Y', strtotime($req['created_at'])) ?>
+                                        <i class="bi bi-calendar3"></i> <?= thaiDateShort($req['created_at'], $thaiMonths) ?>
                                     </div>
                                     <div class="meta-unit">
                                         <i class="bi bi-geo-alt"></i> <?= htmlspecialchars($req['road_name']) ?>

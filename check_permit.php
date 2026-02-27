@@ -2,8 +2,34 @@
 require 'includes/db.php';
 require 'includes/thaibaht.php';
 
+function showPermitError($title, $message) {
+    ?>
+    <!DOCTYPE html>
+    <html lang="th">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title><?= $title ?> - เทศบาลเมืองศิลา</title>
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+        <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;500;700&display=swap" rel="stylesheet">
+        <style>body{font-family:'Sarabun',sans-serif;background:#f8fafc;min-height:100vh;display:flex;align-items:center;justify-content:center;}</style>
+    </head>
+    <body>
+        <div class="text-center p-5">
+            <div class="mb-4"><i class="bi bi-exclamation-triangle-fill text-warning" style="font-size:4rem;"></i></div>
+            <h3 class="fw-bold mb-3"><?= $title ?></h3>
+            <p class="text-muted mb-4"><?= $message ?></p>
+            <a href="index.php" class="btn btn-primary px-4">กลับสู่หน้าหลัก</a>
+        </div>
+    </body>
+    </html>
+    <?php
+    exit;
+}
+
 if (!isset($_GET['id'])) {
-    die("ไม่พบข้อมูล");
+    showPermitError('ไม่พบข้อมูล', 'กรุณาระบุเลขที่ใบอนุญาตที่ต้องการตรวจสอบ');
 }
 
 $request_id = $_GET['id'];
@@ -17,7 +43,7 @@ $stmt->execute();
 $request = $stmt->get_result()->fetch_assoc();
 
 if (!$request) {
-    die("ไม่พบข้อมูลใบอนุญาต");
+    showPermitError('ไม่พบข้อมูลใบอนุญาต', 'ไม่พบข้อมูลใบอนุญาตในระบบ กรุณาตรวจสอบเลขที่อีกครั้ง');
 }
 
 // Calculate status color/text

@@ -343,7 +343,8 @@ if (isset($_GET['export']) && $_GET['export'] === 'csv') {
                                     <td><?= htmlspecialchars($exp['first_name'] . ' ' . $exp['last_name']) ?></td>
                                     <td><?= htmlspecialchars($exp['sign_type']) ?></td>
                                     <td><?= htmlspecialchars($exp['permit_no'] ?? '-') ?></td>
-                                    <td><?= date('d/m/Y', strtotime($exp['expire_date'])) ?></td>
+                                    <?php $exp_ts = strtotime($exp['expire_date']); ?>
+                                    <td><?= date('j', $exp_ts) . ' ' . $thai_months[(int)date('n', $exp_ts)] . ' ' . (date('Y', $exp_ts)+543) ?></td>
                                     <td><span class="expiring-badge <?= $badge_class ?>"><?= $days_left ?> วัน</span></td>
                                 </tr>
                             <?php endwhile; ?>
@@ -372,13 +373,13 @@ if (isset($_GET['export']) && $_GET['export'] === 'csv') {
                         <tbody>
                             <?php while ($exd = $expired_result->fetch_assoc()):
                                 $days_over = abs(ceil((strtotime($exd['expire_date']) - time()) / 86400));
-                            ?>
+                                $exd_ts = strtotime($exd['expire_date']); ?>
                                 <tr>
                                     <td>#<?= $exd['id'] ?></td>
                                     <td><?= htmlspecialchars($exd['first_name'] . ' ' . $exd['last_name']) ?></td>
                                     <td><?= htmlspecialchars($exd['sign_type']) ?></td>
                                     <td><?= htmlspecialchars($exd['permit_no'] ?? '-') ?></td>
-                                    <td><?= date('d/m/Y', strtotime($exd['expire_date'])) ?></td>
+                                    <td><?= date('j', $exd_ts) . ' ' . $thai_months[(int)date('n', $exd_ts)] . ' ' . (date('Y', $exd_ts)+543) ?></td>
                                     <td><span class="expiring-badge expiring-danger"><?= $days_over ?> วัน</span></td>
                                 </tr>
                             <?php endwhile; ?>

@@ -29,7 +29,7 @@ if (isset($_POST['submit'])) {
                 Swal.fire({
                     icon: 'error',
                     title: 'เกิดข้อผิดพลาด',
-                    text: '" . addslashes($conn->error) . "',
+                    text: 'เลขบัตรประชาชนนี้อาจมีอยู่ในระบบแล้ว หรือข้อมูลไม่ถูกต้อง กรุณาลองใหม่',
                     confirmButtonColor: '#3085d6',
                     confirmButtonText: 'ตกลง'
                 });
