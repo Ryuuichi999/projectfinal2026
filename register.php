@@ -19,22 +19,14 @@ if (isset($_POST['submit'])) {
         $_POST['address'],
         $pass
     );
-    if ($stmt->execute()) {
-        $success = true;
-    } else {
-        echo "
-        <script src='https://cdn.jsdelivr.net/npm/sweetalert2@11'></script>
-        <script>
-            document.addEventListener('DOMContentLoaded', function() {
-                Swal.fire({
-                    icon: 'error',
-                    title: 'เกิดข้อผิดพลาด',
-                    text: 'เลขบัตรประชาชนนี้อาจมีอยู่ในระบบแล้ว หรือข้อมูลไม่ถูกต้อง กรุณาลองใหม่',
-                    confirmButtonColor: '#3085d6',
-                    confirmButtonText: 'ตกลง'
-                });
-            });
-        </script>";
+    try {
+        if ($stmt->execute()) {
+            $success = true;
+        } else {
+            $register_error = 'เลขบัตรประชาชนนี้อาจมีอยู่ในระบบแล้ว หรือข้อมูลไม่ถูกต้อง กรุณาลองใหม่';
+        }
+    } catch (mysqli_sql_exception $e) {
+        $register_error = 'เลขบัตรประชาชนนี้มีอยู่ในระบบแล้ว กรุณาใช้เลขบัตรอื่นหรือเข้าสู่ระบบ';
     }
 }
 ?>
@@ -198,6 +190,21 @@ if (isset($_POST['submit'])) {
                         showConfirmButton: false
                     }).then(() => {
                         window.location.href = 'login.php';
+                    });
+                });
+            </script>
+        <?php endif; ?>
+
+        <?php if (isset($register_error)): ?>
+            <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+            <script>
+                document.addEventListener('DOMContentLoaded', function () {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'เกิดข้อผิดพลาด',
+                        text: '<?= $register_error ?>',
+                        confirmButtonColor: '#3085d6',
+                        confirmButtonText: 'ตกลง'
                     });
                 });
             </script>
