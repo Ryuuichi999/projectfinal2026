@@ -66,6 +66,14 @@ if ($request['status'] == 'approved') {
 $lat = $request['location_lat'] ?? '16.482780';
 $lng = $request['location_lng'] ?? '102.812704';
 
+// PDPA: Mask ชื่อบางส่วนเพื่อคุ้มครองข้อมูลส่วนบุคคล
+function maskName($name) {
+    $len = mb_strlen($name, 'UTF-8');
+    if ($len <= 1) return $name;
+    if ($len == 2) return mb_substr($name, 0, 1, 'UTF-8') . '*';
+    return mb_substr($name, 0, 1, 'UTF-8') . str_repeat('*', $len - 2) . mb_substr($name, -1, 1, 'UTF-8');
+}
+
 function getThaiDate($date)
 {
     if (!$date)
@@ -210,7 +218,7 @@ function getThaiDate($date)
                 <div class="info-row">
                     <span class="info-label">ผู้ได้รับอนุญาต</span>
                     <span class="info-value">
-                        <?= htmlspecialchars($request['title_name'] . $request['first_name'] . ' ' . $request['last_name']) ?>
+                        <?= htmlspecialchars($request['title_name']) . maskName(htmlspecialchars($request['first_name'])) . ' ' . maskName(htmlspecialchars($request['last_name'])) ?>
                     </span>
                 </div>
                 <div class="info-row">

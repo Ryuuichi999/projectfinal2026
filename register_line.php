@@ -192,6 +192,13 @@ if (isset($_POST['action'])) {
                                         <input type="password" name="password" class="form-control"
                                             placeholder="กำหนดรหัสผ่าน" required>
                                     </div>
+                                    <div class="form-check mb-3">
+                                        <input class="form-check-input" type="checkbox" id="pdpaConsentLine" required>
+                                        <label class="form-check-label small text-muted" for="pdpaConsentLine">
+                                            ฉันยินยอมให้เก็บรวบรวมและใช้ข้อมูลส่วนบุคคลตาม
+                                            <a href="privacy_policy.php" target="_blank" class="text-decoration-none fw-semibold">นโยบายความเป็นส่วนตัว (PDPA)</a>
+                                        </label>
+                                    </div>
                                     <button type="submit" class="btn btn-success w-100">สมัครสมาชิก</button>
                                 </form>
                             </div>

@@ -1,19 +1,17 @@
 <?php
-// สมมติว่าไฟล์ map.php อยู่ในรูทของ Projectป้าย/
 require './includes/db.php';
 
-// Public GIS map - no login required
-// สำหรับผู้ใช้ทั่วไปที่ไม่ได้ล็อกอิน - ดูแผนที่ได้แต่ไม่เห็นหมุด
+// Public GIS map - เฉพาะป้ายที่อนุมัติแล้ว (ไม่แสดงข้อมูลส่วนบุคคล)
 
-// กำหนดบทบาทและผู้ใช้ปัจจุบัน
-$role = 'guest';
-$userId = 0;
+$approved_signs = [];
+$approved_rows = [];
 
-// ดึงข้อมูลคำร้องที่มีพิกัดและสถานะ เพื่อแสดงบนแผนที่
-$approved_signs = []; // ว่างเปล่า
+// ดึงเฉพาะคำขอที่อนุมัติแล้ว + มีพิกัด
+$result_signs = $conn->query("SELECT r.id, r.location_lat, r.location_lng, r.sign_type, r.permit_no, r.road_name, r.width, r.height, r.quantity, r.duration_days, r.permit_date
+    FROM sign_requests r
+    WHERE r.status = 'approved' AND r.location_lat IS NOT NULL AND r.location_lng IS NOT NULL
+    ORDER BY r.id DESC");
 
-// สำหรับผู้ใช้ทั่วไปที่ไม่ได้ล็อกอิน - แสดงหมุดทั้งหมด
-$result_signs = $conn->query("SELECT id, location_lat, location_lng, sign_type, status FROM sign_requests WHERE location_lat IS NOT NULL AND location_lng IS NOT NULL");
 if ($result_signs && $result_signs->num_rows > 0) {
     while ($row = $result_signs->fetch_assoc()) {
         $approved_signs[] = [
@@ -21,32 +19,21 @@ if ($result_signs && $result_signs->num_rows > 0) {
             'lat' => (float) $row['location_lat'],
             'lng' => (float) $row['location_lng'],
             'type' => htmlspecialchars($row['sign_type']),
-            'status' => htmlspecialchars($row['status'])
+            'permit_no' => htmlspecialchars($row['permit_no'] ?? '-'),
+            'road' => htmlspecialchars($row['road_name'] ?? '-'),
+            'size' => $row['width'] . 'x' . $row['height'] . ' ม.',
+            'qty' => (int) $row['quantity'],
+            'duration' => (int) ($row['duration_days'] ?? 0),
+            'permit_date' => $row['permit_date'] ? date('d/m/Y', strtotime($row['permit_date'])) : '-'
         ];
+        $approved_rows[] = end($approved_signs);
     }
 }
 
-$approved_rows = []; // ว่างเปล่า
-// สำหรับผู้ใช้ทั่วไปที่ไม่ได้ล็อกอิน - แสดงข้อมูลทั้งหมด
-$res_rows = $conn->query("SELECT r.id, r.sign_type, r.receipt_date, r.description, r.duration_days, u.title_name, u.first_name, u.last_name, u.address, u.phone 
-                              FROM sign_requests r 
-                              JOIN users u ON r.user_id = u.id 
-                              WHERE r.location_lat IS NOT NULL AND r.location_lng IS NOT NULL
-                              ORDER BY r.id DESC LIMIT 1000");
-if ($res_rows && $res_rows->num_rows > 0) {
-    while ($row = $res_rows->fetch_assoc()) {
-        $approved_rows[] = [
-            'id' => (int) $row['id'],
-            'type' => htmlspecialchars($row['sign_type']),
-            'desc' => htmlspecialchars($row['description'] ?? ''),
-            'duration' => (int) ($row['duration_days'] ?? 0),
-            'name' => htmlspecialchars(($row['title_name'] ?? '') . $row['first_name'] . ' ' . $row['last_name']),
-            'address' => htmlspecialchars($row['address'] ?? ''),
-            'phone' => htmlspecialchars($row['phone'] ?? ''),
-            'date' => $row['receipt_date'] ? date('d/m/Y', strtotime($row['receipt_date'])) : ''
-        ];
-    }
-}
+$total_signs = count($approved_signs);
+$unique_types = count(array_unique(array_column($approved_signs, 'type')));
+$unique_roads = count(array_filter(array_unique(array_column($approved_signs, 'road')), function($r) { return $r !== '-'; }));
+
 ?>
 
 <!DOCTYPE html>
@@ -54,149 +41,246 @@ if ($res_rows && $res_rows->num_rows > 0) {
 
 <head>
     <meta charset="UTF-8">
-    <title>แผนที่ GIS</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>แผนที่ป้ายโฆษณา - เทศบาลเมืองศิลา</title>
 
     <?php include './includes/header.php'; ?>
-
     <link rel="stylesheet" href="assets/css/style.css">
-
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css" />
 
     <style>
-        #mapid {
-            height: 480px;
-            width: 100%;
-            border-radius: 14px;
-            border: 1px solid #e5e7eb;
+        .page-header {
+            background: linear-gradient(135deg, #1e3a5f 0%, #2563eb 100%);
+            color: white;
+            border-radius: 16px;
+            padding: 28px 32px;
+            margin-bottom: 24px;
         }
+        .page-header h2 { font-weight: 700; margin-bottom: 4px; }
+        .page-header p { opacity: 0.85; margin-bottom: 0; font-size: 0.95rem; }
 
-        .fixed-card {
-            height: 480px;
+        .stat-card {
+            background: white;
+            border-radius: 12px;
+            padding: 18px 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+            border: 1px solid #f1f5f9;
             display: flex;
-            flex-direction: column;
+            align-items: center;
+            gap: 14px;
+        }
+        .stat-icon {
+            width: 48px; height: 48px;
+            border-radius: 12px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.3rem;
+        }
+        .stat-value { font-size: 1.5rem; font-weight: 700; line-height: 1.2; color: #1a202c; }
+        .stat-label { font-size: 0.8rem; color: #64748b; }
+
+        #mapid {
+            height: 520px;
+            width: 100%;
+            border-radius: 12px;
+            border: 1px solid #e2e8f0;
         }
 
-        .fixed-card-body {
-            flex: 1 1 auto;
+        .search-box {
+            background: white;
+            border-radius: 12px;
+            padding: 16px 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+            border: 1px solid #f1f5f9;
+            margin-bottom: 16px;
+        }
+        .search-box .form-control {
+            border-radius: 8px;
+            border: 1px solid #e2e8f0;
+            padding: 10px 14px 10px 40px;
+            font-size: 0.95rem;
+        }
+        .search-box .form-control:focus {
+            box-shadow: 0 0 0 3px rgba(37,99,235,0.15);
+            border-color: #2563eb;
+        }
+        .search-icon {
+            position: absolute;
+            left: 14px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #94a3b8;
+        }
+
+        .list-card {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+            border: 1px solid #f1f5f9;
             overflow: hidden;
         }
-
-        .table-wrap {
-            height: 400px;
-            overflow: auto;
-            margin-top: 6px;
+        .list-card-header {
+            padding: 14px 20px;
+            border-bottom: 1px solid #f1f5f9;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
         }
+        .list-card-header h6 { margin: 0; font-weight: 700; color: #1a202c; }
 
-        .table-page {
-            height: 100%;
+        .table-container {
+            max-height: 400px;
             overflow-y: auto;
         }
-
-        .map-container {
-            position: relative;
+        .table { font-size: 0.85rem; margin-bottom: 0; }
+        .table th {
+            background: #f8fafc;
+            font-weight: 600;
+            color: #475569;
+            font-size: 0.78rem;
+            text-transform: uppercase;
+            letter-spacing: 0.03em;
+            position: sticky;
+            top: 0;
+            z-index: 1;
+            border-bottom: 2px solid #e2e8f0;
         }
+        .table th, .table td { padding: 10px 14px; vertical-align: middle; }
+        .table tbody tr { cursor: pointer; transition: background 0.15s; }
+        .table tbody tr:hover { background: #f0f7ff; }
 
-        .table {
-            min-width: 540px;
-            font-size: 11px;
+        .permit-badge {
+            background: #f0fdf4;
+            color: #15803d;
+            padding: 3px 10px;
+            border-radius: 6px;
+            font-size: 0.78rem;
+            font-weight: 600;
         }
-
-        .table th,
-        .table td {
-            padding: .2rem .45rem;
-        }
-
-        .table-type {
-            max-width: 80px;
+        .road-cell {
+            max-width: 140px;
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
         }
 
-        .table-desc {
-            max-width: 160px;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
+        .table-footer {
+            padding: 10px 20px;
+            border-top: 1px solid #f1f5f9;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: #fafbfc;
         }
+        .table-footer .btn { border-radius: 8px; }
 
-        .table-name {
-            max-width: 120px;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
+        .no-results {
+            text-align: center;
+            padding: 40px 20px;
+            color: #94a3b8;
         }
-
-        .full-height-card {
-            min-height: calc(100vh - 140px);
-        }
+        .no-results i { font-size: 2.5rem; margin-bottom: 8px; display: block; }
     </style>
 </head>
 
 <body>
-
     <?php include './includes/navbar.php'; ?>
 
-    <div class="container-fluid px-md-5 fade-in-up mt-4">
-        <div class="card p-4 fade-in-up full-height-card">
-            <h2 class="mb-2">🗺️ แผนที่ข้อมูลพื้นที่ (GIS)</h2>
-            <p class="text-muted mb-4">แสดงขอบเขตเทศบาลเมืองศิลา ตำแหน่งป้ายที่ได้รับอนุมัติ และเส้นทางถนนในพื้นที่</p>
+    <div class="container-fluid px-md-4 px-lg-5 fade-in-up mt-4 mb-5">
+        <!-- Header -->
+        <div class="page-header">
+            <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+                <div>
+                    <h2><i class="bi bi-geo-alt-fill me-2"></i>แผนที่ป้ายโฆษณา</h2>
+                    <p>แสดงตำแหน่งป้ายโฆษณาที่ได้รับอนุญาตในเขตเทศบาลเมืองศิลา</p>
+                </div>
+                <div class="d-flex align-items-center gap-2">
+                    <span class="badge bg-white text-dark px-3 py-2 fw-semibold" style="font-size:0.85rem;">
+                        <i class="bi bi-signpost-2 me-1 text-success"></i> <?= $total_signs ?> ป้ายที่อนุมัติ
+                    </span>
+                </div>
+            </div>
+        </div>
 
-            <div class="row g-3">
-                <div class="col-md-6">
-                    <div class="map-container">
-                        <div class="d-flex align-items-center gap-2 mb-2">
-                            <span class="badge" style="background-color: #16a34a; color: white;">🪧 อนุมัติแล้ว</span>
-                            <span class="badge" style="background-color: #f59e0b; color: white;">🪧 รอดำเนินการ</span>
-                            <span class="badge" style="background-color: #3b82f6; color: white;">🪧 รอชำระเงิน</span>
-                            <span class="badge" style="background-color: #8b5cf6; color: white;">🪧 รอใบเสร็จ</span>
-                            <span class="badge" style="background-color: #dc2626; color: white;">🪧 ไม่อนุมัติ</span>
-                        </div>
-                        <div id="mapid"></div>
+        <!-- Stats Row -->
+        <div class="row g-3 mb-4">
+            <div class="col-6">
+                <div class="stat-card">
+                    <div class="stat-icon" style="background:#f0fdf4; color:#16a34a;"><i class="bi bi-patch-check-fill"></i></div>
+                    <div>
+                        <div class="stat-value"><?= $total_signs ?></div>
+                        <div class="stat-label">ป้ายที่อนุมัติในเขตเทศบาล</div>
                     </div>
                 </div>
-                <div class="col-md-6">
-                    <div class="card fixed-card">
-                        <div class="p-2 border-bottom">
-                            <h6 class="mb-0">รายการคำร้องบนแผนที่</h6>
-                            <div class="d-flex align-items-center gap-2">
-                                <label class="text-muted">แสดง</label>
-                                <select id="pageSize" class="form-select form-select-sm w-auto">
-                                    <option value="5">5</option>
-                                    <option value="10" selected>10</option>
-                                    <option value="20">20</option>
-                                </select>
-                                <div class="ms-auto d-flex align-items-center gap-2">
-                                    <label class="text-muted">ค้นหา</label>
-                                    <input id="searchInput" type="text" class="form-control form-control-sm"
-                                        placeholder="ชื่อ/ที่อยู่/ประเภท">
-                                </div>
-                            </div>
+            </div>
+            <div class="col-6">
+                <div class="stat-card">
+                    <div class="stat-icon" style="background:#fdf2f8; color:#db2777;"><i class="bi bi-shield-check"></i></div>
+                    <div>
+                        <div class="stat-value">PDPA</div>
+                        <div class="stat-label">คุ้มครองข้อมูลส่วนบุคคล</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Map -->
+        <div class="row g-4">
+            <div class="col-lg-7">
+                <div id="mapid"></div>
+                <div class="d-flex align-items-center gap-2 mt-2 flex-wrap">
+                    <span class="small text-muted me-1"><i class="bi bi-circle-fill" style="color:#16a34a; font-size:8px;"></i> ป้ายที่อนุมัติ</span>
+                    <span class="small text-muted me-1"><i class="bi bi-circle-fill" style="color:#dc2626; font-size:8px;"></i> ขอบเขตเทศบาล</span>
+                    <span class="small text-muted"><i class="bi bi-circle-fill" style="color:#f59e0b; font-size:8px;"></i> เส้นทางถนน</span>
+                </div>
+            </div>
+
+            <!-- Table Panel -->
+            <div class="col-lg-5">
+                <!-- Search -->
+                <div class="search-box">
+                    <div class="position-relative">
+                        <i class="bi bi-search search-icon"></i>
+                        <input id="searchInput" type="text" class="form-control"
+                            placeholder="ค้นหาเลขคำขอ, ประเภทป้าย, ถนน...">
+                    </div>
+                </div>
+
+                <!-- List -->
+                <div class="list-card">
+                    <div class="list-card-header">
+                        <h6><i class="bi bi-list-ul me-2"></i>รายการป้ายที่อนุมัติ</h6>
+                        <select id="pageSize" class="form-select form-select-sm" style="width:auto;">
+                            <option value="5">5</option>
+                            <option value="10" selected>10</option>
+                            <option value="20">20</option>
+                        </select>
+                    </div>
+                    <div class="table-container">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>คำร้อง</th>
+                                    <th>ประเภทป้าย</th>
+                                    <th>ถนน/สถานที่</th>
+                                    <th>ขนาด</th>
+                                    <th>ระยะเวลา</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tableBody"></tbody>
+                        </table>
+                        <div id="noResults" class="no-results d-none">
+                            <i class="bi bi-search"></i>
+                            <div class="fw-semibold">ไม่พบข้อมูลที่ค้นหา</div>
+                            <div class="small">ลองค้นหาด้วยคำอื่น</div>
                         </div>
-                        <div class="fixed-card-body p-0">
-                            <div class="table-wrap">
-                                <table class="table table-sm mb-0">
-                                    <thead>
-                                        <tr>
-                                            <th>เลขคำขอ</th>
-                                            <th>ประเภท</th>
-                                            <th>รายละเอียด</th>
-                                            <th>ระยะเวลา</th>
-                                            <th>ชื่อ</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody id="tableBody" class="table-page"></tbody>
-                                </table>
-                            </div>
-                        </div>
-                        <div class="p-2 border-top d-flex justify-content-between align-items-center">
-                            <div id="pageInfo" class="small text-muted"></div>
-                            <div class="btn-group">
-                                <button id="prevBtn" class="btn btn-outline-secondary btn-sm"><i
-                                        class="bi bi-chevron-left"></i></button>
-                                <button id="nextBtn" class="btn btn-outline-secondary btn-sm"><i
-                                        class="bi bi-chevron-right"></i></button>
-                            </div>
+                    </div>
+                    <div class="table-footer">
+                        <div id="pageInfo" class="small text-muted"></div>
+                        <div class="btn-group">
+                            <button id="prevBtn" class="btn btn-outline-secondary btn-sm"><i class="bi bi-chevron-left"></i></button>
+                            <button id="nextBtn" class="btn btn-outline-secondary btn-sm"><i class="bi bi-chevron-right"></i></button>
                         </div>
                     </div>
                 </div>
@@ -204,225 +288,173 @@ if ($res_rows && $res_rows->num_rows > 0) {
         </div>
     </div>
 
+    <!-- PDPA Notice -->
+    <div class="text-center mt-4">
+        <p class="text-muted small mb-0">
+            <i class="bi bi-shield-check me-1"></i>
+            ข้อมูลที่แสดงบนหน้านี้ไม่มีข้อมูลส่วนบุคคลตาม พ.ร.บ. คุ้มครองข้อมูลส่วนบุคคล พ.ศ. 2562 |
+            <a href="/Project2026/privacy_policy.php" class="text-decoration-none">นโยบายความเป็นส่วนตัว</a>
+        </p>
+    </div>
+
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-    <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css" />
-    <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css" />
     <script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>
     <script src="https://unpkg.com/leaflet.heat/dist/leaflet-heat.js"></script>
 
     <script>
-        document.addEventListener('DOMContentLoaded', function () {
-            // โค้ดจะทำงานได้เมื่อ DOM และ Leaflet JS โหลดเสร็จแล้ว
+    document.addEventListener('DOMContentLoaded', function () {
+        if (typeof L === 'undefined') {
+            document.getElementById('mapid').innerHTML = '<div class="alert alert-danger m-3">ไม่สามารถโหลดแผนที่ได้</div>';
+            return;
+        }
 
-            const initialLat = 16.485;
-            const initialLng = 102.835;
-            const initialZoom = 12;
+        var mymap = L.map('mapid', { zoomControl: true }).setView([16.485, 102.835], 12);
 
-            // ตรวจสอบว่า Leaflet โหลดสำเร็จหรือไม่
-            if (typeof L === 'undefined') {
-                console.error("Leaflet library (L) failed to load.");
-                document.getElementById('mapid').innerHTML = '<div class="alert alert-danger">ไม่สามารถโหลดแผนที่ได้ โปรดตรวจสอบการเชื่อมต่ออินเทอร์เน็ตหรือ CDN Links.</div>';
-                return;
-            }
+        var baseStyle = L.tileLayer('https://api.maptiler.com/maps/base-v4/{z}/{x}/{y}.png?key=<?= MAPTILER_API_KEY ?>', {
+            maxZoom: 20,
+            attribution: '&copy; MapTiler &copy; OpenStreetMap'
+        }).addTo(mymap);
 
-            var mymap = L.map('mapid', { zoomControl: true }).setView([initialLat, initialLng], initialZoom);
+        var datavizStyle = L.tileLayer('https://api.maptiler.com/maps/dataviz-v4/{z}/{x}/{y}.png?key=<?= MAPTILER_API_KEY ?>', {
+            maxZoom: 20,
+            attribution: '&copy; MapTiler &copy; OpenStreetMap'
+        });
 
-            var baseStyle = L.tileLayer('https://api.maptiler.com/maps/base-v4/{z}/{x}/{y}.png?key=<?php echo MAPTILER_API_KEY; ?>', {
-                maxZoom: 20,
-                attribution: '<a href="https://www.maptiler.com/copyright/" target="_blank">&copy; MapTiler</a> <a href="https://www.openstreetmap.org/copyright" target="_blank">&copy; OpenStreetMap contributors</a>'
-            }).addTo(mymap);
+        var approvedSigns = <?= json_encode($approved_signs) ?>;
+        var approvedList = <?= json_encode($approved_rows) ?>;
 
-            var datavizStyle = L.tileLayer('https://api.maptiler.com/maps/dataviz-v4/{z}/{x}/{y}.png?key=<?php echo MAPTILER_API_KEY; ?>', {
-                maxZoom: 20,
-                attribution: '<a href="https://www.maptiler.com/copyright/" target="_blank">&copy; MapTiler</a> <a href="https://www.openstreetmap.org/copyright" target="_blank">&copy; OpenStreetMap contributors</a>'
+        var markers = L.markerClusterGroup();
+        var heat = L.heatLayer(approvedSigns.map(function(s) { return [s.lat, s.lng, 0.6]; }), { radius: 20, blur: 15 });
+
+        var baseLayers = { "แผนที่หลัก": baseStyle, "แผนที่ Dataviz": datavizStyle };
+        var overlays = { "แผนที่ความร้อน": heat, "หมุดตำแหน่งป้าย": markers };
+        var layerControl = L.control.layers(baseLayers, overlays, { collapsed: true, position: 'topright' }).addTo(mymap);
+
+        // สร้างหมุด — เฉพาะป้ายที่อนุมัติ (สีเขียว)
+        approvedSigns.forEach(function(sign) {
+            if (!sign.lat || !sign.lng) return;
+            var customIcon = L.divIcon({
+                className: 'custom-marker',
+                html: '<div style="background:#16a34a;width:26px;height:26px;border-radius:6px;border:2px solid white;box-shadow:0 2px 6px rgba(0,0,0,0.3);display:flex;align-items:center;justify-content:center;font-size:13px;">🪧</div>',
+                iconSize: [26, 26], iconAnchor: [13, 13]
             });
 
-            // *** 4. การแสดงตำแหน่งป้ายที่อนุมัติแล้วจากฐานข้อมูล ***
-            var approvedSigns = <?php echo json_encode($approved_signs); ?>;
-            var approvedList = <?php echo json_encode($approved_rows); ?>;
+            var popupHtml = '<div style="min-width:180px;font-family:Sarabun,sans-serif;">'
+                + '<div style="font-weight:700;font-size:0.95rem;color:#1a202c;margin-bottom:6px;">คำขอ #' + sign.id + '</div>'
+                + '<div style="display:flex;flex-direction:column;gap:3px;font-size:0.85rem;">'
+                + '<div><span style="color:#64748b;">ประเภท:</span> <b>' + sign.type + '</b></div>'
+                + '<div><span style="color:#64748b;">ขนาด:</span> ' + sign.size + '</div>'
+                + '<div><span style="color:#64748b;">ถนน:</span> ' + sign.road + '</div>'
+                + '</div></div>';
 
-            // สำหรับผู้ใช้ทั่วไป - แสดงหมุดทั้งหมด
-            var markers = L.markerClusterGroup();
-            var heat = L.heatLayer(approvedSigns.map(function (s) { return [s.lat, s.lng, 0.6]; }), { radius: 20, blur: 15 });
-            var baseLayers = {
-                "แผนที่หลัก": baseStyle,
-                "แผนที่ Dataviz": datavizStyle
-            };
-            var overlays = { "แผนที่ความร้อน": heat, "หมุดตำแหน่งป้าย": markers };
-            var layerControl = L.control.layers(baseLayers, overlays, { collapsed: true, position: 'topright' }).addTo(mymap);
-            approvedSigns.forEach(function (sign) {
-                if (sign.lat && sign.lng) {
-                    // กำหนดสีหมุดตามสถานะ
-                    var markerColor = '#16a34a'; // สีเขียว (อนุมัติแล้ว) - default
-                    var statusText = 'อนุมัติแล้ว';
-                    
-                    if (sign.status === 'pending') {
-                        markerColor = '#f59e0b'; // สีเหลือง (รอดำเนินการ)
-                        statusText = 'รอดำเนินการ';
-                    } else if (sign.status === 'waiting_payment') {
-                        markerColor = '#3b82f6'; // สีน้ำเงิน (รอชำระเงิน)
-                        statusText = 'รอชำระเงิน';
-                    } else if (sign.status === 'waiting_receipt') {
-                        markerColor = '#8b5cf6'; // สีม่วง (รอใบเสร็จ)
-                        statusText = 'รอใบเสร็จ';
-                    } else if (sign.status === 'rejected') {
-                        markerColor = '#dc2626'; // สีแดง (ไม่อนุมัติ)
-                        statusText = 'ไม่อนุมัติ';
-                    } else if (sign.status === 'cancelled') {
-                        markerColor = '#6b7280'; // สีเทา (ยกเลิก)
-                        statusText = 'ยกเลิก';
+            var m = L.marker([sign.lat, sign.lng], { icon: customIcon }).bindPopup(popupHtml);
+            markers.addLayer(m);
+        });
+        markers.addTo(mymap);
+        heat.addTo(mymap);
+
+        if (approvedSigns.length > 0) {
+            var bounds = L.latLngBounds(approvedSigns.map(function(s) { return [s.lat, s.lng]; }));
+            mymap.fitBounds(bounds, { padding: [30, 30], maxZoom: 14 });
+        }
+
+        // GeoJSON layers
+        fetch('data/sila.geojson')
+            .then(function(r) { return r.json(); })
+            .then(function(data) {
+                var bl = L.geoJSON(data, {
+                    style: { weight: 3, opacity: 1, color: '#dc2626', fillOpacity: 0.08, fillColor: '#dc2626' },
+                    onEachFeature: function(f, l) {
+                        if (f.properties && f.properties.T_NAME_T) l.bindPopup('<b>ขอบเขต:</b> ' + f.properties.T_NAME_T);
                     }
-                    
-                    // สร้าง custom marker icon
-                    var customIcon = L.divIcon({
-                        className: 'custom-marker',
-                        html: '<div style="background-color: ' + markerColor + '; width: 24px; height: 24px; border-radius: 4px; border: 2px solid white; box-shadow: 0 2px 6px rgba(0,0,0,0.4); display: flex; align-items: center; justify-content: center; font-weight: bold; color: white; font-size: 12px;">🪧</div>',
-                        iconSize: [24, 24],
-                        iconAnchor: [12, 12]
-                    });
-                    
-                    var m = L.marker([sign.lat, sign.lng], {icon: customIcon})
-                        .bindPopup("<b>เลขคำขอ #" + sign.id + "</b><br><b>ประเภทป้าย:</b> " + sign.type + "<br><b>สถานะ:</b> " + statusText);
-                    markers.addLayer(m);
-                }
+                }).addTo(mymap);
+                layerControl.addOverlay(bl, "ขอบเขตเทศบาล");
+            }).catch(function(e) { console.error('GeoJSON error:', e); });
+
+        fetch('data/road_sila.geojson')
+            .then(function(r) { return r.json(); })
+            .then(function(data) {
+                var rl = L.geoJSON(data, { style: { color: '#f59e0b', weight: 3 } }).addTo(mymap);
+                layerControl.addOverlay(rl, "เส้นทางถนน");
+            }).catch(function(e) { console.error('Road error:', e); });
+
+        // Auto toggle heatmap by zoom
+        mymap.on('zoomend', function() {
+            if (mymap.getZoom() < 13) { if (!mymap.hasLayer(heat)) heat.addTo(mymap); }
+            else { if (mymap.hasLayer(heat)) mymap.removeLayer(heat); }
+        });
+
+        // === Table with search & pagination ===
+        var searchEl = document.getElementById('searchInput');
+        var pageSizeEl = document.getElementById('pageSize');
+        var tbody = document.getElementById('tableBody');
+        var pageInfoEl = document.getElementById('pageInfo');
+        var prevBtn = document.getElementById('prevBtn');
+        var nextBtn = document.getElementById('nextBtn');
+        var noResults = document.getElementById('noResults');
+        var page = 1;
+
+        function filtered() {
+            var q = (searchEl.value || '').trim().toLowerCase();
+            if (!q) return approvedList;
+            return approvedList.filter(function(r) {
+                return String(r.id).includes(q)
+                    || (r.type || '').toLowerCase().includes(q)
+                    || (r.road || '').toLowerCase().includes(q)
+                    || (r.size || '').toLowerCase().includes(q);
             });
-            markers.addTo(mymap);
+        }
 
-            // หากมีป้ายที่อนุมัติแล้วอย่างน้อย 1 ป้าย ให้ปรับมุมมองแผนที่ไปยังป้ายนั้น
-            if (approvedSigns.length > 0) {
-                mymap.setView([approvedSigns[0].lat, approvedSigns[0].lng], 13);
-            }
+        function render() {
+            var size = parseInt(pageSizeEl.value, 10);
+            var rows = filtered();
+            var total = rows.length;
+            var totalPages = Math.max(1, Math.ceil(total / size));
+            if (page > totalPages) page = totalPages;
 
-            // // ตัวอย่าง Marker ตำแหน่ง ทม.ศิลา
-            // L.marker([16.480, 102.830])
-            //     .addTo(mymap)
-            //     .bindPopup("เทศบาลเมืองศิลา (ทม.ศิลา)");
-
-            // *** 5. การแสดงขอบเขตพื้นที่จาก GeoJSON ***
-
-            // กำหนดพาธไปยังไฟล์ GeoJSON ของคุณ (เนื่องจาก map.php อยู่ในรูท และไฟล์อยู่ใน data/)
-            const geojsonPath = 'data/sila.geojson';
-            var boundaryLayer = null;
-            heat.addTo(mymap);
-
-            fetch(geojsonPath)
-                .then(response => {
-                    if (!response.ok) {
-                        throw new Error(`Failed to load GeoJSON: ${response.statusText}`);
-                    }
-                    return response.json();
-                })
-                .then(geojson_data => {
-                    boundaryLayer = L.geoJSON(geojson_data, {
-                        style: function (feature) {
-                            return {
-                                weight: 3,             // ความหนาของเส้นขอบ
-                                opacity: 1,
-                                color: '#dc2626',     // สีแดงสำหรับเขตเทศบาล
-                                fillOpacity: 0.1,      // ความโปร่งใสของสีเติม
-                                fillColor: '#dc2626'   // สีเติมแดงอ่อนๆ
-                            };
-                        },
-                        onEachFeature: function (feature, layer) {
-                            // เพิ่ม Popup เพื่อแสดงข้อมูล (เช่น ชื่อ) เมื่อคลิก
-                            if (feature.properties && feature.properties.T_NAME_T) {
-                                layer.bindPopup("<b>ขอบเขต:</b> " + feature.properties.T_NAME_T);
-                            } else if (feature.properties && feature.properties.T_NAME_E) {
-                                layer.bindPopup("<b>Boundary:</b> " + feature.properties.T_NAME_E);
-                            }
-                        }
-                    }).addTo(mymap);
-                    layerControl.addOverlay(boundaryLayer, "ขอบเขตเทศบาล");
-
-                    console.log("GeoJSON loaded successfully:", geojson_data);
-
-                    // **ตัวเลือก:** หากคุณต้องการให้แผนที่ซูมไปยังขอบเขตของ GeoJSON อัตโนมัติ
-                    // L.geoJSON(geojson_data).addTo(mymap).getBounds().isValid() && mymap.fitBounds(L.geoJSON(geojson_data).getBounds());
-
-                })
-                .catch(error => {
-                    console.error("Error loading GeoJSON data:", error);
-                });
-
-            var roadLayer = null;
-            fetch('data/road_sila.geojson')
-                .then(function (response) {
-                    if (!response.ok) {
-                        throw new Error(response.statusText);
-                    }
-                    return response.json();
-                })
-                .then(function (roads) {
-                    roadLayer = L.geoJSON(roads, {
-                        style: { color: '#f59e0b', weight: 3 }
-                    }).addTo(mymap);
-                    layerControl.addOverlay(roadLayer, "เส้นทางถนน");
-                })
-                .catch(function (err) {
-                    console.error(err);
-                });
-
-            mymap.on('zoomend', function () {
-                var z = mymap.getZoom();
-                if (z < 13) {
-                    if (!mymap.hasLayer(heat)) heat.addTo(mymap);
-                } else {
-                    if (mymap.hasLayer(heat)) mymap.removeLayer(heat);
-                }
-            });
-
-            // ใช้ปุ่มเลเยอร์มาตรฐานของ Leaflet (collapsed) แทน offcanvas
-
-            var pageSizeEl = document.getElementById('pageSize');
-            var searchEl = document.getElementById('searchInput');
-            var tbody = document.getElementById('tableBody');
-            var pageInfo = document.getElementById('pageInfo');
-            var prevBtn = document.getElementById('prevBtn');
-            var nextBtn = document.getElementById('nextBtn');
-            var page = 1;
-            function filtered() {
-                var q = (searchEl.value || '').toLowerCase();
-                if (!q) return approvedList;
-                return approvedList.filter(function (r) {
-                    return (r.type || '').toLowerCase().includes(q)
-                        || (r.name || '').toLowerCase().includes(q)
-                        || (r.address || '').toLowerCase().includes(q)
-                        || (r.desc || '').toLowerCase().includes(q)
-                        || (String(r.id)).includes(q);
-                });
-            }
-            function render() {
-                var size = parseInt(pageSizeEl.value, 10);
-                var rows = filtered();
-                var totalPages = Math.max(1, Math.ceil(rows.length / size));
-                if (page > totalPages) page = totalPages;
+            if (total === 0) {
+                tbody.innerHTML = '';
+                noResults.classList.remove('d-none');
+            } else {
+                noResults.classList.add('d-none');
                 var start = (page - 1) * size;
                 var slice = rows.slice(start, start + size);
-                tbody.innerHTML = slice.map(function (r) {
-                    var d = (r.duration || 0) + " วัน";
-                    return "<tr>"
-                        + "<td>#" + r.id + "</td>"
-                        + "<td class='table-type'>" + r.type + "</td>"
-                        + "<td class='table-desc'>" + r.desc + "</td>"
-                        + "<td>" + d + "</td>"
-                        + "<td class='table-name'>" + r.name + "</td>"
-                        + "</tr>";
+                tbody.innerHTML = slice.map(function(r) {
+                    return '<tr onclick="flyTo(' + r.lat + ',' + r.lng + ',' + r.id + ')">'
+                        + '<td class="fw-semibold text-primary">#' + r.id + '</td>'
+                        + '<td>' + r.type + '</td>'
+                        + '<td class="road-cell" title="' + r.road + '">' + r.road + '</td>'
+                        + '<td class="text-nowrap">' + r.size + '</td>'
+                        + '<td>' + (r.duration ? r.duration + ' วัน' : '-') + '</td>'
+                        + '</tr>';
                 }).join('');
-                pageInfo.textContent = "หน้า " + page + " / " + totalPages + " • ทั้งหมด " + rows.length + " รายการ";
-                prevBtn.disabled = page <= 1;
-                nextBtn.disabled = page >= totalPages;
             }
-            pageSizeEl.addEventListener('change', function () { page = 1; render(); });
-            searchEl.addEventListener('input', function () { page = 1; render(); });
-            prevBtn.addEventListener('click', function () { if (page > 1) { page--; render(); } });
-            nextBtn.addEventListener('click', function () {
-                var size = parseInt(pageSizeEl.value, 10);
-                var rows = filtered();
-                var totalPages = Math.max(1, Math.ceil(rows.length / size));
-                if (page < totalPages) { page++; render(); }
-            });
-            render();
+
+            pageInfoEl.textContent = total + ' รายการ • หน้า ' + page + '/' + totalPages;
+            prevBtn.disabled = page <= 1;
+            nextBtn.disabled = page >= totalPages;
+        }
+
+        pageSizeEl.addEventListener('change', function() { page = 1; render(); });
+        searchEl.addEventListener('input', function() { page = 1; render(); });
+        prevBtn.addEventListener('click', function() { if (page > 1) { page--; render(); } });
+        nextBtn.addEventListener('click', function() {
+            var totalPages = Math.max(1, Math.ceil(filtered().length / parseInt(pageSizeEl.value, 10)));
+            if (page < totalPages) { page++; render(); }
         });
+
+        render();
+
+        // Click row to fly to marker
+        window.flyTo = function(lat, lng, id) {
+            mymap.flyTo([lat, lng], 16, { duration: 0.8 });
+            markers.eachLayer(function(layer) {
+                if (layer.getLatLng().lat === lat && layer.getLatLng().lng === lng) {
+                    layer.openPopup();
+                }
+            });
+        };
+    });
     </script>
 
     <?php include './includes/scripts.php'; ?>

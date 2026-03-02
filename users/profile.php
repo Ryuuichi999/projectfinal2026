@@ -157,6 +157,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     <li class="nav-item">
                         <a class="nav-link" data-bs-toggle="tab" href="#password-tab">เปลี่ยนรหัสผ่าน</a>
                     </li>
+                    <li class="nav-item">
+                        <a class="nav-link" data-bs-toggle="tab" href="#pdpa-tab"><i class="bi bi-shield-check me-1"></i>PDPA</a>
+                    </li>
                 </ul>
 
                 <div class="tab-content card shadow-sm p-4" style="border-top-left-radius: 0;">
@@ -249,12 +252,96 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                             </div>
                         </form>
                     </div>
+
+                    <!-- Tab: PDPA สิทธิ์เจ้าของข้อมูล -->
+                    <div class="tab-pane fade" id="pdpa-tab">
+                        <div class="mb-4">
+                            <h6 class="fw-bold mb-3"><i class="bi bi-shield-check text-primary me-2"></i>สิทธิ์ของคุณตาม พ.ร.บ. คุ้มครองข้อมูลส่วนบุคคล พ.ศ. 2562</h6>
+                            <p class="text-muted small">คุณสามารถใช้สิทธิ์ดังต่อไปนี้ได้ตามกฎหมาย หากมีข้อสงสัยเพิ่มเติม กรุณาอ่าน
+                                <a href="/Project2026/privacy_policy.php" target="_blank" class="text-decoration-none fw-semibold">นโยบายความเป็นส่วนตัว</a>
+                            </p>
+                        </div>
+
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <div class="border rounded-3 p-3 h-100">
+                                    <h6 class="fw-bold"><i class="bi bi-download me-2 text-primary"></i>ขอสำเนาข้อมูล</h6>
+                                    <p class="text-muted small mb-3">ขอรับสำเนาข้อมูลส่วนบุคคลที่หน่วยงานเก็บรักษาไว้ เจ้าหน้าที่จะติดต่อกลับภายใน 7 วันทำการ</p>
+                                    <button type="button" class="btn btn-outline-primary btn-sm w-100" onclick="requestDataExport()">
+                                        <i class="bi bi-file-earmark-arrow-down me-1"></i>ส่งคำขอสำเนาข้อมูล
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="border rounded-3 p-3 h-100">
+                                    <h6 class="fw-bold"><i class="bi bi-trash3 me-2 text-danger"></i>ขอลบข้อมูล</h6>
+                                    <p class="text-muted small mb-3">ขอให้ลบข้อมูลส่วนบุคคลทั้งหมด หากมีคำร้องที่ยังดำเนินการอยู่ อาจไม่สามารถลบได้ทันที</p>
+                                    <button type="button" class="btn btn-outline-danger btn-sm w-100" onclick="requestDataDeletion()">
+                                        <i class="bi bi-exclamation-triangle me-1"></i>ส่งคำขอลบข้อมูล
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mt-4 p-3 rounded-3" style="background:#eff6ff; border-left:4px solid #2563eb;">
+                            <p class="mb-0 small"><i class="bi bi-info-circle me-2 text-primary"></i>
+                                หากต้องการใช้สิทธิ์อื่นๆ เช่น ขอแก้ไข ขอคัดค้าน หรือถอนความยินยอม กรุณาติดต่อเจ้าหน้าที่คุ้มครองข้อมูล โทร. 043-246-505-6 หรือ Email: saraban@sila-kk.go.th
+                            </p>
+                        </div>
+                    </div>
                 </div>
 
             </div>
         </div>
     </div>
 
+    <script>
+    function requestDataExport() {
+        Swal.fire({
+            title: 'ขอสำเนาข้อมูลส่วนบุคคล',
+            html: 'ระบบจะส่งคำขอไปยังเจ้าหน้าที่<br>ท่านจะได้รับสำเนาข้อมูลทาง Email ภายใน 7 วันทำการ',
+            icon: 'info',
+            showCancelButton: true,
+            confirmButtonColor: '#2563eb',
+            cancelButtonColor: '#94a3b8',
+            confirmButtonText: 'ยืนยันคำขอ',
+            cancelButtonText: 'ยกเลิก'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                Swal.fire({
+                    icon: 'success',
+                    title: 'ส่งคำขอเรียบร้อยแล้ว',
+                    text: 'เจ้าหน้าที่จะดำเนินการและส่งข้อมูลให้ทาง Email',
+                    confirmButtonColor: '#2563eb'
+                });
+            }
+        });
+    }
+    function requestDataDeletion() {
+        Swal.fire({
+            title: 'ขอลบข้อมูลส่วนบุคคล',
+            html: '<div class="text-start small">' +
+                '<p class="text-danger fw-bold"><i class="bi bi-exclamation-triangle me-1"></i>คำเตือน: การลบข้อมูลไม่สามารถย้อนกลับได้</p>' +
+                '<p>หากคุณมีคำร้องที่ยังดำเนินการอยู่ ข้อมูลจะถูกลบหลังคำร้องดำเนินการเสร็จสิ้น</p>' +
+                '</div>',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#dc2626',
+            cancelButtonColor: '#94a3b8',
+            confirmButtonText: 'ยืนยันคำขอลบ',
+            cancelButtonText: 'ยกเลิก'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                Swal.fire({
+                    icon: 'success',
+                    title: 'ส่งคำขอเรียบร้อยแล้ว',
+                    text: 'เจ้าหน้าที่จะตรวจสอบและดำเนินการภายใน 15 วันทำการ',
+                    confirmButtonColor: '#2563eb'
+                });
+            }
+        });
+    }
+    </script>
     <?php include '../includes/scripts.php'; ?>
 </body>
 

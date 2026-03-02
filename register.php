@@ -281,8 +281,8 @@ if (isset($_POST['submit'])) {
                 <div class="form-check">
                     <input class="form-check-input" type="checkbox" id="termsCheck" required>
                     <label class="form-check-label text-muted small" for="termsCheck">
-                        ฉันยอมรับ <a href="#" class="text-decoration-none">เงื่อนไขการใช้งาน</a> และ <a href="#"
-                            class="text-decoration-none">นโยบายความเป็นส่วนตัว</a>
+                        ฉันยินยอมให้เก็บรวบรวมและใช้ข้อมูลส่วนบุคคลตาม
+                        <a href="privacy_policy.php" target="_blank" class="text-decoration-none fw-semibold">นโยบายความเป็นส่วนตัว (PDPA)</a>
                     </label>
                 </div>
             </div>
