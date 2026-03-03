@@ -67,7 +67,8 @@ if (!function_exists('getTimelineIcon')) {
             'receipt_issued' => ['icon' => '🧾', 'color' => '#007bff'],
             'permit_issued' => ['icon' => '📄', 'color' => '#6f42c1'],
             'expired' => ['icon' => '⏰', 'color' => '#6c757d'],
-            'renewed' => ['icon' => '🔄', 'color' => '#20c997'],
+            'expiry_warning' => ['icon' => '⚠️', 'color' => '#f59e0b'],
+            'followup_expired' => ['icon' => '🚨', 'color' => '#dc3545'],
         ];
         return $icons[$action] ?? ['icon' => '📌', 'color' => '#6c757d'];
     }

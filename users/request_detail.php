@@ -493,6 +493,27 @@ $timeline_logs = getRequestLogs($conn, $request_id);
             <!-- ═══ Right Column: Sidebar ═══ -->
             <div class="col-lg-4">
 
+                <!-- Expired Alert Banner -->
+                <?php if ($request['status'] === 'expired'):
+                    $exp_base = !empty($request['permit_date']) ? $request['permit_date'] : date('Y-m-d', strtotime($request['created_at']));
+                    $exp_expire = date('Y-m-d', strtotime($exp_base . ' + ' . $request['duration_days'] . ' days'));
+                    $exp_date_str = date('d/m/Y', strtotime($exp_expire));
+                    $days_since = (int)((time() - strtotime($exp_expire)) / 86400);
+                    $days_remain = max(0, 7 - $days_since);
+                ?>
+                <div class="alert alert-danger mb-3" role="alert">
+                    <h6 class="fw-bold mb-1"><i class="bi bi-exclamation-triangle-fill me-1"></i> ใบอนุญาตหมดอายุแล้ว</h6>
+                    <p class="small mb-2">หมดอายุเมื่อ <strong><?= $exp_date_str ?></strong>
+                        <?php if ($days_remain > 0): ?>
+                            — เหลือเวลาเก็บป้าย <strong class="text-danger"><?= $days_remain ?> วัน</strong>
+                        <?php else: ?>
+                            — <strong class="text-danger">เกินระยะเวลาเก็บป้าย 7 วันแล้ว</strong>
+                        <?php endif; ?>
+                    </p>
+                    <p class="small mb-0">กรุณาถอดป้ายออกทันที มิฉะนั้นอาจถูกดำเนินการตามกฎหมาย</p>
+                </div>
+                <?php endif; ?>
+
                 <!-- 1. Fee (ค่าธรรมเนียม) -->
                 <div class="fee-card">
                     <h5 class="fw-bold text-dark mb-0">ค่าธรรมเนียม</h5>
@@ -514,6 +535,8 @@ $timeline_logs = getRequestLogs($conn, $request_id);
                                 <i class="bi bi-clock-history"></i> รอตรวจสอบคำร้อง
                             <?php elseif ($request['status'] == 'approved'): ?>
                                 <i class="bi bi-check-circle-fill text-success"></i> อนุมัติแล้ว
+                            <?php elseif ($request['status'] == 'expired'): ?>
+                                <i class="bi bi-exclamation-triangle-fill text-danger"></i> ใบอนุญาตหมดอายุ
                             <?php else: ?>
                                 <i class="bi bi-info-circle-fill"></i> สถานะปัจจุบัน
                             <?php endif; ?>
@@ -530,15 +553,13 @@ $timeline_logs = getRequestLogs($conn, $request_id);
                                 echo "คำร้องถูกปฏิเสธเนื่องจาก: " . $request['decision_note'];
                             elseif ($request['status'] == 'need_documents')
                                 echo "กรุณาแนบเอกสารเพิ่มเติม: " . $request['decision_note'];
+                            elseif ($request['status'] == 'expired')
+                                echo "ใบอนุญาตหมดอายุแล้ว กรุณาถอดป้ายออกภายใน 7 วัน มิฉะนั้นอาจถูกดำเนินการตามกฎหมาย";
                             else
                                 echo "อยู่ระหว่างการดำเนินการ";
                             ?>
                         </div>
-                        <?php if ($request['status'] == 'approved'):
-                            $det_expire = $request['expire_date'];
-                            $det_days_left = $det_expire ? (int)((strtotime($det_expire) - time()) / 86400) : null;
-                            $det_can_renew = ($det_days_left !== null && $det_days_left <= 30);
-                        ?>
+                        <?php if ($request['status'] == 'approved' || $request['status'] == 'expired'): ?>
                             <div class="mt-3">
                                 <a href="view_receipt.php?id=<?= $request['id'] ?>" target="_blank"
                                     class="btn btn-outline-primary btn-sm w-100 mb-2">
@@ -552,22 +573,6 @@ $timeline_logs = getRequestLogs($conn, $request_id);
                                     class="btn btn-warning btn-sm w-100 mb-2">
                                     <i class="bi bi-patch-check-fill"></i> สติกเกอร์ใบอนุญาต
                                 </a>
-                                <?php if ($det_can_renew): ?>
-                                <hr class="my-2">
-                                <?php if ($det_days_left < 0): ?>
-                                <div class="alert alert-danger py-2 px-3 mb-2 small">
-                                    <i class="bi bi-exclamation-triangle-fill"></i> ใบอนุญาตหมดอายุแล้ว
-                                </div>
-                                <?php else: ?>
-                                <div class="alert alert-warning py-2 px-3 mb-2 small">
-                                    <i class="bi bi-clock-fill"></i> เหลือ <?= $det_days_left ?> วัน
-                                </div>
-                                <?php endif; ?>
-                                <a href="renew_permit.php?id=<?= $request['id'] ?>"
-                                    class="btn btn-danger btn-sm w-100">
-                                    <i class="bi bi-arrow-clockwise"></i> ต่ออายุใบอนุญาต
-                                </a>
-                                <?php endif; ?>
                             </div>
                         <?php endif; ?>
                     </div>

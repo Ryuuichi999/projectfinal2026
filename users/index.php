@@ -63,6 +63,19 @@ $stmtExp->bind_param("i", $user_id);
 $stmtExp->execute();
 $expiringPermits = $stmtExp->get_result();
 
+// 5. คำร้องที่หมดอายุแล้ว
+$expired_sql = "SELECT id, sign_type, road_name,
+    DATE_ADD(COALESCE(permit_date, created_at), INTERVAL duration_days DAY) as expire_date
+    FROM sign_requests
+    WHERE user_id = ? AND status = 'expired'
+    ORDER BY expire_date DESC";
+$stmtExpired = $conn->prepare($expired_sql);
+$stmtExpired->bind_param("i", $user_id);
+$stmtExpired->execute();
+$expiredPermits = $stmtExpired->get_result();
+$expiredRows = [];
+while ($r = $expiredPermits->fetch_assoc()) { $expiredRows[] = $r; }
+
 // Thai short month names
 $thaiMonths = [1 => 'ม.ค.', 'ก.พ.', 'มี.ค.', 'เม.ย.', 'พ.ค.', 'มิ.ย.', 'ก.ค.', 'ส.ค.', 'ก.ย.', 'ต.ค.', 'พ.ย.', 'ธ.ค.'];
 function thaiDateShort($dateStr, $months) {
@@ -516,6 +529,54 @@ function thaiDateShort($dateStr, $months) {
             </div>
         <?php endif; ?>
 
+        <!-- Expired Permits Section -->
+        <?php if (!empty($expiredRows)): ?>
+            <div class="recent-section" style="border-left: 4px solid #dc3545;">
+                <div class="section-header">
+                    <h4><i class="bi bi-exclamation-triangle-fill text-danger"></i> ใบอนุญาตหมดอายุ</h4>
+                    <span class="badge bg-danger"><?= count($expiredRows) ?> รายการ</span>
+                </div>
+                <div id="expiredList">
+                    <?php foreach ($expiredRows as $idx => $exp):
+                        $days_since = (int)((time() - strtotime($exp['expire_date'])) / 86400);
+                        $collect_remain = max(0, 7 - $days_since);
+                    ?>
+                        <a href="request_detail.php?id=<?= $exp['id'] ?>" class="request-item expired-item" style="<?= $idx >= 5 ? 'display:none;' : '' ?>">
+                            <div class="request-item-icon" style="background:#fef2f2; color:#dc3545;">
+                                <i class="bi bi-exclamation-triangle-fill"></i>
+                            </div>
+                            <div class="request-item-content">
+                                <div class="request-item-title">
+                                    <span class="request-item-id">#<?= $exp['id'] ?></span>
+                                    <?php if ($collect_remain > 0): ?>
+                                        <span class="badge bg-danger">เก็บป้ายภายใน <?= $collect_remain ?> วัน</span>
+                                    <?php else: ?>
+                                        <span class="badge bg-dark">เกินกำหนดเก็บป้าย</span>
+                                    <?php endif; ?>
+                                </div>
+                                <div class="request-item-info">
+                                    <?= htmlspecialchars($exp['sign_type']) ?> — <?= htmlspecialchars($exp['road_name']) ?>
+                                </div>
+                                <div class="request-item-meta">
+                                    <div class="meta-unit">
+                                        <i class="bi bi-calendar-x"></i> หมดอายุ <?= thaiDateShort($exp['expire_date'], $thaiMonths) ?>
+                                    </div>
+                                </div>
+                            </div>
+                            <i class="bi bi-chevron-right text-muted"></i>
+                        </a>
+                    <?php endforeach; ?>
+                </div>
+                <?php if (count($expiredRows) > 5): ?>
+                    <div class="text-center mt-3">
+                        <button id="showMoreExpired" class="btn btn-outline-danger btn-sm" onclick="toggleExpiredItems()">
+                            <i class="bi bi-chevron-down me-1"></i> ดูเพิ่มเติม (<span id="hiddenCount"><?= count($expiredRows) - 5 ?></span> รายการ)
+                        </button>
+                    </div>
+                <?php endif; ?>
+            </div>
+        <?php endif; ?>
+
         <!-- Help Alert -->
         <div class="help-alert mb-5">
             <i class="bi bi-info-circle-fill fs-5"></i>
@@ -527,6 +588,22 @@ function thaiDateShort($dateStr, $months) {
     </div>
 
     <?php include '../includes/scripts.php'; ?>
+    <script>
+        function toggleExpiredItems() {
+            var items = document.querySelectorAll('.expired-item');
+            var btn = document.getElementById('showMoreExpired');
+            var expanded = btn.getAttribute('data-expanded') === 'true';
+            items.forEach(function(item, idx) {
+                if (idx >= 5) {
+                    item.style.display = expanded ? 'none' : 'flex';
+                }
+            });
+            btn.setAttribute('data-expanded', !expanded);
+            btn.innerHTML = expanded
+                ? '<i class="bi bi-chevron-down me-1"></i> ดูเพิ่มเติม (<span id="hiddenCount">' + (items.length - 5) + '</span> รายการ)'
+                : '<i class="bi bi-chevron-up me-1"></i> ซ่อน';
+        }
+    </script>
 </body>
 
 </html>

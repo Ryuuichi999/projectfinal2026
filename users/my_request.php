@@ -104,15 +104,21 @@ if (!isset($_SESSION['user_id'])) {
                                             // Expiry logic
                                             $expire_date = $row['expire_date'];
                                             $days_left = $expire_date ? (int)((strtotime($expire_date) - time()) / 86400) : null;
-                                            $can_renew = false;
                                             $expiry_html = '';
                                             if ($row['status'] == 'approved' && $days_left !== null) {
                                                 if ($days_left < 0) {
                                                     $expiry_html = "<div class='mt-1'><span class='badge bg-danger bg-opacity-90 px-2'><i class='bi bi-x-circle-fill me-1'></i>หมดอายุแล้ว</span></div>";
-                                                    $can_renew = true;
                                                 } elseif ($days_left <= 30) {
                                                     $expiry_html = "<div class='mt-1'><span class='badge bg-warning text-dark px-2'><i class='bi bi-clock-fill me-1'></i>เหลือ {$days_left} วัน</span></div>";
-                                                    $can_renew = true;
+                                                }
+                                            }
+                                            if ($row['status'] == 'expired' && $days_left !== null) {
+                                                $days_since = abs($days_left);
+                                                $collect_remain = max(0, 7 - $days_since);
+                                                if ($collect_remain > 0) {
+                                                    $expiry_html = "<div class='mt-1'><span class='badge bg-danger px-2'><i class='bi bi-exclamation-triangle-fill me-1'></i>เก็บป้ายภายใน {$collect_remain} วัน</span></div>";
+                                                } else {
+                                                    $expiry_html = "<div class='mt-1'><span class='badge bg-dark px-2'><i class='bi bi-exclamation-triangle-fill me-1'></i>เกินกำหนดเก็บป้าย</span></div>";
                                                 }
                                             }
 
@@ -127,7 +133,7 @@ if (!isset($_SESSION['user_id'])) {
                                             echo "<div class='d-flex gap-1 justify-content-center flex-nowrap align-items-center'>";
                                             // ปุ่มดูรายละเอียด (เสมอ)
                                             echo "<a href='request_detail.php?id={$row['id']}' class='btn btn-outline-primary btn-sm px-2' data-bs-toggle='tooltip' title='ดูรายละเอียด'><i class='bi bi-eye-fill'></i></a>";
-                                            if ($row['status'] == 'approved') {
+                                            if ($row['status'] == 'approved' || $row['status'] == 'expired') {
                                                 // Dropdown รวมเอกสาร 3 ปุ่ม
                                                 echo "<div class='dropdown'>
                                                     <button class='btn btn-outline-secondary btn-sm px-2 dropdown-toggle' type='button' data-bs-toggle='dropdown' aria-expanded='false' title='เอกสาร'>
@@ -139,9 +145,6 @@ if (!isset($_SESSION['user_id'])) {
                                                         <li><a class='dropdown-item' href='view_sticker.php?id={$row['id']}' target='_blank'><i class='bi bi-patch-check-fill text-warning me-2'></i>สติกเกอร์</a></li>
                                                     </ul>
                                                 </div>";
-                                                if ($can_renew) {
-                                                    echo "<a href='renew_permit.php?id={$row['id']}' class='btn btn-danger btn-sm px-2' data-bs-toggle='tooltip' title='ต่ออายุ'><i class='bi bi-arrow-clockwise'></i></a>";
-                                                }
                                             }
                                             if ($row['status'] == 'waiting_payment') {
                                                 echo "<a href='../payment.php?id={$row['id']}' class='btn btn-primary btn-sm px-2' data-bs-toggle='tooltip' title='ชำระเงิน'><i class='bi bi-qr-code'></i></a>";
