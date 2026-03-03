@@ -14,7 +14,7 @@ if (!isset($_GET['id'])) {
     exit;
 }
 
-$request_id = $_GET['id'];
+$request_id = (int) $_GET['id'];
 $sql = "SELECT r.*, u.citizen_id, u.title_name, u.first_name, u.last_name, u.address as user_address, u.phone 
         FROM sign_requests r 
         JOIN users u ON r.user_id = u.id 

@@ -1,5 +1,6 @@
 <?php
 require '../includes/db.php';
+require_once '../includes/csrf_helper.php';
 
 // ตรวจสอบสิทธิ์ Admin
 if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
@@ -9,6 +10,7 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
 
 // === POST Actions (ปลอดภัยกว่า GET) ===
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    csrf_check();
 
     // ลบผู้ใช้
     if (isset($_POST['delete_id'])) {
@@ -199,9 +201,11 @@ function get_role_badge($role)
 
     <!-- Hidden POST Forms -->
     <form id="deleteForm" method="POST" style="display:none;">
+        <?= csrf_field() ?>
         <input type="hidden" name="delete_id" id="deleteIdInput">
     </form>
     <form id="roleForm" method="POST" style="display:none;">
+        <?= csrf_field() ?>
         <input type="hidden" name="change_role_id" id="roleIdInput">
         <input type="hidden" name="new_role" id="roleInput">
     </form>

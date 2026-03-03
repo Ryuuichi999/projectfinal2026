@@ -14,7 +14,7 @@ if (!isset($_GET['id'])) {
     exit;
 }
 
-$request_id = $_GET['id'];
+$request_id = (int) $_GET['id'];
 $user_id = $_SESSION['user_id'];
 $role = $_SESSION['role'];
 

@@ -1,5 +1,6 @@
 <?php
 require '../includes/db.php';
+require_once '../includes/csrf_helper.php';
 
 // ตรวจสอบสิทธิ์ Admin
 if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
@@ -10,8 +11,15 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
 $message = '';
 
 if (isset($_POST['submit'])) {
+    csrf_check();
     $citizen_id = trim($_POST['citizen_id']);
     $password = $_POST['password'];
+
+    // Password policy
+    if (strlen($password) < 8 || !preg_match('/[0-9]/', $password) || !preg_match('/[a-zA-Z]/', $password)) {
+        $message = "รหัสผ่านต้องมีอย่างน้อย 8 ตัวอักษร มีทั้งตัวอักษรและตัวเลข";
+        $message_type = "danger";
+    } else {
     $title_name = trim($_POST['title_name']);
     $first_name = trim($_POST['first_name']);
     $last_name = trim($_POST['last_name']);
@@ -54,6 +62,7 @@ if (isset($_POST['submit'])) {
             $message_type = "danger";
         }
     }
+    }
 }
 ?>
 
@@ -87,6 +96,7 @@ if (isset($_POST['submit'])) {
                 <?php endif; ?>
 
                 <form method="post">
+                    <?= csrf_field() ?>
                     <div class="row g-3">
                         <div class="col-md-6">
                             <label class="form-label">เลขบัตรประชาชน (Username) *</label>
@@ -95,7 +105,8 @@ if (isset($_POST['submit'])) {
                         </div>
                         <div class="col-md-6">
                             <label class="form-label">รหัสผ่าน *</label>
-                            <input type="password" name="password" class="form-control" required minlength="4">
+                            <input type="password" name="password" class="form-control" required minlength="8">
+                            <div class="form-text">อย่างน้อย 8 ตัวอักษร มีทั้งตัวอักษรและตัวเลข</div>
                         </div>
 
                         <div class="col-md-2">

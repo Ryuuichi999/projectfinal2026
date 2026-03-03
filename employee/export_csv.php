@@ -23,6 +23,15 @@ header('Content-Disposition: attachment; filename="' . $filename . '"');
 
 $output = fopen('php://output', 'w');
 
+// CSV formula injection prevention
+$csv_safe = function ($val) {
+    $val = (string) $val;
+    if (isset($val[0]) && in_array($val[0], ['=', '+', '-', '@', "\t", "\r"])) {
+        $val = "'" . $val;
+    }
+    return $val;
+};
+
 // BOM สำหรับ Excel รองรับภาษาไทย
 fprintf($output, chr(0xEF) . chr(0xBB) . chr(0xBF));
 
@@ -56,18 +65,18 @@ $status_labels = [
 while ($row = $result->fetch_assoc()) {
     fputcsv($output, [
         $row['id'],
-        $row['title_name'] . ' ' . $row['first_name'] . ' ' . $row['last_name'],
-        $row['citizen_id'],
-        $row['phone'],
-        $row['email'] ?? '',
-        $row['sign_type'],
+        $csv_safe($row['title_name'] . ' ' . $row['first_name'] . ' ' . $row['last_name']),
+        $csv_safe($row['citizen_id']),
+        $csv_safe($row['phone']),
+        $csv_safe($row['email'] ?? ''),
+        $csv_safe($row['sign_type']),
         $row['width'],
         $row['height'],
         $row['quantity'],
         $row['fee'],
-        $status_labels[$row['status']] ?? $row['status'],
-        $row['road_name'] ?? '',
-        date('d/m/Y H:i', strtotime($row['created_at']))
+        $csv_safe($status_labels[$row['status']] ?? $row['status']),
+        $csv_safe($row['road_name'] ?? ''),
+        $csv_safe(date('d/m/Y H:i', strtotime($row['created_at'])))
     ]);
 }
 

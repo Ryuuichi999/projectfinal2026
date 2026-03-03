@@ -52,27 +52,34 @@ if (isset($_POST['action'])) {
         if ($check->get_result()->num_rows > 0) {
             $error = "เลขบัตรประชาชนนี้มีในระบบแล้ว หากเป็นของคุณ กรุณาเลือก 'เชื่อมต่อบัญชีเดิม'";
         } else {
-            // บันทึกข้อมูลใหม่
-            $password = password_hash($_POST['password'], PASSWORD_DEFAULT);
-            $title_name = $_POST['title_name'];
-            $first_name = $_POST['first_name'];
-            $last_name = $_POST['last_name'];
-            $phone = $_POST['phone'];
-            $address = $_POST['address'];
+            // Password policy check
+            $raw_pass = $_POST['password'];
+            if (strlen($raw_pass) < 8 || !preg_match('/[0-9]/', $raw_pass) || !preg_match('/[a-zA-Z]/', $raw_pass)) {
+                $error = "รหัสผ่านต้องมีอย่างน้อย 8 ตัวอักษร มีทั้งตัวอักษรและตัวเลข";
+            }
+            if (empty($error)) {
+                // บันทึกข้อมูลใหม่
+                $password = password_hash($raw_pass, PASSWORD_DEFAULT);
+                $title_name = $_POST['title_name'];
+                $first_name = $_POST['first_name'];
+                $last_name = $_POST['last_name'];
+                $phone = $_POST['phone'];
+                $address = $_POST['address'];
 
-            $insert = $conn->prepare("INSERT INTO users (citizen_id, password, title_name, first_name, last_name, phone, address, line_user_id, role) VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'user')");
-            $insert->bind_param("ssssssss", $citizen_id, $password, $title_name, $first_name, $last_name, $phone, $address, $line_user_id);
+                $insert = $conn->prepare("INSERT INTO users (citizen_id, password, title_name, first_name, last_name, phone, address, line_user_id, role) VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'user')");
+                $insert->bind_param("ssssssss", $citizen_id, $password, $title_name, $first_name, $last_name, $phone, $address, $line_user_id);
 
-            if ($insert->execute()) {
-                $new_user_id = $insert->insert_id;
-                $_SESSION['user_id'] = $new_user_id;
-                $_SESSION['role'] = 'user';
-                unset($_SESSION['line_login_data']);
-                $success = true;
-                $redirect_to = 'users/index.php';
-            } else {
-                error_log("register_line insert error: " . $conn->error);
-                $error = "เกิดข้อผิดพลาดในการบันทึกข้อมูล กรุณาลองใหม่อีกครั้ง";
+                if ($insert->execute()) {
+                    $new_user_id = $insert->insert_id;
+                    $_SESSION['user_id'] = $new_user_id;
+                    $_SESSION['role'] = 'user';
+                    unset($_SESSION['line_login_data']);
+                    $success = true;
+                    $redirect_to = 'users/index.php';
+                } else {
+                    error_log("register_line insert error: " . $conn->error);
+                    $error = "เกิดข้อผิดพลาดในการบันทึกข้อมูล กรุณาลองใหม่อีกครั้ง";
+                }
             }
         }
     }
