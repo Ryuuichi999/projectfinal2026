@@ -66,6 +66,9 @@ if ($request['status'] == 'approved') {
 $lat = $request['location_lat'] ?? '16.482780';
 $lng = $request['location_lng'] ?? '102.812704';
 
+$sila_geojson   = file_get_contents(__DIR__ . '/data/sila.geojson');
+$road_geojson   = file_get_contents(__DIR__ . '/data/road_sila.geojson');
+
 // PDPA: Mask ชื่อบางส่วนเพื่อคุ้มครองข้อมูลส่วนบุคคล
 function maskName($name) {
     $len = mb_strlen($name, 'UTF-8');
@@ -273,9 +276,32 @@ function getThaiDate($date)
 
     <script>
         document.addEventListener('DOMContentLoaded', function () {
-            var map = L.map('map').setView([<?= $lat ?>, <?= $lng ?>], 15);
-            L.tileLayer('https://api.maptiler.com/maps/streets/{z}/{x}/{y}.jpg?key=74WdZqK81CgYkZtsM0fB', {
-                attribution: '<a href="https://www.maptiler.com/copyright/" target="_blank">&copy; MapTiler</a> <a href="https://www.openstreetmap.org/copyright" target="_blank">&copy; OpenStreetMap contributors</a>',
+            var map = L.map('map').setView([<?= $lat ?>, <?= $lng ?>], 14);
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank">OpenStreetMap</a> contributors',
+                maxZoom: 19
+            }).addTo(map);
+
+            // เส้นขอบเขต ทม.ศิลา
+            var silaData = <?= $sila_geojson ?>;
+            L.geoJSON(silaData, {
+                style: {
+                    color: '#e74c3c',
+                    weight: 2.5,
+                    opacity: 0.9,
+                    fillColor: '#e74c3c',
+                    fillOpacity: 0.06
+                }
+            }).addTo(map);
+
+            // เส้นถนนในเขต ทม.ศิลา
+            var roadData = <?= $road_geojson ?>;
+            L.geoJSON(roadData, {
+                style: {
+                    color: '#2980b9',
+                    weight: 1.5,
+                    opacity: 0.6
+                }
             }).addTo(map);
 
             L.marker([<?= $lat ?>, <?= $lng ?>]).addTo(map)

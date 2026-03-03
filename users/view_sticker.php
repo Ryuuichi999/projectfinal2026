@@ -72,11 +72,11 @@ function getThaiDateShort($date)
         }
 
         .sticker {
-            width: 100mm;
-            height: 100mm;
+            width: 115mm;
+            height: 115mm;
             background: white;
             border: 2px solid #000;
-            padding: 4mm;
+            padding: 5mm;
             box-sizing: border-box;
             position: relative;
             box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
@@ -102,7 +102,7 @@ function getThaiDateShort($date)
             }
 
             @page {
-                size: 100mm 100mm;
+                size: 115mm 115mm;
                 margin: 0;
             }
         }
@@ -115,7 +115,7 @@ function getThaiDateShort($date)
         }
 
         .logo {
-            width: 15mm;
+            width: 22mm;
             height: auto;
             display: block;
             margin: 0 auto;
@@ -124,23 +124,23 @@ function getThaiDateShort($date)
         .org-name {
             font-size: 12pt;
             font-weight: bold;
-            margin-top: 2px;
+            margin-top: 3px;
         }
 
         .title {
-            font-size: 16pt;
+            font-size: 14pt;
             font-weight: 800;
             text-align: center;
             background: #000;
             color: #fff;
-            padding: 10px;
+            padding: 7px;
             border-radius: 4px;
-            margin: 5px 0;
-            line-height: 1.5;
+            margin: 4px 0;
+            line-height: 1.4;
         }
 
         .permit-no {
-            font-size: 20pt;
+            font-size: 22pt;
             font-weight: 900;
             text-align: center;
             color: #d32f2f;
@@ -153,7 +153,7 @@ function getThaiDateShort($date)
             display: flex;
             justify-content: space-between;
             border-bottom: 1px dotted #ccc;
-            padding: 1px 0;
+            padding: 2px 0;
         }
 
         .detail-row strong {
@@ -181,7 +181,7 @@ function getThaiDateShort($date)
         }
 
         .expiry-date {
-            font-size: 14pt;
+            font-size: 15pt;
             color: #d32f2f;
             display: block;
         }
@@ -241,12 +241,12 @@ function getThaiDateShort($date)
     <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function () {
-            var permitUrl = "http://" + window.location.host + "/Project2026/check_permit.php?id=<?= $request['id'] ?>";
+            var permitUrl = window.location.origin + "/Project2026/check_permit.php?id=<?= $request['id'] ?>";
             new QRCode(document.getElementById("qrcode"), {
                 text: permitUrl,
-                width: 60,
-                height: 60,
-                correctLevel: QRCode.CorrectLevel.M
+                width: 90,
+                height: 90,
+                correctLevel: QRCode.CorrectLevel.L
             });
         });
 

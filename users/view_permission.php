@@ -202,8 +202,6 @@ function toThaiNum($number)
         <!-- รหัสแบบฟอร์ม (ขวาบน) -->
         <div class="text-right" style="position: absolute; top: 15mm; right: 20mm; font-size: 14pt;">
             แบบ ร.ส. ๒
-            <div id="qrcode" style="margin-top: 10px; display: flex; justify-content: flex-end;"></div>
-            <div style="font-size: 10pt; margin-top: 5px; color: #666;">สแกนเพื่อตรวจสอบสถานะ</div>
         </div>
 
         <div class="header-garuda">
@@ -301,23 +299,11 @@ function toThaiNum($number)
 
             <div>(<?= htmlspecialchars($signer_name) ?>)</div>
             <div style="margin-top: 5px; white-space: pre-wrap;"><?= htmlspecialchars($signer_pos) ?></div>
-            
             <div>หรือพนักงานเจ้าหน้าที่ผู้ออกหนังสืออนุญาต</div>
         </div>
 
     </div>
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-    <script>
-        document.addEventListener('DOMContentLoaded', function () {
-            var permitUrl = "http://" + window.location.host + "/Project2026/check_permit.php?id=<?= $request['id'] ?>";
-            new QRCode(document.getElementById("qrcode"), {
-                text: permitUrl,
-                width: 70,
-                height: 70
-            });
-        });
-    </script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <script>
         function downloadPDF() {
