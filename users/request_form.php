@@ -2,6 +2,7 @@
 require '../includes/db.php';
 require_once '../includes/log_helper.php';
 require_once '../includes/receipt_helper.php';
+require_once '../includes/csrf_helper.php';
 
 if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'user') {
     header("Location: login.php");
@@ -20,6 +21,7 @@ $message = '';
 $message_type = '';
 
 if (isset($_POST['submit'])) {
+    csrf_check();
     // 1. รับค่า
     $applicant_name = trim($_POST['applicant_name']);
     $applicant_address = trim($_POST['applicant_address']);
@@ -101,8 +103,22 @@ if (isset($_POST['submit'])) {
                 mkdir($real_upload_dir, 0777, true);
             }
 
+            $allowed_mimes = ['image/jpeg', 'image/png', 'image/gif', 'application/pdf'];
+            $max_file_size = 10 * 1024 * 1024; // 10MB
+
             foreach ($uploaded_files as $input_name => $doc_type_name) {
                 if (isset($_FILES[$input_name]) && $_FILES[$input_name]['error'] == UPLOAD_ERR_OK) {
+                    // Validate MIME type using finfo (real check)
+                    $finfo = new finfo(FILEINFO_MIME_TYPE);
+                    $real_mime = $finfo->file($_FILES[$input_name]['tmp_name']);
+                    if (!in_array($real_mime, $allowed_mimes)) {
+                        throw new Exception("ไฟล์ {$doc_type_name} ไม่ใช่ประเภทที่อนุญาต (รองรับ JPG, PNG, GIF, PDF)");
+                    }
+                    // Validate file size
+                    if ($_FILES[$input_name]['size'] > $max_file_size) {
+                        throw new Exception("ไฟล์ {$doc_type_name} มีขนาดเกิน 10MB");
+                    }
+
                     $file_name = time() . '_' . basename($_FILES[$input_name]['name']);
                     $target_path = $real_upload_dir . $file_name;
                     $db_path = "/uploads/{$request_id}/" . $file_name; // Keep leading slash for DB compatibility with .. fix
@@ -322,6 +338,7 @@ if (isset($_POST['submit'])) {
             <?php endif; ?>
 
             <form method="post" enctype="multipart/form-data">
+                <?= csrf_field() ?>
 
                 <div class="writing-place">
                     เขียนที่ <span class="fw-bold">เทศบาลเมืองศิลา</span>

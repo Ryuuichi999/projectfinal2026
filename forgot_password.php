@@ -2,6 +2,7 @@
 require 'includes/db.php';
 require_once 'includes/config.php';
 require_once 'includes/SMTPMailer.php';
+require_once 'includes/csrf_helper.php';
 
 $step = $_GET['step'] ?? 'request'; // request, verify, reset
 $msg = '';
@@ -120,8 +121,8 @@ if (isset($_POST['reset_password'])) {
         exit;
     }
 
-    if (strlen($new_pass) < 4) {
-        $msg = 'รหัสผ่านต้องมีอย่างน้อย 4 ตัวอักษร';
+    if (strlen($new_pass) < 8 || !preg_match('/[0-9]/', $new_pass) || !preg_match('/[a-zA-Z]/', $new_pass)) {
+        $msg = 'รหัสผ่านต้องมีอย่างน้อย 8 ตัวอักษร และมีทั้งตัวอักษรและตัวเลข';
         $msg_type = 'danger';
         $step = 'reset';
     } elseif ($new_pass !== $confirm_pass) {
@@ -336,6 +337,7 @@ if (isset($_POST['reset_password'])) {
                     ระบบจะส่งรหัส OTP ไปยัง Email ที่คุณลงทะเบียนไว้
                 </p>
                 <form method="POST">
+                    <?= csrf_field() ?>
                     <div class="mb-3">
                         <label class="form-label fw-bold">เลขบัตรประชาชน</label>
                         <input type="text" name="citizen_id" class="form-control" placeholder="กรอกเลขบัตร 13 หลัก"
@@ -355,6 +357,7 @@ if (isset($_POST['reset_password'])) {
                     </strong> แล้ว
                 </p>
                 <form method="POST">
+                    <?= csrf_field() ?>
                     <div class="otp-inputs">
                         <input type="text" maxlength="1" class="otp-input" autofocus>
                         <input type="text" maxlength="1" class="otp-input">
@@ -378,15 +381,20 @@ if (isset($_POST['reset_password'])) {
                 <!-- STEP 3: ตั้งรหัสผ่านใหม่ -->
                 <h5 class="text-center mb-3">ตั้งรหัสผ่านใหม่</h5>
                 <form method="POST">
+                    <?= csrf_field() ?>
                     <div class="mb-3">
                         <label class="form-label fw-bold">รหัสผ่านใหม่</label>
-                        <input type="password" name="new_password" class="form-control" placeholder="อย่างน้อย 4 ตัวอักษร"
-                            minlength="4" required>
+                        <input type="password" name="new_password" class="form-control" placeholder="กรอกรหัสผ่านใหม่"
+                            minlength="8" required>
+                        <small class="text-muted">
+                            • อย่างน้อย 8 ตัวอักษร<br>
+                            • ต้องมีทั้งตัวอักษรและตัวเลข
+                        </small>
                     </div>
                     <div class="mb-3">
                         <label class="form-label fw-bold">ยืนยันรหัสผ่าน</label>
                         <input type="password" name="confirm_password" class="form-control"
-                            placeholder="กรอกรหัสผ่านอีกครั้ง" minlength="4" required>
+                            placeholder="กรอกรหัสผ่านอีกครั้ง" minlength="8" required>
                     </div>
                     <button type="submit" name="reset_password" class="btn btn-primary-custom">
                         🔑 เปลี่ยนรหัสผ่าน

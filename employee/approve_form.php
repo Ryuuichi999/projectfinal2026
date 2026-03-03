@@ -2,6 +2,7 @@
 require '../includes/db.php';
 require '../includes/email_helper.php';
 require_once '../includes/log_helper.php';
+require_once '../includes/csrf_helper.php';
 
 if (!isset($_SESSION['user_id']) || ($_SESSION['role'] !== 'admin' && $_SESSION['role'] !== 'employee')) {
     header("Location: ../login.php");
@@ -31,6 +32,7 @@ if ($result->num_rows === 0) {
 $request = $result->fetch_assoc();
 
 if (isset($_POST['approve_confirm'])) {
+    csrf_check();
     $sql_update = "UPDATE sign_requests SET status = 'waiting_payment', approved_by = ? WHERE id = ?";
     $stmt_up = $conn->prepare($sql_update);
     $approver_id = $_SESSION['user_id'];
@@ -305,6 +307,7 @@ if (isset($_POST['approve_confirm'])) {
 
                     <!-- Actions -->
                     <form method="post" id="approveForm" class="text-center mt-4">
+                        <?= csrf_field() ?>
                         <input type="hidden" name="approve_confirm" value="1">
                         <div class="d-flex gap-3 justify-content-center">
                             <a href="request_list.php" class="btn btn-outline-secondary px-4 py-2 rounded-pill fw-bold border-0 bg-light">

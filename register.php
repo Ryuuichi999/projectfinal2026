@@ -1,33 +1,44 @@
 <?php
 require 'includes/db.php';
+require_once 'includes/csrf_helper.php';
 
 if (isset($_POST['submit'])) {
-    $pass = password_hash($_POST['password'], PASSWORD_DEFAULT);
+    if (!csrf_verify()) {
+        $register_error = 'เซสชันหมดอายุ กรุณาลองใหม่';
+    } elseif (strlen($_POST['password']) < 8) {
+        $register_error = 'รหัสผ่านต้องมีอย่างน้อย 8 ตัวอักษร';
+    } elseif (!preg_match('/[0-9]/', $_POST['password'])) {
+        $register_error = 'รหัสผ่านต้องมีตัวเลขอย่างน้อย 1 ตัว';
+    } elseif (!preg_match('/[a-zA-Z]/', $_POST['password'])) {
+        $register_error = 'รหัสผ่านต้องมีตัวอักษรอย่างน้อย 1 ตัว';
+    } else {
+        $pass = password_hash($_POST['password'], PASSWORD_DEFAULT);
 
-    $stmt = $conn->prepare(
-        "INSERT INTO users(title_name,first_name,last_name,email,citizen_id,phone,address,password)
-         VALUES (?,?,?,?,?,?,?,?)"
-    );
-    $stmt->bind_param(
-        "ssssssss",
-        $_POST['title_name'],
-        $_POST['first_name'],
-        $_POST['last_name'],
-        $_POST['email'],
-        $_POST['citizen_id'],
-        $_POST['phone'],
-        $_POST['address'],
-        $pass
-    );
-    try {
-        if ($stmt->execute()) {
-            $success = true;
-        } else {
-            $register_error = 'เลขบัตรประชาชนนี้อาจมีอยู่ในระบบแล้ว หรือข้อมูลไม่ถูกต้อง กรุณาลองใหม่';
+        $stmt = $conn->prepare(
+            "INSERT INTO users(title_name,first_name,last_name,email,citizen_id,phone,address,password)
+             VALUES (?,?,?,?,?,?,?,?)"
+        );
+        $stmt->bind_param(
+            "ssssssss",
+            $_POST['title_name'],
+            $_POST['first_name'],
+            $_POST['last_name'],
+            $_POST['email'],
+            $_POST['citizen_id'],
+            $_POST['phone'],
+            $_POST['address'],
+            $pass
+        );
+        try {
+            if ($stmt->execute()) {
+                $success = true;
+            } else {
+                $register_error = 'เลขบัตรประชาชนนี้อาจมีอยู่ในระบบแล้ว หรือข้อมูลไม่ถูกต้อง กรุณาลองใหม่';
+            }
+        } catch (mysqli_sql_exception $e) {
+            $register_error = 'เลขบัตรประชาชนนี้มีอยู่ในระบบแล้ว กรุณาใช้เลขบัตรอื่นหรือเข้าสู่ระบบ';
         }
-    } catch (mysqli_sql_exception $e) {
-        $register_error = 'เลขบัตรประชาชนนี้มีอยู่ในระบบแล้ว กรุณาใช้เลขบัตรอื่นหรือเข้าสู่ระบบ';
-    }
+    } // end password validation else
 }
 ?>
 <!DOCTYPE html>
@@ -211,6 +222,7 @@ if (isset($_POST['submit'])) {
         <?php endif; ?>
 
         <form method="post" id="registerForm" onsubmit="return validateForm()">
+            <?= csrf_field() ?>
             <div class="row g-2 mb-2">
                 <div class="col-md-3">
                     <label class="form-label">คำนำหน้า</label>
@@ -243,7 +255,7 @@ if (isset($_POST['submit'])) {
             </div>
 
             <div class="mb-2">
-                <label class="form-label">อีเมล (สำหรับรับแจ้งเตือน)</label>
+                <label class="form-label">อีเมล</label>
                 <input type="email" class="form-control" name="email" id="email" placeholder="example@mail.com"
                     required>
             </div>
@@ -262,6 +274,10 @@ if (isset($_POST['submit'])) {
                             onclick="togglePass('password', this)">
                             <i class="bi bi-eye text-muted"></i>
                         </button>
+                    </div>
+                    <div class="form-text small text-muted">
+                        • อย่างน้อย 8 ตัวอักษร<br>
+                        • ต้องมีทั้งตัวอักษรและตัวเลข
                     </div>
                 </div>
                 <div class="col-md-6">
@@ -339,11 +355,23 @@ if (isset($_POST['submit'])) {
             const confirm = document.getElementById('confirm_password');
             const passError = document.getElementById('pass-error');
 
-            if (pass.value !== confirm.value) {
+            if (pass.value.length < 8) {
+                pass.classList.add('is-invalid');
+                passError.textContent = 'รหัสผ่านต้องมีอย่างน้อย 8 ตัวอักษร';
+                passError.classList.remove('d-none');
+                isValid = false;
+            } else if (!/[0-9]/.test(pass.value) || !/[a-zA-Z]/.test(pass.value)) {
+                pass.classList.add('is-invalid');
+                passError.textContent = 'รหัสผ่านต้องมีทั้งตัวอักษรและตัวเลข';
+                passError.classList.remove('d-none');
+                isValid = false;
+            } else if (pass.value !== confirm.value) {
                 confirm.classList.add('is-invalid');
+                passError.textContent = 'รหัสผ่านไม่ตรงกัน';
                 passError.classList.remove('d-none');
                 isValid = false;
             } else {
+                pass.classList.remove('is-invalid');
                 confirm.classList.remove('is-invalid');
                 passError.classList.add('d-none');
             }

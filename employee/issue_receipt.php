@@ -4,6 +4,7 @@ require '../includes/email_helper.php';
 require '../includes/settings_helper.php';
 require '../includes/permit_helper.php';
 require_once '../includes/log_helper.php';
+require_once '../includes/csrf_helper.php';
 
 if (!isset($_SESSION['user_id']) || ($_SESSION['role'] !== 'admin' && $_SESSION['role'] !== 'employee')) {
     header("Location: ../login.php");
@@ -51,6 +52,7 @@ $setting_sig_path = getSetting($conn, 'permit_signature_path', '');
 
 // 3. Handle Form Submission
 if (isset($_POST['issue_permit_confirm'])) {
+    csrf_check();
     $permit_no = $_POST['permit_no'];
     $permit_date = $_POST['permit_date'];
     $p_signer_name = $_POST['permit_signer_name'];
@@ -146,6 +148,7 @@ if (isset($_POST['issue_permit_confirm'])) {
                     </div>
 
                     <form method="post" id="issuePermitForm">
+                        <?= csrf_field() ?>
 
                         <!-- Section 1: Permit Details -->
                         <h6 class="border-bottom pb-2 mb-3 text-secondary"><i

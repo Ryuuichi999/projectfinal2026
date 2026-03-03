@@ -1,5 +1,6 @@
 <?php
 require '../includes/db.php';
+require_once '../includes/csrf_helper.php';
 
 if (!isset($_SESSION['user_id'])) {
     header("Location: ../login.php");
@@ -12,6 +13,7 @@ $msg_type = '';
 
 // ─── submit feedback ───
 if (isset($_POST['submit_feedback'])) {
+    csrf_check();
     $rating = (int) $_POST['rating'];
     $comment = trim($_POST['comment'] ?? '');
     $request_id = !empty($_POST['request_id']) ? (int) $_POST['request_id'] : null;
@@ -24,7 +26,7 @@ if (isset($_POST['submit_feedback'])) {
         $stmt->bind_param("iiis", $user_id, $request_id, $rating, $comment);
 
         if ($stmt->execute()) {
-            $msg = 'ขอบคุณสำหรับความคิดเห็นของคุณ! 🙏';
+            $msg = 'ขอบคุณสำหรับความคิดเห็นของคุณ! ';
             $msg_type = 'success';
         } else {
             $msg = 'เกิดข้อผิดพลาด กรุณาลองใหม่';
@@ -112,7 +114,7 @@ $avg_stats = $avg_result->fetch_assoc();
 
                 <!-- ฟอร์มประเมิน -->
                 <div class="card p-4 feedback-card mb-4">
-                    <h4 class="text-center mb-3">⭐ ให้คะแนนความพึงพอใจ</h4>
+                    <h4 class="text-center mb-3"> ให้คะแนนความพึงพอใจ</h4>
                     <p class="text-center text-muted">กรุณาให้คะแนนการใช้บริการของเรา</p>
 
                     <?php if ($msg): ?>
@@ -122,6 +124,7 @@ $avg_stats = $avg_result->fetch_assoc();
                     <?php endif; ?>
 
                     <form method="POST">
+                        <?= csrf_field() ?>
                         <!-- เลือกคำร้อง (ถ้ามี) -->
                         <?php if ($requests_result->num_rows > 0): ?>
                             <div class="mb-3">

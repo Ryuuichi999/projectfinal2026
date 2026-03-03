@@ -4,6 +4,7 @@ require '../includes/email_helper.php';
 require_once '../includes/status_helper.php';
 require_once '../includes/log_helper.php';
 require_once '../includes/audit_helper.php';
+require_once '../includes/csrf_helper.php';
 
 if (!isset($_SESSION['user_id']) || ($_SESSION['role'] !== 'admin' && $_SESSION['role'] !== 'employee')) {
     header("Location: ../login.php");
@@ -49,6 +50,7 @@ if ($result->num_rows === 0) {
 $request = $result->fetch_assoc();
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
+    csrf_check();
     $action = $_POST['action'];
     if ($action === 'start_review') {
         if ($request['status'] === 'pending') {
@@ -525,6 +527,7 @@ $result_docs = $stmt_docs->get_result();
 
                         <?php if ($request['status'] === 'pending'): ?>
                             <form method="post" class="d-grid">
+                                <?= csrf_field() ?>
                                 <input type="hidden" name="action" value="start_review">
                                 <button class="btn btn-primary py-2"><i class="bi bi-search me-2"></i>
                                     เริ่มตรวจสอบข้อมูล</button>
@@ -533,6 +536,7 @@ $result_docs = $stmt_docs->get_result();
 
                         <?php if (in_array($request['status'], ['pending', 'reviewing', 'need_documents'])): ?>
                             <form method="post" id="approveForm" class="d-grid gap-2 mt-2">
+                                <?= csrf_field() ?>
                                 <input type="hidden" name="action" value="approve">
                                 <button type="button" class="btn btn-success py-2" onclick="confirmApprove()">
                                     <i class="bi bi-check-circle me-2"></i> อนุมัติ (ส่งชำระเงิน)
@@ -748,6 +752,7 @@ $result_docs = $stmt_docs->get_result();
     <div class="modal fade" id="requestDocsModal" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
             <form method="post" class="modal-content">
+                <?= csrf_field() ?>
                 <div class="modal-header">
                     <h5 class="modal-title">ขอเอกสารเพิ่มเติม</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
@@ -772,6 +777,7 @@ $result_docs = $stmt_docs->get_result();
     <div class="modal fade" id="rejectModal" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
             <form method="post" class="modal-content">
+                <?= csrf_field() ?>
                 <div class="modal-header">
                     <h5 class="modal-title">ปฏิเสธคำขอ</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>

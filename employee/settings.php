@@ -1,6 +1,7 @@
 <?php
 require '../includes/db.php';
 require '../includes/settings_helper.php';
+require_once '../includes/csrf_helper.php';
 
 // Check Admin or Employee
 if (!isset($_SESSION['user_id']) || ($_SESSION['role'] !== 'admin' && $_SESSION['role'] !== 'employee')) {
@@ -16,6 +17,7 @@ $error = '';
 
 // Handle Submit
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    csrf_check();
     // === RECEIPT SETTINGS ===
     if (isset($_POST['save_receipt_settings'])) {
         $signer_name = trim($_POST['receipt_signer_name']);
@@ -151,6 +153,7 @@ $permit_sig = getSetting($conn, 'permit_signature_path', '');
                 </div>
                 <div class="card-body">
                     <form method="post" enctype="multipart/form-data">
+                        <?= csrf_field() ?>
                         <div class="mb-3">
                             <label class="form-label">ชื่อผู้รับเงิน / ผู้ออกใบเสร็จ</label>
                             <input type="text" name="receipt_signer_name" class="form-control"
@@ -204,6 +207,7 @@ $permit_sig = getSetting($conn, 'permit_signature_path', '');
                 </div>
                 <div class="card-body">
                     <form method="post" enctype="multipart/form-data">
+                        <?= csrf_field() ?>
                         <div class="mb-3">
                             <label class="form-label">ชื่อผู้ออกใบอนุญาต (นายกเทศมนตรี/ผู้มีอำนาจ)</label>
                             <input type="text" name="permit_signer_name" class="form-control"

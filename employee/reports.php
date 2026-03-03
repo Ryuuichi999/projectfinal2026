@@ -22,9 +22,12 @@ if (empty($available_years))
     $available_years[] = date('Y');
 
 // ─── ข้อมูลสรุป ───
-$where_date = "YEAR(r.created_at) = $year";
-if ($month > 0)
-    $where_date .= " AND MONTH(r.created_at) = $month";
+// Build params for prepared statements
+$params_types = ($month > 0) ? "ii" : "i";
+$params_values = ($month > 0) ? [$year, $month] : [$year];
+$where_clause = ($month > 0)
+    ? "YEAR(r.created_at) = ? AND MONTH(r.created_at) = ?"
+    : "YEAR(r.created_at) = ?";
 
 // 1. สถิติรวม
 $stats_sql = "SELECT 
@@ -36,8 +39,11 @@ $stats_sql = "SELECT
     SUM(CASE WHEN r.status = 'rejected' THEN 1 ELSE 0 END) as rejected,
     SUM(CASE WHEN r.status = 'approved' THEN r.fee ELSE 0 END) as total_fee,
     SUM(r.fee) as estimated_fee
-FROM sign_requests r WHERE $where_date";
-$stats = $conn->query($stats_sql)->fetch_assoc();
+FROM sign_requests r WHERE $where_clause";
+$stats_stmt = $conn->prepare($stats_sql);
+$stats_stmt->bind_param($params_types, ...$params_values);
+$stats_stmt->execute();
+$stats = $stats_stmt->get_result()->fetch_assoc();
 
 // 2. สรุปรายเดือน (ถ้าเลือกทั้งปี)
 $monthly_data = [];
@@ -47,8 +53,11 @@ if ($month == 0) {
         COUNT(*) as total,
         SUM(CASE WHEN r.status = 'approved' THEN 1 ELSE 0 END) as approved_count,
         SUM(CASE WHEN r.status = 'approved' THEN r.fee ELSE 0 END) as fee_collected
-    FROM sign_requests r WHERE YEAR(r.created_at) = $year GROUP BY MONTH(r.created_at) ORDER BY m";
-    $monthly_result = $conn->query($monthly_sql);
+    FROM sign_requests r WHERE YEAR(r.created_at) = ? GROUP BY MONTH(r.created_at) ORDER BY m";
+    $monthly_stmt = $conn->prepare($monthly_sql);
+    $monthly_stmt->bind_param("i", $year);
+    $monthly_stmt->execute();
+    $monthly_result = $monthly_stmt->get_result();
     while ($row = $monthly_result->fetch_assoc()) {
         $monthly_data[$row['m']] = $row;
     }
@@ -56,8 +65,11 @@ if ($month == 0) {
 
 // 3. สรุปตามประเภทป้าย
 $type_sql = "SELECT sign_type, COUNT(*) as cnt, SUM(CASE WHEN status='approved' THEN fee ELSE 0 END) as fee_total
-    FROM sign_requests r WHERE $where_date GROUP BY sign_type ORDER BY cnt DESC";
-$type_result = $conn->query($type_sql);
+    FROM sign_requests r WHERE $where_clause GROUP BY sign_type ORDER BY cnt DESC";
+$type_stmt = $conn->prepare($type_sql);
+$type_stmt->bind_param($params_types, ...$params_values);
+$type_stmt->execute();
+$type_result = $type_stmt->get_result();
 
 // 4. ป้ายใกล้หมดอายุ (30 วัน)
 $expiring_sql = "SELECT r.*, u.first_name, u.last_name,
@@ -92,8 +104,11 @@ if (isset($_GET['export']) && $_GET['export'] === 'csv') {
     $out = fopen('php://output', 'w');
     fputcsv($out, ['#', 'วันที่ยื่น', 'ผู้ยื่น', 'ประเภทป้าย', 'ขนาด', 'ค่าธรรมเนียม', 'สถานะ', 'เลขที่ใบอนุญาต']);
 
-    $export_sql = "SELECT r.*, u.first_name, u.last_name FROM sign_requests r JOIN users u ON r.user_id = u.id WHERE $where_date ORDER BY r.id";
-    $export_result = $conn->query($export_sql);
+    $export_sql = "SELECT r.*, u.first_name, u.last_name FROM sign_requests r JOIN users u ON r.user_id = u.id WHERE $where_clause ORDER BY r.id";
+    $export_stmt = $conn->prepare($export_sql);
+    $export_stmt->bind_param($params_types, ...$params_values);
+    $export_stmt->execute();
+    $export_result = $export_stmt->get_result();
     $n = 1;
     while ($row = $export_result->fetch_assoc()) {
         fputcsv($out, [

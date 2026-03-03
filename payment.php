@@ -4,6 +4,7 @@ require_once './includes/email_helper.php';
 require_once './includes/receipt_helper.php';
 require_once './includes/settings_helper.php';
 require_once './includes/log_helper.php';
+require_once './includes/csrf_helper.php';
 
 if (!isset($_SESSION['user_id'])) {
     header("Location: login.php");
@@ -57,12 +58,23 @@ if ($request['status'] !== 'waiting_payment') {
 
 // Handle Slip Upload
 if (isset($_POST['upload_slip'])) {
+    csrf_check();
     if (isset($_FILES['slip_file']) && $_FILES['slip_file']['error'] == UPLOAD_ERR_OK) {
         $allowed = ['jpg', 'jpeg', 'png'];
+        $allowed_mimes = ['image/jpeg', 'image/png'];
+        $max_slip_size = 5 * 1024 * 1024; // 5MB
         $filename = $_FILES['slip_file']['name'];
         $ext = strtolower(pathinfo($filename, PATHINFO_EXTENSION));
 
-        if (in_array($ext, $allowed)) {
+        // Validate real MIME type
+        $finfo = new finfo(FILEINFO_MIME_TYPE);
+        $real_mime = $finfo->file($_FILES['slip_file']['tmp_name']);
+
+        if ($_FILES['slip_file']['size'] > $max_slip_size) {
+            $error = "ไฟล์สลิปมีขนาดเกิน 5MB";
+        } elseif (!in_array($real_mime, $allowed_mimes)) {
+            $error = "ไฟล์สลิปต้องเป็นรูปภาพ JPG หรือ PNG เท่านั้น (ตรวจพบ: {$real_mime})";
+        } elseif (in_array($ext, $allowed)) {
             // Check Slip with Thunder API
             $filePath = $_FILES['slip_file']['tmp_name'];
             $token = THUNDER_API_TOKEN;
@@ -326,6 +338,7 @@ $qr_url = "https://promptpay.io/{$promptpay_id}/{$amount}.png";
                         </div>
 
                         <form method="post" enctype="multipart/form-data" id="slipForm">
+                            <?= csrf_field() ?>
                             <div class="mb-3">
                                 <label class="form-label fw-bold">เลือกไฟล์สลิปการโอนเงิน <span class="text-danger">*</span></label>
                                 <input type="file" name="slip_file" id="slip_file" class="form-control form-control-lg"

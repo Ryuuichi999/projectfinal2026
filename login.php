@@ -1,30 +1,71 @@
 <?php
 require 'includes/db.php';
+require_once 'includes/csrf_helper.php';
 
 if (isset($_POST['login'])) {
-    $stmt = $conn->prepare("SELECT * FROM users WHERE citizen_id=?");
-    $stmt->bind_param("s", $_POST['citizen_id']);
-    $stmt->execute();
-    $user = $stmt->get_result()->fetch_assoc();
-
-    if ($user && password_verify($_POST['password'], $user['password'])) {
-        $_SESSION['user_id'] = $user['id'];
-        $_SESSION['role'] = $user['role'];
-
-        // Audit Log
-        require_once 'includes/audit_helper.php';
-        logAudit($conn, 'login', 'users', $user['id'], 'Login ด้วย citizen_id');
-
-        if ($user['role'] === 'admin') {
-            $redirect_to = "admin/dashboard.php";
-        } elseif ($user['role'] === 'employee') {
-            $redirect_to = "employee/dashboard.php";
-        } else {
-            $redirect_to = "users/index.php";
-        }
-        $success = true;
+    // CSRF check
+    if (!csrf_verify()) {
+        $error = "เซสชันหมดอายุ กรุณาลองใหม่";
     } else {
-        $error = "ข้อมูลไม่ถูกต้อง";
+        $citizen_id = trim($_POST['citizen_id'] ?? '');
+
+        // Rate Limiting — ตรวจสอบจำนวนครั้งที่ login ผิด
+        $rate_key = 'login_attempts_' . md5($citizen_id);
+        $max_attempts = 5;
+        $lockout_minutes = 15;
+
+        if (!isset($_SESSION[$rate_key])) {
+            $_SESSION[$rate_key] = ['count' => 0, 'first_attempt' => time()];
+        }
+
+        $attempts = &$_SESSION[$rate_key];
+        // รีเซ็ตถ้าเกินเวลา lockout
+        if (time() - $attempts['first_attempt'] > $lockout_minutes * 60) {
+            $attempts = ['count' => 0, 'first_attempt' => time()];
+        }
+
+        if ($attempts['count'] >= $max_attempts) {
+            $remaining = ceil(($lockout_minutes * 60 - (time() - $attempts['first_attempt'])) / 60);
+            $error = "คุณลองเข้าสู่ระบบผิดเกินกำหนด กรุณารอ {$remaining} นาที";
+        } else {
+            $stmt = $conn->prepare("SELECT * FROM users WHERE citizen_id=?");
+            $stmt->bind_param("s", $citizen_id);
+            $stmt->execute();
+            $user = $stmt->get_result()->fetch_assoc();
+
+            if ($user && password_verify($_POST['password'], $user['password'])) {
+                // ล้าง rate limit
+                unset($_SESSION[$rate_key]);
+
+                // Regenerate session ID เพื่อป้องกัน Session Fixation
+                session_regenerate_id(true);
+
+                $_SESSION['user_id'] = $user['id'];
+                $_SESSION['role'] = $user['role'];
+
+                // Audit Log
+                require_once 'includes/audit_helper.php';
+                logAudit($conn, 'login', 'users', $user['id'], 'Login ด้วย citizen_id');
+
+                if ($user['role'] === 'admin') {
+                    $redirect_to = "admin/dashboard.php";
+                } elseif ($user['role'] === 'employee') {
+                    $redirect_to = "employee/dashboard.php";
+                } else {
+                    $redirect_to = "users/index.php";
+                }
+                csrf_regenerate();
+                $success = true;
+            } else {
+                $attempts['count']++;
+                $remaining_attempts = $max_attempts - $attempts['count'];
+                if ($remaining_attempts > 0) {
+                    $error = "ข้อมูลไม่ถูกต้อง (เหลือโอกาสอีก {$remaining_attempts} ครั้ง)";
+                } else {
+                    $error = "คุณลองเข้าสู่ระบบผิดเกินกำหนด กรุณารอ {$lockout_minutes} นาที";
+                }
+            }
+        }
     }
 }
 ?>
@@ -288,6 +329,7 @@ if (isset($_POST['login'])) {
                 <?php endif; ?>
 
                 <form method="post">
+                    <?= csrf_field() ?>
                     <div class="mb-3">
                         <label class="form-label text-muted small">เลขประจำตัวประชาชน</label>
                         <input class="form-control" name="citizen_id" placeholder="เลขบัตรประชาชน" required>
