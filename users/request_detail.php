@@ -358,8 +358,8 @@ $timeline_logs = getRequestLogs($conn, $request_id);
                     <i class="bi bi-chevron-left me-1"></i> ย้อนกลับ
                 </a>
                 <h1 class="page-title mb-1">รายละเอียดคำร้อง</h1>
-                <div class="page-subtitle">เลขที่คำขอ
-                    #<?= $request['id'] ?>/<?= date('y', strtotime($request['created_at'])) + 43 ?></div>
+                <div class="page-subtitle">เลขที่คำร้อง
+                    <?= !empty($request['request_no']) ? htmlspecialchars($request['request_no']) : '#' . $request['id'] . '/' . date('y', strtotime($request['created_at'])) + 43 ?></div>
             </div>
             <div class="d-flex flex-column align-items-end" style="margin-top: 32px;">
                 <div class="mb-1"><?= get_status_badge($request['status']) ?></div>

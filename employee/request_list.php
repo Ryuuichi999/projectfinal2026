@@ -17,8 +17,9 @@ if (isset($_POST['action']) && isset($_POST['request_id'])) {
     $status = '';
 
     if ($action === 'approve') {
-        $status = 'approved';
-        $msg = 'อนุมัติคำขอเรียบร้อยแล้ว';
+        $status = 'waiting_payment';
+        $msg = 'อนุมัติคำขอเรียบร้อยแล้ว สถานะเปลี่ยนเป็นรอชำระเงิน';
+        $approved_by = $_SESSION['user_id'];
     } elseif ($action === 'reject') {
         $status = 'rejected';
         $msg = 'ปฏิเสธคำขอเรียบร้อยแล้ว';
@@ -28,11 +29,20 @@ if (isset($_POST['action']) && isset($_POST['request_id'])) {
     }
 
     if ($status) {
-        $stmt_update = $conn->prepare("UPDATE sign_requests SET status = ? WHERE id = ?");
-        $stmt_update->bind_param("si", $status, $request_id);
+        if ($action === 'approve') {
+            $stmt_update = $conn->prepare("UPDATE sign_requests SET status = ?, approved_by = ? WHERE id = ?");
+            $stmt_update->bind_param("sii", $status, $approved_by, $request_id);
+        } else {
+            $stmt_update = $conn->prepare("UPDATE sign_requests SET status = ? WHERE id = ?");
+            $stmt_update->bind_param("si", $status, $request_id);
+        }
         if ($stmt_update->execute()) {
             send_status_notification($request_id, $conn);
-            logRequestAction($conn, $request_id, $status, $msg, $_SESSION['user_id']);
+            if ($action === 'approve') {
+                logRequestAction($conn, $request_id, 'waiting_payment', 'อนุมัติคำร้อง — รอชำระค่าธรรมเนียม', $_SESSION['user_id'], 'ตรวจสอบเอกสารเบื้องต้นผ่านแล้ว');
+            } else {
+                logRequestAction($conn, $request_id, $status, $msg, $_SESSION['user_id']);
+            }
 
             require_once '../includes/audit_helper.php';
             logAudit($conn, $action, 'sign_requests', $request_id, $msg);
@@ -182,16 +192,20 @@ $result->data_seek(0);
                                         </a>
 
                                         <?php if ($row['status'] == 'pending'): ?>
-                                            <a href="approve_form.php?id=<?= $row['id'] ?>"
-                                                class="btn btn-sm btn-success px-2" title="อนุมัติ"
-                                                data-bs-toggle="tooltip">
+                                            <button type="button" class="btn btn-sm btn-success px-2" title="อนุมัติ"
+                                                data-bs-toggle="tooltip"
+                                                onclick="confirmApprove(<?= $row['id'] ?>)">
                                                 <i class="bi bi-check-circle-fill"></i>
-                                            </a>
+                                            </button>
                                             <button type="button" class="btn btn-sm btn-danger px-2" title="ปฏิเสธ"
                                                 data-bs-toggle="tooltip"
                                                 onclick="confirmReject(<?= $row['id'] ?>)">
                                                 <i class="bi bi-x-circle-fill"></i>
                                             </button>
+                                            <form id="approveForm<?= $row['id'] ?>" method="post" class="d-none">
+                                                <input type="hidden" name="request_id" value="<?= $row['id'] ?>">
+                                                <input type="hidden" name="action" value="approve">
+                                            </form>
                                             <form id="rejectForm<?= $row['id'] ?>" method="post" class="d-none">
                                                 <input type="hidden" name="request_id" value="<?= $row['id'] ?>">
                                                 <input type="hidden" name="action" value="reject">
@@ -328,6 +342,24 @@ $result->data_seek(0);
                 new bootstrap.Dropdown(dropdownToggleEl);
             });
         });
+
+        // SweetAlert ยืนยันก่อนอนุมัติ
+        function confirmApprove(requestId) {
+            Swal.fire({
+                title: 'ยืนยันการอนุมัติ?',
+                text: "สถานะจะเปลี่ยนเป็น 'รอชำระเงิน'",
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonColor: '#10b981',
+                cancelButtonColor: '#94a3b8',
+                confirmButtonText: 'ยืนยัน อนุมัติ',
+                cancelButtonText: 'ยกเลิก'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    document.getElementById('approveForm' + requestId).submit();
+                }
+            });
+        }
 
         // SweetAlert ยืนยันก่อนปฏิเสธ
         function confirmReject(requestId) {

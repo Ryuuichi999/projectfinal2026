@@ -13,58 +13,69 @@ $role = $_SESSION['role'] ?? 'guest';
 $userId = isset($_SESSION['user_id']) ? (int) $_SESSION['user_id'] : 0;
 
 // ดึงข้อมูลคำร้องที่มีพิกัดและสถานะ เพื่อแสดงบนแผนที่
+// แสดงเฉพาะคำร้องของ user เอง ที่ได้รับอนุมัติแล้ว และยังไม่หมดอายุ
 $approved_signs = [];
-if ($role === 'user') {
-    $stmt = $conn->prepare("SELECT id, location_lat, location_lng, sign_type, status FROM sign_requests WHERE user_id = ? AND location_lat IS NOT NULL AND location_lng IS NOT NULL");
-    $stmt->bind_param("i", $userId);
-    $stmt->execute();
-    $result_signs = $stmt->get_result();
-} else {
-    $result_signs = $conn->query("SELECT id, location_lat, location_lng, sign_type, status FROM sign_requests WHERE location_lat IS NOT NULL AND location_lng IS NOT NULL");
-}
+$stmt = $conn->prepare("SELECT id, location_lat, location_lng, sign_type, road_name, status, duration_days, permit_date, created_at 
+                         FROM sign_requests 
+                         WHERE user_id = ? 
+                         AND status = 'approved' 
+                         AND location_lat IS NOT NULL AND location_lng IS NOT NULL");
+$stmt->bind_param("i", $userId);
+$stmt->execute();
+$result_signs = $stmt->get_result();
 if ($result_signs && $result_signs->num_rows > 0) {
     while ($row = $result_signs->fetch_assoc()) {
+        // คำนวณวันหมดอายุ — ถ้าหมดอายุแล้วไม่แสดง
+        $base = !empty($row['permit_date']) ? $row['permit_date'] : ($row['created_at'] ? date('Y-m-d', strtotime($row['created_at'])) : null);
+        $dur = (int)($row['duration_days'] ?? 0);
+        if ($base && $dur > 0) {
+            $expire = date('Y-m-d', strtotime($base . " + {$dur} days"));
+            if ($expire < date('Y-m-d')) continue; // หมดอายุแล้ว ข้าม
+        }
         $approved_signs[] = [
             'id' => (int) $row['id'],
             'lat' => (float) $row['location_lat'],
             'lng' => (float) $row['location_lng'],
             'type' => htmlspecialchars($row['sign_type']),
+            'road' => htmlspecialchars($row['road_name'] ?? ''),
             'status' => htmlspecialchars($row['status'])
         ];
     }
 }
 
 $approved_rows = [];
-if ($role === 'user') {
-    $stmt_rows = $conn->prepare("SELECT r.id, r.sign_type, r.receipt_date, r.description, r.duration_days, u.title_name, u.first_name, u.last_name, u.address, u.phone 
-                                 FROM sign_requests r 
-                                 JOIN users u ON r.user_id = u.id 
-                                 WHERE r.user_id = ? AND r.location_lat IS NOT NULL AND r.location_lng IS NOT NULL
-                                 ORDER BY r.id DESC LIMIT 1000");
-    $stmt_rows->bind_param("i", $userId);
-    $stmt_rows->execute();
-    $res_rows = $stmt_rows->get_result();
-} else {
-    $res_rows = $conn->query("SELECT r.id, r.sign_type, r.receipt_date, r.description, r.duration_days, u.title_name, u.first_name, u.last_name, u.address, u.phone 
-                              FROM sign_requests r 
-                              JOIN users u ON r.user_id = u.id 
-                              WHERE r.location_lat IS NOT NULL AND r.location_lng IS NOT NULL
-                              ORDER BY r.id DESC LIMIT 1000");
-}
+$stmt_rows = $conn->prepare("SELECT r.id, r.sign_type, r.road_name, r.description, r.duration_days, r.permit_date, r.permit_no, r.created_at
+                             FROM sign_requests r 
+                             WHERE r.user_id = ? 
+                             AND r.status = 'approved'
+                             AND r.location_lat IS NOT NULL AND r.location_lng IS NOT NULL
+                             ORDER BY r.id DESC LIMIT 1000");
+$stmt_rows->bind_param("i", $userId);
+$stmt_rows->execute();
+$res_rows = $stmt_rows->get_result();
 if ($res_rows && $res_rows->num_rows > 0) {
     while ($row = $res_rows->fetch_assoc()) {
+        // คำนวณวันหมดอายุ — ถ้าหมดอายุแล้วไม่แสดง
+        $base = !empty($row['permit_date']) ? $row['permit_date'] : ($row['created_at'] ? date('Y-m-d', strtotime($row['created_at'])) : null);
+        $dur = (int)($row['duration_days'] ?? 0);
+        $expire_str = '';
+        if ($base && $dur > 0) {
+            $expire = date('Y-m-d', strtotime($base . " + {$dur} days"));
+            if ($expire < date('Y-m-d')) continue; // หมดอายุแล้ว ข้าม
+            $expire_str = date('d/m/Y', strtotime($expire));
+        }
         $approved_rows[] = [
             'id' => (int) $row['id'],
             'type' => htmlspecialchars($row['sign_type']),
+            'road' => htmlspecialchars($row['road_name'] ?? ''),
             'desc' => htmlspecialchars($row['description'] ?? ''),
             'duration' => (int) ($row['duration_days'] ?? 0),
-            'name' => htmlspecialchars(($row['title_name'] ?? '') . $row['first_name'] . ' ' . $row['last_name']),
-            'address' => htmlspecialchars($row['address'] ?? ''),
-            'phone' => htmlspecialchars($row['phone'] ?? ''),
-            'date' => $row['receipt_date'] ? date('d/m/Y', strtotime($row['receipt_date'])) : ''
+            'permit_no' => htmlspecialchars($row['permit_no'] ?? '-'),
+            'expire' => $expire_str
         ];
     }
 }
+
 ?>
 
 <!DOCTYPE html>
@@ -158,17 +169,14 @@ if ($res_rows && $res_rows->num_rows > 0) {
     <div class="container-fluid px-md-5 fade-in-up mt-4">
         <div class="card p-4 fade-in-up full-height-card">
             <h2 class="mb-2">🗺️ แผนที่ข้อมูลพื้นที่ (GIS)</h2>
-            <p class="text-muted mb-4">แสดงขอบเขต ตำแหน่งป้ายที่ได้รับอนุมัติ และเส้นทางถนนในเขต ทม.ศิลา</p>
+            <p class="text-muted mb-4">แสดงตำแหน่งป้ายของคุณที่ได้รับอนุมัติแล้ว ในเขต ทม.ศิลา</p>
 
             <div class="row g-3">
                 <div class="col-md-6">
                     <div class="map-container">
                         <div class="d-flex align-items-center gap-2 mb-2">
-                            <span class="badge" style="background-color: #16a34a; color: white;">🪧 อนุมัติแล้ว</span>
-                            <span class="badge" style="background-color: #f59e0b; color: white;">🪧 รอดำเนินการ</span>
-                            <span class="badge" style="background-color: #3b82f6; color: white;">🪧 รอชำระเงิน</span>
-                            <span class="badge" style="background-color: #8b5cf6; color: white;">🪧 รอใบเสร็จ</span>
-                            <span class="badge" style="background-color: #dc2626; color: white;">🪧 ไม่อนุมัติ</span>
+                            <span class="badge" style="background-color: #16a34a; color: white;">🪧 ป้ายที่อนุมัติแล้ว</span>
+                            <small class="text-muted">แสดงเฉพาะคำร้องของคุณที่ได้รับอนุมัติและยังไม่หมดอายุ</small>
                         </div>
                         <div id="mapid"></div>
                     </div>
@@ -187,7 +195,7 @@ if ($res_rows && $res_rows->num_rows > 0) {
                                 <div class="ms-auto d-flex align-items-center gap-2">
                                     <label class="text-muted">ค้นหา</label>
                                     <input id="searchInput" type="text" class="form-control form-control-sm"
-                                        placeholder="ชื่อ/ที่อยู่/ประเภท">
+                                        placeholder="ประเภท/ถนน">
                                 </div>
                             </div>
                         </div>
@@ -198,9 +206,9 @@ if ($res_rows && $res_rows->num_rows > 0) {
                                         <tr>
                                             <th>เลขคำขอ</th>
                                             <th>ประเภท</th>
-                                            <th>รายละเอียด</th>
+                                            <th>ถนน</th>
                                             <th>ระยะเวลา</th>
-                                            <th>ชื่อ</th>
+                                            <th>หมดอายุ</th>
                                         </tr>
                                     </thead>
                                     <tbody id="tableBody" class="table-page"></tbody>
@@ -269,28 +277,8 @@ if ($res_rows && $res_rows->num_rows > 0) {
             var layerControl = L.control.layers(baseLayers, overlays, { collapsed: true, position: 'topright' }).addTo(mymap);
             approvedSigns.forEach(function (sign) {
                 if (sign.lat && sign.lng) {
-                    // กำหนดสีหมุดตามสถานะ
-                    var markerColor = '#16a34a'; // สีเขียว (อนุมัติแล้ว) - default
-                    var statusText = 'อนุมัติแล้ว';
+                    var markerColor = '#16a34a'; // สีเขียว (อนุมัติแล้ว)
                     
-                    if (sign.status === 'pending') {
-                        markerColor = '#f59e0b'; // สีเหลือง (รอดำเนินการ)
-                        statusText = 'รอดำเนินการ';
-                    } else if (sign.status === 'waiting_payment') {
-                        markerColor = '#3b82f6'; // สีน้ำเงิน (รอชำระเงิน)
-                        statusText = 'รอชำระเงิน';
-                    } else if (sign.status === 'waiting_receipt') {
-                        markerColor = '#8b5cf6'; // สีม่วง (รอใบเสร็จ)
-                        statusText = 'รอใบเสร็จ';
-                    } else if (sign.status === 'rejected') {
-                        markerColor = '#dc2626'; // สีแดง (ไม่อนุมัติ)
-                        statusText = 'ไม่อนุมัติ';
-                    } else if (sign.status === 'cancelled') {
-                        markerColor = '#6b7280'; // สีเทา (ยกเลิก)
-                        statusText = 'ยกเลิก';
-                    }
-                    
-                    // สร้าง custom marker icon
                     var customIcon = L.divIcon({
                         className: 'custom-marker',
                         html: '<div style="background-color: ' + markerColor + '; width: 24px; height: 24px; border-radius: 4px; border: 2px solid white; box-shadow: 0 2px 6px rgba(0,0,0,0.4); display: flex; align-items: center; justify-content: center; font-weight: bold; color: white; font-size: 12px;">🪧</div>',
@@ -299,7 +287,7 @@ if ($res_rows && $res_rows->num_rows > 0) {
                     });
                     
                     var m = L.marker([sign.lat, sign.lng], {icon: customIcon})
-                        .bindPopup("<b>เลขคำขอ #" + sign.id + "</b><br><b>ประเภทป้าย:</b> " + sign.type + "<br><b>สถานะ:</b> " + statusText);
+                        .bindPopup("<b>เลขคำขอ #" + sign.id + "</b><br><b>ประเภทป้าย:</b> " + sign.type + "<br><b>ถนน:</b> " + (sign.road || '-') + "<br><b>สถานะ:</b> ✅ อนุมัติแล้ว");
                     markers.addLayer(m);
                 }
             });
@@ -402,9 +390,9 @@ if ($res_rows && $res_rows->num_rows > 0) {
                 if (!q) return approvedList;
                 return approvedList.filter(function (r) {
                     return (r.type || '').toLowerCase().includes(q)
-                        || (r.name || '').toLowerCase().includes(q)
-                        || (r.address || '').toLowerCase().includes(q)
+                        || (r.road || '').toLowerCase().includes(q)
                         || (r.desc || '').toLowerCase().includes(q)
+                        || (r.permit_no || '').toLowerCase().includes(q)
                         || (String(r.id)).includes(q);
                 });
             }
@@ -420,9 +408,9 @@ if ($res_rows && $res_rows->num_rows > 0) {
                     return "<tr>"
                         + "<td>#" + r.id + "</td>"
                         + "<td class='table-type'>" + r.type + "</td>"
-                        + "<td class='table-desc'>" + r.desc + "</td>"
+                        + "<td class='table-desc'>" + (r.road || '-') + "</td>"
                         + "<td>" + d + "</td>"
-                        + "<td class='table-name'>" + r.name + "</td>"
+                        + "<td>" + (r.expire || '-') + "</td>"
                         + "</tr>";
                 }).join('');
                 pageInfo.textContent = "หน้า " + page + " / " + totalPages + " • ทั้งหมด " + rows.length + " รายการ";

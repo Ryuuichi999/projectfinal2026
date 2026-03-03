@@ -40,6 +40,19 @@ if (!function_exists('get_status_badge')) {
                 $class = 'secondary';
                 $text = '❌ ไม่อนุมัติ';
                 break;
+            case 'expired':
+                $class = 'dark';
+                $text = '⏰ หมดอายุ';
+                break;
+            case 'cancelled_payment':
+                $class = 'secondary';
+                $text = '❌ ยกเลิก (ไม่ชำระเงิน)';
+                break;
+            case '':
+            case null:
+                $class = 'primary';
+                $text = '⏳ รอกำลังพิจารณา';
+                break;
             default:
                 $class = 'info';
                 $text = $status;

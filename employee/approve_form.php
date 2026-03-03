@@ -224,7 +224,7 @@ if (isset($_POST['approve_confirm'])) {
                 <div class="card-header-styled d-flex justify-content-between align-items-start">
                     <div>
                         <div class="header-title">ตรวจสอบคำขออนุญาต</div>
-                        <div class="header-subtitle"><i class="bi bi-files me-1"></i> คำขอเลขที่ #<?= $request['id'] ?></div>
+                        <div class="header-subtitle"><i class="bi bi-files me-1"></i> เลขที่คำร้อง #<?= $request['id'] ?></div>
                     </div>
                     <div class="status-badge">
                         <i class="bi bi-clock me-1"></i> รอตรวจสอบ

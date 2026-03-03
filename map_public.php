@@ -7,13 +7,20 @@ $approved_signs = [];
 $approved_rows = [];
 
 // ดึงเฉพาะคำขอที่อนุมัติแล้ว + มีพิกัด
-$result_signs = $conn->query("SELECT r.id, r.location_lat, r.location_lng, r.sign_type, r.permit_no, r.road_name, r.width, r.height, r.quantity, r.duration_days, r.permit_date
+$result_signs = $conn->query("SELECT r.id, r.location_lat, r.location_lng, r.sign_type, r.permit_no, r.road_name, r.width, r.height, r.quantity, r.duration_days, r.permit_date, r.created_at
     FROM sign_requests r
     WHERE r.status = 'approved' AND r.location_lat IS NOT NULL AND r.location_lng IS NOT NULL
     ORDER BY r.id DESC");
 
 if ($result_signs && $result_signs->num_rows > 0) {
     while ($row = $result_signs->fetch_assoc()) {
+        // กรองป้ายที่หมดอายุแล้วออก
+        $base = !empty($row['permit_date']) ? $row['permit_date'] : ($row['created_at'] ? date('Y-m-d', strtotime($row['created_at'])) : null);
+        $dur = (int)($row['duration_days'] ?? 0);
+        if ($base && $dur > 0) {
+            $expire = date('Y-m-d', strtotime($base . " + {$dur} days"));
+            if ($expire < date('Y-m-d')) continue;
+        }
         $approved_signs[] = [
             'id' => (int) $row['id'],
             'lat' => (float) $row['location_lat'],

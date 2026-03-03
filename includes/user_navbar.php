@@ -199,7 +199,7 @@ if ($userId && $role === 'user') {
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link <?= strpos($_SERVER['PHP_SELF'], 'map_public.php') !== false ? 'active' : '' ?>" href="/Project2026/map_public.php">
+                    <a class="nav-link <?= strpos($_SERVER['PHP_SELF'], 'map.php') !== false ? 'active' : '' ?>" href="/Project2026/map.php">
                         <i class="bi bi-geo-alt me-1"></i> แผนที่ GIS
                     </a>
                 </li>

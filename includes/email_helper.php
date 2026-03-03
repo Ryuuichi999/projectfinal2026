@@ -24,6 +24,10 @@ if (!function_exists('get_status_label')) {
                 return 'อนุมัติเรียบร้อย';
             case 'rejected':
                 return 'ไม่ผ่านการพิจารณา';
+            case 'expired':
+                return 'ใบอนุญาตหมดอายุ';
+            case 'cancelled_payment':
+                return 'ยกเลิก (ไม่ชำระเงิน)';
             default:
                 return $status;
         }
