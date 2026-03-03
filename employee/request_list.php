@@ -96,6 +96,12 @@ $result->data_seek(0);
             border-radius: 4px;
             white-space: nowrap;
         }
+
+        .badge-sm-expiry {
+            font-size: 0.72rem !important;
+            padding: 0.2rem 0.45rem !important;
+            line-height: 1.2 !important;
+        }
     </style>
 </head>
 
@@ -161,9 +167,9 @@ $result->data_seek(0);
                             $emp_expiry_html = '';
                             if ($row['status'] == 'approved' && $emp_days_left !== null) {
                                 if ($emp_days_left < 0) {
-                                    $emp_expiry_html = "<div class='mt-1'><span class='badge bg-danger bg-opacity-90 px-2'><i class='bi bi-x-circle-fill me-1'></i>หมดอายุแล้ว</span></div>";
+                                    $emp_expiry_html = "<div class='mt-1'><span class='badge badge-sm-expiry bg-danger bg-opacity-90 px-2'><i class='bi bi-x-circle-fill me-1'></i>หมดอายุแล้ว</span></div>";
                                 } elseif ($emp_days_left <= 30) {
-                                    $emp_expiry_html = "<div class='mt-1'><span class='badge bg-warning text-dark px-2'><i class='bi bi-clock-fill me-1'></i>เหลือ {$emp_days_left} วัน</span></div>";
+                                    $emp_expiry_html = "<div class='mt-1'><span class='badge badge-sm-expiry bg-warning text-dark px-2'><i class='bi bi-clock-fill me-1'></i>เหลือ {$emp_days_left} วัน</span></div>";
                                 }
                             }
                         ?>

@@ -53,6 +53,12 @@ if (!isset($_SESSION['user_id'])) {
             /* font-size: 0.85rem; REMOVED */
             padding: 0.25rem 0.5rem;
         }
+
+        .badge-sm-expiry {
+            font-size: 0.72rem !important;
+            padding: 0.2rem 0.45rem !important;
+            line-height: 1.2 !important;
+        }
     </style>
 </head>
 
@@ -107,18 +113,18 @@ if (!isset($_SESSION['user_id'])) {
                                             $expiry_html = '';
                                             if ($row['status'] == 'approved' && $days_left !== null) {
                                                 if ($days_left < 0) {
-                                                    $expiry_html = "<div class='mt-1'><span class='badge bg-danger bg-opacity-90 px-2'><i class='bi bi-x-circle-fill me-1'></i>หมดอายุแล้ว</span></div>";
+                                                    $expiry_html = "<div class='mt-1'><span class='badge badge-sm-expiry bg-danger bg-opacity-90 px-2'><i class='bi bi-x-circle-fill me-1'></i>หมดอายุแล้ว</span></div>";
                                                 } elseif ($days_left <= 30) {
-                                                    $expiry_html = "<div class='mt-1'><span class='badge bg-warning text-dark px-2'><i class='bi bi-clock-fill me-1'></i>เหลือ {$days_left} วัน</span></div>";
+                                                    $expiry_html = "<div class='mt-1'><span class='badge badge-sm-expiry bg-warning text-dark px-2'><i class='bi bi-clock-fill me-1'></i>เหลือ {$days_left} วัน</span></div>";
                                                 }
                                             }
                                             if ($row['status'] == 'expired' && $days_left !== null) {
                                                 $days_since = abs($days_left);
                                                 $collect_remain = max(0, 7 - $days_since);
                                                 if ($collect_remain > 0) {
-                                                    $expiry_html = "<div class='mt-1'><span class='badge bg-danger px-2'><i class='bi bi-exclamation-triangle-fill me-1'></i>เก็บป้ายภายใน {$collect_remain} วัน</span></div>";
+                                                    $expiry_html = "<div class='mt-1'><span class='badge badge-sm-expiry bg-danger px-2'><i class='bi bi-exclamation-triangle-fill me-1'></i>เก็บป้ายภายใน {$collect_remain} วัน</span></div>";
                                                 } else {
-                                                    $expiry_html = "<div class='mt-1'><span class='badge bg-dark px-2'><i class='bi bi-exclamation-triangle-fill me-1'></i>เกินกำหนดเก็บป้าย</span></div>";
+                                                    $expiry_html = "<div class='mt-1'><span class='badge badge-sm-expiry bg-dark px-2'><i class='bi bi-exclamation-triangle-fill me-1'></i>เกินกำหนดเก็บป้าย</span></div>";
                                                 }
                                             }
 
