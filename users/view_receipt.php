@@ -121,7 +121,7 @@ function getThaiDate($date)
 
         .receipt-no {
             position: absolute;
-            top: 20mm;
+            top: 37mm;
             right: 1mm;
             text-align: right;
         }
@@ -137,7 +137,7 @@ function getThaiDate($date)
         }
 
         .subtitle {
-            font-size: 16pt;
+            font-size: 14pt;
         }
 
         .info-row {
