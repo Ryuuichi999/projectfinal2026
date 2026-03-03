@@ -25,9 +25,9 @@ if ($checkCol && $checkCol->num_rows == 0) {
 $checkStatus = $conn->query("SHOW COLUMNS FROM sign_requests LIKE 'status'");
 if ($checkStatus && $row = $checkStatus->fetch_assoc()) {
     $type = $row['Type'];
-    $needAlter = (strpos($type, "reviewing") === false) || (strpos($type, "need_documents") === false);
+    $needAlter = (strpos($type, "reviewing") === false) || (strpos($type, "need_documents") === false) || (strpos($type, "expired") === false) || (strpos($type, "cancelled_payment") === false);
     if ($needAlter) {
-        $conn->query("ALTER TABLE sign_requests MODIFY COLUMN status ENUM('pending','reviewing','need_documents','waiting_payment','waiting_receipt','approved','rejected') NOT NULL DEFAULT 'pending'");
+        $conn->query("ALTER TABLE sign_requests MODIFY COLUMN status ENUM('pending','reviewing','need_documents','waiting_payment','waiting_receipt','waiting_permit','approved','rejected','expired','cancelled_payment') NOT NULL DEFAULT 'pending'");
     }
 }
 

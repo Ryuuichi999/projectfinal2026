@@ -30,6 +30,7 @@ $approved_requests = $conn->query("SELECT COUNT(*) as t FROM sign_requests WHERE
 $rejected_requests = $conn->query("SELECT COUNT(*) as t FROM sign_requests WHERE status = 'rejected'")->fetch_assoc()['t'];
 $waiting_payment = $conn->query("SELECT COUNT(*) as t FROM sign_requests WHERE status = 'waiting_payment'")->fetch_assoc()['t'];
 $waiting_permit = $conn->query("SELECT COUNT(*) as t FROM sign_requests WHERE status = 'waiting_permit'")->fetch_assoc()['t'];
+$expired_requests = $conn->query("SELECT COUNT(*) as t FROM sign_requests WHERE status = 'expired'")->fetch_assoc()['t'];
 
 // สถิติรายเดือน (6 เดือนล่าสุด)
 $thaiMonthsShort = [1=>'ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'];
@@ -106,15 +107,6 @@ $recent_result = $conn->query($sql_recent);
                     </div>
                 </div>
             </div>
-            <!-- 3. รอเอกสาร -->
-            <div class="col">
-                <div class="card dashboard-card bg-light-info hover-lift h-100">
-                    <h6 class="text-nowrap small text-muted mb-2">📂 รอเอกสาร</h6>
-                    <div class="count text-info fs-3 fw-bold">
-                        <?= $waiting_docs_requests ?>
-                    </div>
-                </div>
-            </div>
             <!-- 4. รอชำระเงิน -->
             <div class="col">
                 <div class="card dashboard-card hover-lift h-100" style="background: #fff7ed;">
@@ -139,6 +131,15 @@ $recent_result = $conn->query($sql_recent);
                     <h6 class="text-nowrap small text-muted mb-2">✅ อนุมัติแล้ว</h6>
                     <div class="count text-success fs-3 fw-bold">
                         <?= $approved_requests ?>
+                    </div>
+                </div>
+            </div>
+            <!-- 7. หมดอายุ -->
+            <div class="col">
+                <div class="card dashboard-card hover-lift h-100" style="background: #fef2f2;">
+                    <h6 class="text-nowrap small text-muted mb-2">⏰ หมดอายุ</h6>
+                    <div class="count text-danger fs-3 fw-bold">
+                        <?= $expired_requests ?>
                     </div>
                 </div>
             </div>
@@ -263,16 +264,20 @@ $recent_result = $conn->query($sql_recent);
             'waiting_payment': 'รอชำระเงิน',
             'waiting_permit': 'รอออกใบอนุญาต',
             'approved': 'อนุมัติ',
-            'rejected': 'ไม่อนุมัติ'
+            'rejected': 'ไม่อนุมัติ',
+            'expired': 'หมดอายุ',
+            'cancelled_payment': 'ยกเลิก'
         };
         const statusColors = {
             'pending': '#f59e0b',
             'reviewing': '#3b82f6',
             'need_documents': '#06b6d4',
             'waiting_payment': '#ef4444',
-            'waiting_permit': '#db2777', // New color for waiting permit (Pink/Magenta) or Dark
+            'waiting_permit': '#db2777',
             'approved': '#22c55e',
-            'rejected': '#6b7280'
+            'rejected': '#6b7280',
+            'expired': '#dc3545',
+            'cancelled_payment': '#9ca3af'
         };
 
         new Chart(statusCtx, {
