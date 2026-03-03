@@ -102,6 +102,16 @@ if (isset($_GET['export']) && $_GET['export'] === 'csv') {
     echo "\xEF\xBB\xBF"; // BOM for UTF-8
 
     $out = fopen('php://output', 'w');
+
+    // CSV formula injection prevention
+    $csv_safe = function ($val) {
+        $val = (string) $val;
+        if (isset($val[0]) && in_array($val[0], ['=', '+', '-', '@', "\t", "\r"])) {
+            $val = "'" . $val;
+        }
+        return $val;
+    };
+
     fputcsv($out, ['#', 'วันที่ยื่น', 'ผู้ยื่น', 'ประเภทป้าย', 'ขนาด', 'ค่าธรรมเนียม', 'สถานะ', 'เลขที่ใบอนุญาต']);
 
     $export_sql = "SELECT r.*, u.first_name, u.last_name FROM sign_requests r JOIN users u ON r.user_id = u.id WHERE $where_clause ORDER BY r.id";
@@ -113,13 +123,13 @@ if (isset($_GET['export']) && $_GET['export'] === 'csv') {
     while ($row = $export_result->fetch_assoc()) {
         fputcsv($out, [
             $n++,
-            date('d/m/Y', strtotime($row['created_at'])),
-            $row['first_name'] . ' ' . $row['last_name'],
-            $row['sign_type'],
-            $row['width'] . 'x' . $row['height'] . ' ม.',
+            $csv_safe(date('d/m/Y', strtotime($row['created_at']))),
+            $csv_safe($row['first_name'] . ' ' . $row['last_name']),
+            $csv_safe($row['sign_type']),
+            $csv_safe($row['width'] . 'x' . $row['height'] . ' ม.'),
             number_format($row['fee']),
-            $row['status'],
-            $row['permit_no'] ?? '-'
+            $csv_safe($row['status']),
+            $csv_safe($row['permit_no'] ?? '-')
         ]);
     }
     fclose($out);

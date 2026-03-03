@@ -168,7 +168,7 @@ if (!function_exists('send_status_notification')) {
         // 3. บันทึก Log
         $log_dir = __DIR__ . "/../logs/";
         if (!file_exists($log_dir)) {
-            mkdir($log_dir, 0777, true);
+            mkdir($log_dir, 0755, true);
         }
         $log_content = "[" . date('Y-m-d H:i:s') . "] ID: #{$request_id}, "
             . "Status: {$request['status']}, "

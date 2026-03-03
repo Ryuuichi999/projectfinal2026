@@ -17,7 +17,7 @@ if (!isset($_GET['id'])) {
     exit;
 }
 
-$request_id = $_GET['id'];
+$request_id = (int) $_GET['id'];
 $user_id = $_SESSION['user_id'];
 
 // ดึงข้อมูลคำขอ
@@ -93,7 +93,7 @@ if (isset($_POST['upload_slip'])) {
                     // Valid and Unique -> Proceed to Upload
                     $upload_dir = "uploads/slips/";
                     if (!file_exists($upload_dir)) {
-                        mkdir($upload_dir, 0777, true);
+                        mkdir($upload_dir, 0755, true);
                     }
 
                     $new_filename = "slip_{$request_id}_" . time() . "." . $ext;

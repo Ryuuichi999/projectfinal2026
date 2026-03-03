@@ -10,6 +10,7 @@ $msg_type = '';
 
 // =============== STEP 1: กรอกเลขบัตร + ส่ง OTP ===============
 if (isset($_POST['send_otp'])) {
+    csrf_check();
     $citizen_id = trim($_POST['citizen_id']);
 
     // ตรวจสอบว่ามีผู้ใช้นี้จริง
@@ -79,6 +80,7 @@ if (isset($_POST['send_otp'])) {
 
 // =============== STEP 2: ตรวจสอบ OTP ===============
 if (isset($_POST['verify_otp'])) {
+    csrf_check();
     $otp = trim($_POST['otp']);
     $citizen_id = $_SESSION['reset_citizen_id'] ?? '';
 
@@ -111,6 +113,7 @@ if (isset($_POST['verify_otp'])) {
 
 // =============== STEP 3: ตั้งรหัสผ่านใหม่ ===============
 if (isset($_POST['reset_password'])) {
+    csrf_check();
     $new_pass = $_POST['new_password'];
     $confirm_pass = $_POST['confirm_password'];
     $citizen_id = $_SESSION['reset_citizen_id'] ?? '';

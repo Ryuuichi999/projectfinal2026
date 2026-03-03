@@ -16,7 +16,7 @@ if (!isset($_GET['id'])) {
     exit;
 }
 
-$request_id = $_GET['id'];
+$request_id = (int) $_GET['id'];
 $sql = "SELECT * FROM sign_requests WHERE id = ?";
 $stmt = $conn->prepare($sql);
 $stmt->bind_param("i", $request_id);

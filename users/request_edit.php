@@ -1,5 +1,6 @@
 <?php
 require '../includes/db.php';
+require_once '../includes/csrf_helper.php';
 
 if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'user') {
     header("Location: ../login.php");
@@ -34,6 +35,7 @@ $message = '';
 $message_type = '';
 
 if (isset($_POST['submit'])) {
+    csrf_check();
     $conn->begin_transaction();
     try {
         $uploaded_files = [
@@ -45,11 +47,23 @@ if (isset($_POST['submit'])) {
 
         $real_upload_dir = "../uploads/{$request_id}/";
         if (!file_exists($real_upload_dir)) {
-            mkdir($real_upload_dir, 0777, true);
+            mkdir($real_upload_dir, 0755, true);
         }
+
+        $allowed_mimes = ['image/jpeg', 'image/png', 'image/gif', 'application/pdf'];
+        $max_file_size = 10 * 1024 * 1024; // 10MB
 
         foreach ($uploaded_files as $input_name => $doc_type_name) {
             if (isset($_FILES[$input_name]) && $_FILES[$input_name]['error'] == UPLOAD_ERR_OK) {
+                $finfo = new finfo(FILEINFO_MIME_TYPE);
+                $real_mime = $finfo->file($_FILES[$input_name]['tmp_name']);
+                if (!in_array($real_mime, $allowed_mimes)) {
+                    throw new Exception("ไฟล์ {$doc_type_name} ไม่ใช่ประเภทที่อนุญาต (รองรับ JPG, PNG, GIF, PDF)");
+                }
+                if ($_FILES[$input_name]['size'] > $max_file_size) {
+                    throw new Exception("ไฟล์ {$doc_type_name} มีขนาดเกิน 10MB");
+                }
+
                 $file_name = time() . '_' . basename($_FILES[$input_name]['name']);
                 $target_path = $real_upload_dir . $file_name;
                 $db_path = "/uploads/{$request_id}/" . $file_name;
@@ -126,6 +140,7 @@ if (isset($_POST['submit'])) {
                 <div class="alert alert-<?= $message_type ?>"><?= $message ?></div>
             <?php endif; ?>
             <form method="post" enctype="multipart/form-data">
+                <?= csrf_field() ?>
                 <div class="row g-3">
                     <div class="col-md-6">
                         <label class="form-label">แบบป้าย/รูปภาพโฆษณา</label>

@@ -100,7 +100,7 @@ if (isset($_POST['submit'])) {
             // สร้างโฟลเดอร์เก็บไฟล์
             $real_upload_dir = "../uploads/{$request_id}/";
             if (!file_exists($real_upload_dir)) {
-                mkdir($real_upload_dir, 0777, true);
+                mkdir($real_upload_dir, 0755, true);
             }
 
             $allowed_mimes = ['image/jpeg', 'image/png', 'image/gif', 'application/pdf'];

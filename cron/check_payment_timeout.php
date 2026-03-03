@@ -23,7 +23,7 @@ require_once __DIR__ . '/../includes/log_helper.php';
 $log_file = __DIR__ . '/../logs/cron_payment_timeout.log';
 $log_dir = dirname($log_file);
 if (!file_exists($log_dir)) {
-    mkdir($log_dir, 0777, true);
+    mkdir($log_dir, 0755, true);
 }
 
 function cronLog($msg, $log_file) {

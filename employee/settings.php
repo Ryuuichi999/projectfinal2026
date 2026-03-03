@@ -34,14 +34,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         // Handle File Upload (Receipt)
         if (isset($_FILES['receipt_signature_file']) && $_FILES['receipt_signature_file']['error'] === UPLOAD_ERR_OK) {
-            $allowed = ['jpg', 'jpeg', 'png'];
-            $filename = $_FILES['receipt_signature_file']['name'];
-            $ext = strtolower(pathinfo($filename, PATHINFO_EXTENSION));
+            $allowed_mimes = ['image/jpeg', 'image/png'];
+            $max_size = 5 * 1024 * 1024; // 5MB
+            $finfo = new finfo(FILEINFO_MIME_TYPE);
+            $real_mime = $finfo->file($_FILES['receipt_signature_file']['tmp_name']);
+            $ext = strtolower(pathinfo($_FILES['receipt_signature_file']['name'], PATHINFO_EXTENSION));
 
-            if (in_array($ext, $allowed)) {
+            if (!in_array($real_mime, $allowed_mimes)) {
+                $error = "ไฟล์ลายเซ็นใบเสร็จต้องเป็น JPG หรือ PNG เท่านั้น";
+            } elseif ($_FILES['receipt_signature_file']['size'] > $max_size) {
+                $error = "ไฟล์ลายเซ็นใบเสร็จมีขนาดเกิน 5MB";
+            } else {
                 $upload_dir = '../uploads/signatures/';
                 if (!file_exists($upload_dir)) {
-                    mkdir($upload_dir, 0777, true);
+                    mkdir($upload_dir, 0755, true);
                 }
 
                 $new_filename = 'receipt_sig_' . time() . '.' . $ext;
@@ -51,11 +57,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     $db_val = 'uploads/signatures/' . $new_filename;
                     updateSetting($conn, 'receipt_signature_path', $db_val);
                     $success .= " และอัปโหลดลายเซ็นใบเสร็จสำเร็จ";
-                } else {
-                    $error = "เกิดข้อผิดพลาดในการอัปโหลดไฟล์ลายเซ็นใบเสร็จ";
                 }
-            } else {
-                $error = "อนุญาตเฉพาะไฟล์รูปภาพ (JPG, PNG)";
             }
         }
     }
@@ -76,14 +78,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         // Handle File Upload (Permit)
         if (isset($_FILES['permit_signature_file']) && $_FILES['permit_signature_file']['error'] === UPLOAD_ERR_OK) {
-            $allowed = ['jpg', 'jpeg', 'png'];
-            $filename = $_FILES['permit_signature_file']['name'];
-            $ext = strtolower(pathinfo($filename, PATHINFO_EXTENSION));
+            $allowed_mimes_p = ['image/jpeg', 'image/png'];
+            $max_size_p = 5 * 1024 * 1024; // 5MB
+            $finfo_p = new finfo(FILEINFO_MIME_TYPE);
+            $real_mime_p = $finfo_p->file($_FILES['permit_signature_file']['tmp_name']);
+            $ext = strtolower(pathinfo($_FILES['permit_signature_file']['name'], PATHINFO_EXTENSION));
 
-            if (in_array($ext, $allowed)) {
+            if (!in_array($real_mime_p, $allowed_mimes_p)) {
+                $error = "ไฟล์ลายเซ็นใบอนุญาตต้องเป็น JPG หรือ PNG เท่านั้น";
+            } elseif ($_FILES['permit_signature_file']['size'] > $max_size_p) {
+                $error = "ไฟล์ลายเซ็นใบอนุญาตมีขนาดเกิน 5MB";
+            } else {
                 $upload_dir = '../uploads/signatures/';
                 if (!file_exists($upload_dir)) {
-                    mkdir($upload_dir, 0777, true);
+                    mkdir($upload_dir, 0755, true);
                 }
 
                 $new_filename = 'permit_sig_' . time() . '.' . $ext;
@@ -93,11 +101,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     $db_val = 'uploads/signatures/' . $new_filename;
                     updateSetting($conn, 'permit_signature_path', $db_val);
                     $success .= " และอัปโหลดลายเซ็นใบอนุญาตสำเร็จ";
-                } else {
-                    $error = "เกิดข้อผิดพลาดในการอัปโหลดไฟล์ลายเซ็นใบอนุญาต";
                 }
-            } else {
-                $error = "อนุญาตเฉพาะไฟล์รูปภาพ (JPG, PNG)";
             }
         }
     }

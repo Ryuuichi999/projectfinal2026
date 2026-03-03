@@ -1,6 +1,6 @@
 <?php
-session_start();
 require 'includes/db.php';
+require_once 'includes/csrf_helper.php';
 
 if (!isset($_SESSION['line_login_data'])) {
     header("Location: login.php");
@@ -13,6 +13,7 @@ $success = false;
 
 // จัดการการส่งฟอร์ม (ทั้งเชื่อมบัญชีเดิม และ สมัครใหม่)
 if (isset($_POST['action'])) {
+    csrf_check();
     $citizen_id = $_POST['citizen_id'];
     $line_user_id = $line_data['userId'];
 
@@ -70,7 +71,8 @@ if (isset($_POST['action'])) {
                 $success = true;
                 $redirect_to = 'users/index.php';
             } else {
-                $error = "เกิดข้อผิดพลาดในการบันทึกข้อมูล: " . $conn->error;
+                error_log("register_line insert error: " . $conn->error);
+                $error = "เกิดข้อผิดพลาดในการบันทึกข้อมูล กรุณาลองใหม่อีกครั้ง";
             }
         }
     }
@@ -141,6 +143,7 @@ if (isset($_POST['action'])) {
                             <!-- Form เชื่อมบัญชีเดิม -->
                             <div class="tab-pane fade show active" id="pills-link" role="tabpanel">
                                 <form method="post">
+                                    <?= csrf_field() ?>
                                     <input type="hidden" name="action" value="link_old">
                                     <div class="mb-3">
                                         <label>เลขบัตรประชาชน</label>
@@ -157,6 +160,7 @@ if (isset($_POST['action'])) {
                             <!-- Form สมัครใหม่ -->
                             <div class="tab-pane fade" id="pills-new" role="tabpanel">
                                 <form method="post">
+                                    <?= csrf_field() ?>
                                     <input type="hidden" name="action" value="register_new">
                                     <div class="mb-2">
                                         <label>คำนำหน้า</label>
