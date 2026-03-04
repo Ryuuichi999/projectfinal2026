@@ -56,7 +56,7 @@ $expiring_sql = "SELECT id, sign_type, permit_no, road_name,
     DATE_ADD(COALESCE(permit_date, created_at), INTERVAL duration_days DAY) as expire_date
     FROM sign_requests
     WHERE user_id = ? AND status = 'approved'
-    AND DATE_ADD(COALESCE(permit_date, created_at), INTERVAL duration_days DAY) BETWEEN CURDATE() AND DATE_ADD(CURDATE(), INTERVAL 30 DAY)
+    AND DATE_ADD(COALESCE(permit_date, created_at), INTERVAL duration_days DAY) BETWEEN CURDATE() AND DATE_ADD(CURDATE(), INTERVAL 7 DAY)
     ORDER BY expire_date ASC LIMIT 5";
 $stmtExp = $conn->prepare($expiring_sql);
 $stmtExp->bind_param("i", $user_id);

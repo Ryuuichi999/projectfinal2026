@@ -377,7 +377,7 @@ if (isset($_POST['submit'])) {
                         required>
                 </div>
                 <div class="form-line">
-                    <label>อีเมล (สำหรับรับแจ้งเตือน)</label>
+                    <label>อีเมล</label>
                     <input type="email" name="email" class="form-input-line w-full" value="<?= $me['email'] ?? '' ?>"
                         required placeholder="example@mail.com">
                 </div>

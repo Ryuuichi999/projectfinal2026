@@ -60,7 +60,7 @@ while ($s = $status_query->fetch_assoc()) {
     $status_counts[$s['status']] = (int) $s['c'];
 }
 
-// ป้ายใกล้หมดอายุ (30 วัน)
+// ป้ายใกล้หมดอายุ (7 วัน)
 $thai_months_short = ['', 'ม.ค.', 'ก.พ.', 'มี.ค.', 'เม.ย.', 'พ.ค.', 'มิ.ย.', 'ก.ค.', 'ส.ค.', 'ก.ย.', 'ต.ค.', 'พ.ย.', 'ธ.ค.'];
 
 $expiring_sql = "SELECT r.*, u.first_name, u.last_name,
@@ -68,7 +68,7 @@ $expiring_sql = "SELECT r.*, u.first_name, u.last_name,
     FROM sign_requests r
     JOIN users u ON r.user_id = u.id
     WHERE r.status = 'approved'
-    AND DATE_ADD(COALESCE(r.permit_date, r.created_at), INTERVAL r.duration_days DAY) BETWEEN CURDATE() AND DATE_ADD(CURDATE(), INTERVAL 30 DAY)
+    AND DATE_ADD(COALESCE(r.permit_date, r.created_at), INTERVAL r.duration_days DAY) BETWEEN CURDATE() AND DATE_ADD(CURDATE(), INTERVAL 7 DAY)
     ORDER BY expire_date ASC";
 $expiring_result = $conn->query($expiring_sql);
 
@@ -192,7 +192,7 @@ $recent_result = $conn->query($sql_recent);
         <!-- ===== ป้ายใกล้หมดอายุ ===== -->
         <?php if ($expiring_result && $expiring_result->num_rows > 0): ?>
             <div class="card shadow-sm p-4 mb-4">
-                <h5 class="mb-3"><i class="bi bi-clock-fill text-warning me-2"></i>ป้ายใกล้หมดอายุ (30 วันข้างหน้า)
+                <h5 class="mb-3"><i class="bi bi-clock-fill text-warning me-2"></i>ป้ายใกล้หมดอายุ (7 วันข้างหน้า)
                     <span class="badge bg-warning text-dark"><?= $expiring_result->num_rows ?></span>
                 </h5>
                 <div class="table-responsive">
