@@ -51,8 +51,7 @@ $status_badge = '';
 $is_valid = false;
 if ($request['status'] == 'approved') {
     // Check expiry based on permit_date (official issue date)
-    $base_date = !empty($request['permit_date']) ? $request['permit_date'] : $request['created_at'];
-    $expire_date = date('Y-m-d', strtotime($base_date . ' + ' . $request['duration_days'] . ' days'));
+    $expire_date = !empty($request['end_date']) ? $request['end_date'] : date('Y-m-d', strtotime((!empty($request['permit_date']) ? $request['permit_date'] : $request['created_at']) . ' + ' . $request['duration_days'] . ' days'));
     if (date('Y-m-d') <= $expire_date) {
         $status_badge = '<span class="badge bg-success fs-5"><i class="bi bi-check-circle-fill"></i> ใบอนุญาตถูกต้อง</span>';
         $is_valid = true;

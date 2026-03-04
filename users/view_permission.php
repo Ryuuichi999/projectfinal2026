@@ -52,8 +52,8 @@ $signer_pos = !empty($request['permit_signer_position'])
     : getSetting($conn, 'permit_signer_position', 'นายกเทศมนตรีเมืองศิลา');
 $p_sig_path = getSetting($conn, 'permit_signature_path', '');
 
-$permit_start = !empty($request['permit_date']) ? $request['permit_date'] : $request['created_at'];
-$permit_end   = date('Y-m-d', strtotime($permit_start . ' + ' . ($request['duration_days'] - 1) . ' days'));
+$permit_start = !empty($request['install_date']) ? $request['install_date'] : (!empty($request['permit_date']) ? $request['permit_date'] : $request['created_at']);
+$permit_end   = !empty($request['end_date']) ? $request['end_date'] : date('Y-m-d', strtotime($permit_start . ' + ' . ($request['duration_days'] - 1) . ' days'));
 $safe_permit_no = str_replace('/', '-', $request['permit_no']);
 
 // เตรียม base64 ของลายเซ็นเพื่อใช้ใน PDF (หลีกเลี่ยงปัญหา CORS)

@@ -53,11 +53,11 @@ while ($row = $resultRecent->fetch_assoc()) {
 
 // 4. ป้ายใกล้หมดอายุของผู้ใช้
 $expiring_sql = "SELECT id, sign_type, permit_no, road_name,
-    DATE_ADD(COALESCE(permit_date, created_at), INTERVAL duration_days DAY) as expire_date
+    end_date as expire_date
     FROM sign_requests
     WHERE user_id = ? AND status = 'approved'
-    AND DATE_ADD(COALESCE(permit_date, created_at), INTERVAL duration_days DAY) BETWEEN CURDATE() AND DATE_ADD(CURDATE(), INTERVAL 7 DAY)
-    ORDER BY expire_date ASC LIMIT 5";
+    AND end_date BETWEEN CURDATE() AND DATE_ADD(CURDATE(), INTERVAL 7 DAY)
+    ORDER BY end_date ASC LIMIT 5";
 $stmtExp = $conn->prepare($expiring_sql);
 $stmtExp->bind_param("i", $user_id);
 $stmtExp->execute();
@@ -65,10 +65,10 @@ $expiringPermits = $stmtExp->get_result();
 
 // 5. คำร้องที่หมดอายุแล้ว
 $expired_sql = "SELECT id, sign_type, road_name,
-    DATE_ADD(COALESCE(permit_date, created_at), INTERVAL duration_days DAY) as expire_date
+    end_date as expire_date
     FROM sign_requests
     WHERE user_id = ? AND status = 'expired'
-    ORDER BY expire_date DESC";
+    ORDER BY end_date DESC";
 $stmtExpired = $conn->prepare($expired_sql);
 $stmtExpired->bind_param("i", $user_id);
 $stmtExpired->execute();

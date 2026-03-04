@@ -43,23 +43,17 @@ $warned_count = 0;
 // ส่วนที่ 1: ใบอนุญาตที่หมดอายุแล้ว → เปลี่ยนสถานะเป็น expired
 // ═══════════════════════════════════════════════
 $sql_expired = "SELECT sr.id, sr.email, sr.applicant_name, sr.sign_type, sr.fee,
-                       sr.duration_days, sr.permit_date, sr.created_at, sr.road_name
+                       sr.duration_days, sr.permit_date, sr.created_at, sr.road_name, sr.end_date
                 FROM sign_requests sr
                 WHERE sr.status = 'approved'
-                AND sr.duration_days > 0
-                AND (
-                    -- ใช้ permit_date ถ้ามี ไม่งั้นใช้ created_at
-                    (sr.permit_date IS NOT NULL AND DATE_ADD(sr.permit_date, INTERVAL sr.duration_days DAY) < CURDATE())
-                    OR
-                    (sr.permit_date IS NULL AND DATE_ADD(sr.created_at, INTERVAL sr.duration_days DAY) < CURDATE())
-                )";
+                AND sr.end_date IS NOT NULL
+                AND sr.end_date < CURDATE()";
 
 $result_expired = $conn->query($sql_expired);
 
 while ($row = $result_expired->fetch_assoc()) {
     $request_id = $row['id'];
-    $base_date = !empty($row['permit_date']) ? $row['permit_date'] : date('Y-m-d', strtotime($row['created_at']));
-    $expire_date = date('Y-m-d', strtotime($base_date . ' + ' . $row['duration_days'] . ' days'));
+    $expire_date = $row['end_date'];
     
     cronLog("คำร้อง #{$request_id} — หมดอายุ {$expire_date} → เปลี่ยนเป็น expired", $log_file);
     
@@ -91,25 +85,19 @@ while ($row = $result_expired->fetch_assoc()) {
 $warn_date = date('Y-m-d', strtotime("+{$WARN_BEFORE_DAYS} days"));
 
 $sql_warning = "SELECT sr.id, sr.email, sr.applicant_name, sr.sign_type, sr.fee,
-                       sr.duration_days, sr.permit_date, sr.created_at, sr.road_name
+                       sr.duration_days, sr.permit_date, sr.created_at, sr.road_name, sr.end_date
                 FROM sign_requests sr
                 WHERE sr.status = 'approved'
-                AND sr.duration_days > 0
-                AND (
-                    (sr.permit_date IS NOT NULL AND DATE_ADD(sr.permit_date, INTERVAL sr.duration_days DAY) = ?)
-                    OR
-                    (sr.permit_date IS NULL AND DATE_ADD(DATE(sr.created_at), INTERVAL sr.duration_days DAY) = ?)
-                )";
+                AND sr.end_date = ?";
 
 $stmt_warn = $conn->prepare($sql_warning);
-$stmt_warn->bind_param("ss", $warn_date, $warn_date);
+$stmt_warn->bind_param("s", $warn_date);
 $stmt_warn->execute();
 $result_warning = $stmt_warn->get_result();
 
 while ($row = $result_warning->fetch_assoc()) {
     $request_id = $row['id'];
-    $base_date = !empty($row['permit_date']) ? $row['permit_date'] : date('Y-m-d', strtotime($row['created_at']));
-    $expire_date = date('Y-m-d', strtotime($base_date . ' + ' . $row['duration_days'] . ' days'));
+    $expire_date = $row['end_date'];
     
     cronLog("คำร้อง #{$request_id} — จะหมดอายุใน {$WARN_BEFORE_DAYS} วัน ({$expire_date}) → ส่งเตือน", $log_file);
     
@@ -136,25 +124,19 @@ $followup_count = 0;
 $followup_date = date('Y-m-d', strtotime('-7 days'));
 
 $sql_followup = "SELECT sr.id, sr.email, sr.applicant_name, sr.sign_type, sr.fee,
-                       sr.duration_days, sr.permit_date, sr.created_at, sr.road_name
+                       sr.duration_days, sr.permit_date, sr.created_at, sr.road_name, sr.end_date
                 FROM sign_requests sr
                 WHERE sr.status = 'expired'
-                AND sr.duration_days > 0
-                AND (
-                    (sr.permit_date IS NOT NULL AND DATE_ADD(sr.permit_date, INTERVAL sr.duration_days DAY) = ?)
-                    OR
-                    (sr.permit_date IS NULL AND DATE_ADD(DATE(sr.created_at), INTERVAL sr.duration_days DAY) = ?)
-                )";
+                AND sr.end_date = ?";
 
 $stmt_followup = $conn->prepare($sql_followup);
-$stmt_followup->bind_param("ss", $followup_date, $followup_date);
+$stmt_followup->bind_param("s", $followup_date);
 $stmt_followup->execute();
 $result_followup = $stmt_followup->get_result();
 
 while ($row = $result_followup->fetch_assoc()) {
     $request_id = $row['id'];
-    $base_date = !empty($row['permit_date']) ? $row['permit_date'] : date('Y-m-d', strtotime($row['created_at']));
-    $expire_date = date('Y-m-d', strtotime($base_date . ' + ' . $row['duration_days'] . ' days'));
+    $expire_date = $row['end_date'];
     
     cronLog("คำร้อง #{$request_id} — หมดอายุครบ 7 วัน ({$expire_date}) → ส่งเตือนเก็บป้ายครั้งสุดท้าย", $log_file);
     

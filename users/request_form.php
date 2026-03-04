@@ -33,14 +33,47 @@ if (isset($_POST['submit'])) {
     $description = trim($_POST['description']);
     $email = trim($_POST['email']);
 
-    // วันที่และระยะเวลา
+    // ตรวจสอบประเภทป้าย
+    $allowed_types = ['ไวนิล', 'สติกเกอร์', 'ผ้าใบ', 'Roll-up', 'ไม้อัด'];
+    if (!in_array($sign_type, $allowed_types)) {
+        $message = "ประเภทป้ายไม่ถูกต้อง";
+        $message_type = 'danger';
+    }
+
+    // ตรวจสอบขนาดพื้นที่ ≤1 ตร.ม.
+    $area = $width * $height;
+    if ($area > 1) {
+        $message = "ขนาดพื้นที่ป้ายต้องไม่เกิน 1 ตร.ม. (ปัจจุบัน: " . number_format($area, 2) . " ตร.ม.)";
+        $message_type = 'danger';
+    }
+
+    // ตรวจสอบจำนวน ≤2
+    if ($quantity > 2) {
+        $message = "จำนวนป้ายต้องไม่เกิน 2 ผืน/แผ่น ต่อ 1 คำร้อง";
+        $message_type = 'danger';
+    }
+
+    // ระยะเวลา: คำนวณจากวันเริ่ม-วันสิ้นสุด + ประเภท (ไม่ค้า ≤30 วัน, ค้า ≤60 วัน)
     $install_date = $_POST['install_date'];
     $end_date = $_POST['end_date'];
-    // คำนวณระยะเวลา (วัน)
+    $sign_purpose = $_POST['sign_purpose'] ?? '';
+    if (!in_array($sign_purpose, ['non_commercial', 'commercial'])) {
+        $message = "กรุณาเลือกประเภทการใช้งาน";
+        $message_type = 'danger';
+    }
     $d1 = new DateTime($install_date);
     $d2 = new DateTime($end_date);
-    $interval = $d1->diff($d2);
-    $duration_days = $interval->days + 1; // รวมวันแรก
+    $duration_days = (int) $d1->diff($d2)->days;
+    if ($duration_days < 1) {
+        $message = "วันสิ้นสุดต้องมากกว่าวันเริ่มติดตั้ง";
+        $message_type = 'danger';
+    }
+    $max_days = ($sign_purpose === 'commercial') ? 60 : 30;
+    if ($duration_days > $max_days) {
+        $label = ($sign_purpose === 'commercial') ? 'เป็นการค้า (สูงสุด 60 วัน)' : 'ไม่เป็นการค้า (สูงสุด 30 วัน)';
+        $message = "ระยะเวลาเกินกำหนด: {$duration_days} วัน — {$label}";
+        $message_type = 'danger';
+    }
 
     // พิกัด (Primary)
     $lat = empty($_POST['lat']) ? NULL : (float) $_POST['lat'];
@@ -49,6 +82,10 @@ if (isset($_POST['submit'])) {
     if (is_null($lat) || is_null($lng)) {
         $message = "กรุณาปักหมุดตำแหน่งหลักบนแผนที่";
         $message_type = 'danger';
+    }
+
+    if (!empty($message)) {
+        // หยุดไม่ให้ดำเนินการต่อถ้ามี error
     } else {
         // 2. คำนวณค่าธรรมเนียม (แก้ไข: คิดเหมาป้ายละ 200 บาท ไม่คิดตามขนาด/วัน)
         $fee = 200 * $quantity;
@@ -59,12 +96,12 @@ if (isset($_POST['submit'])) {
             // ตรวจสอบคอลัมน์ใหม่ว่ามีหรือยัง (เผื่อ script update schema ยังไม่รัน)
             // แต่เราสมมติว่ารันแล้วตาม Plan
             $sql = "INSERT INTO sign_requests 
-            (user_id, applicant_name, applicant_address, email, sign_type, width, height, quantity, road_name, location_lat, location_lng, fee, status, duration_days, description) 
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'pending', ?, ?)";
+            (user_id, applicant_name, applicant_address, email, sign_type, width, height, quantity, road_name, location_lat, location_lng, fee, status, duration_days, install_date, end_date, sign_purpose, description) 
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'pending', ?, ?, ?, ?, ?)";
 
             $stmt = $conn->prepare($sql);
             $stmt->bind_param(
-                "issssddisddiis",
+                "issssddisddiissss",
                 $user_id,
                 $applicant_name,
                 $applicant_address,
@@ -78,6 +115,9 @@ if (isset($_POST['submit'])) {
                 $lng,
                 $fee,
                 $duration_days,
+                $install_date,
+                $end_date,
+                $sign_purpose,
                 $description
             );
             $stmt->execute();
@@ -392,23 +432,31 @@ if (isset($_POST['submit'])) {
 
                 <div class="form-line">
                     <label>ประเภทป้าย/สื่อโฆษณา</label>
-                    <input type="text" name="sign_type" class="form-input-line w-300px"
-                        placeholder="เช่น ป้ายคัทเอาท์, ป้ายผ้าใบ" required>
+                    <select name="sign_type" class="form-input-line w-300px" required style="cursor:pointer;">
+                        <option value="">-- เลือกประเภทป้าย --</option>
+                        <option value="ไวนิล">ไวนิล</option>
+                        <option value="สติกเกอร์">สติกเกอร์</option>
+                        <option value="ผ้าใบ">ผ้าใบ</option>
+                        <option value="Roll-up">Roll-up (แขวนชั่วคราว ไม่ยึดถาวร)</option>
+                        <option value="ไม้อัด">ไม้อัด</option>
+                    </select>
                 </div>
 
                 <div class="form-line">
                     <label>ขนาดป้าย กว้าง</label>
-                    <input type="number" step="0.01" name="width" id="width" class="form-input-line w-100px" required>
+                    <input type="number" step="0.01" name="width" id="width" class="form-input-line w-100px" required max="1" min="0.01">
                     <label>เมตร x ยาว/สูง</label>
-                    <input type="number" step="0.01" name="height" id="height" class="form-input-line w-100px" required>
+                    <input type="number" step="0.01" name="height" id="height" class="form-input-line w-100px" required max="1" min="0.01">
                     <label>เมตร</label>
+                    <span id="areaInfo" class="ms-2 badge bg-secondary">พื้นที่: 0 ตร.ม.</span>
                 </div>
+                <div class="text-muted small ms-4 mb-2"><i class="bi bi-info-circle"></i> พื้นที่ป้ายต้องไม่เกิน 1 ตร.ม. / น้ำหนัก ≤10 กก. / ด้านยาวไม่เกิน 1 ม. (ใกล้ทางสาธารณะ)</div>
 
                 <div class="form-line">
                     <label>จำนวน</label>
-                    <input type="number" name="quantity" id="quantity" class="form-input-line w-100px" required min="1"
+                    <input type="number" name="quantity" id="quantity" class="form-input-line w-100px" required min="1" max="2"
                         value="1">
-                    <label>ป้าย</label>
+                    <label>ผืน/แผ่น (สูงสุด 2ผืน/แผ่น ต่อ 1 คำร้อง)</label>
                 </div>
 
                 <div class="form-line">
@@ -454,10 +502,22 @@ if (isset($_POST['submit'])) {
                 <!-- ระยะเวลา -->
                 <div class="section-title mt-3">ระยะเวลาที่ขออนุญาต</div>
                 <div class="form-line">
-                    <label>ตั้งแต่วันที่</label>
-                    <input type="date" name="install_date" class="form-input-line" required>
-                    <label>ถึงวันที่</label>
-                    <input type="date" name="end_date" class="form-input-line" required>
+                    <label class="me-3">ประเภทการใช้งาน:</label>
+                    <div class="form-check form-check-inline">
+                        <input class="form-check-input" type="radio" name="sign_purpose" id="purposeNon" value="non_commercial" required checked>
+                        <label class="form-check-label" for="purposeNon">ไม่เป็นการค้า (สูงสุด 30 วัน)</label>
+                    </div>
+                    <div class="form-check form-check-inline">
+                        <input class="form-check-input" type="radio" name="sign_purpose" id="purposeCom" value="commercial">
+                        <label class="form-check-label" for="purposeCom">เป็นการค้า (สูงสุด 60 วัน)</label>
+                    </div>
+                </div>
+                <div class="form-line">
+                    <label>วันที่เริ่มติดตั้ง</label>
+                    <input type="date" name="install_date" id="install_date" class="form-input-line" required>
+                    <label class="ms-3">ถึงวันที่</label>
+                    <input type="date" name="end_date" id="end_date" class="form-input-line" required>
+                    <span id="durationInfo" class="ms-2 badge bg-secondary"></span>
                 </div>
 
                 <!-- เอกสารแนบ -->
@@ -678,6 +738,73 @@ if (isset($_POST['submit'])) {
                     text: 'จุดที่ท่านเลือกอยู่นอกเขตเทศบาลเมืองศิลา กรุณาเลือกจุดติดตั้งใหม่ภายในขอบเขตสีน้ำเงิน',
                     confirmButtonText: 'ตกลง'
                 });
+            });
+
+            // === คำนวณพื้นที่ป้าย realtime ===
+            function calcArea() {
+                var w = parseFloat(document.getElementById('width').value) || 0;
+                var h = parseFloat(document.getElementById('height').value) || 0;
+                var area = w * h;
+                var badge = document.getElementById('areaInfo');
+                badge.textContent = 'พื้นที่: ' + area.toFixed(2) + ' ตร.ม.';
+                badge.className = area > 1 ? 'ms-2 badge bg-danger' : 'ms-2 badge bg-success';
+            }
+            document.getElementById('width').addEventListener('input', calcArea);
+            document.getElementById('height').addEventListener('input', calcArea);
+
+            // === ตรวจสอบระยะเวลาตามประเภทการใช้งาน ===
+            function checkDuration() {
+                var installDate = document.getElementById('install_date').value;
+                var endDate = document.getElementById('end_date').value;
+                var badge = document.getElementById('durationInfo');
+                if (!installDate || !endDate) { badge.textContent = ''; return; }
+
+                var d1 = new Date(installDate);
+                var d2 = new Date(endDate);
+                var diff = Math.round((d2 - d1) / (1000 * 60 * 60 * 24));
+
+                if (diff < 1) {
+                    badge.textContent = 'วันสิ้นสุดต้องมากกว่าวันเริ่ม';
+                    badge.className = 'ms-2 badge bg-danger';
+                    return;
+                }
+
+                var purpose = document.querySelector('input[name="sign_purpose"]:checked');
+                var maxDays = (purpose && purpose.value === 'commercial') ? 60 : 30;
+                var label = (purpose && purpose.value === 'commercial') ? 'เป็นการค้า' : 'ไม่เป็นการค้า';
+
+                badge.textContent = 'ระยะเวลา: ' + diff + ' วัน';
+
+                if (diff > maxDays) {
+                    badge.className = 'ms-2 badge bg-danger';
+                    Swal.fire({
+                        icon: 'warning',
+                        title: 'ระยะเวลาเกินกำหนด',
+                        html: 'ประเภท <b>' + label + '</b> กำหนดสูงสุด <b>' + maxDays + ' วัน</b><br>ท่านเลือก <b>' + diff + ' วัน</b> กรุณาปรับวันสิ้นสุดใหม่',
+                        confirmButtonText: 'ตกลง'
+                    });
+                } else {
+                    badge.className = 'ms-2 badge bg-success';
+                }
+            }
+            document.getElementById('install_date').addEventListener('change', checkDuration);
+            document.getElementById('end_date').addEventListener('change', checkDuration);
+            document.querySelectorAll('input[name="sign_purpose"]').forEach(function(r) {
+                r.addEventListener('change', checkDuration);
+            });
+
+            // === แจ้งเตือนจำนวนเกิน 2 ===
+            document.getElementById('quantity').addEventListener('input', function() {
+                var qty = parseInt(this.value) || 0;
+                if (qty > 2) {
+                    Swal.fire({
+                        icon: 'warning',
+                        title: 'จำนวนเกินกำหนด',
+                        text: 'สูงสุด 2 ผืน/แผ่น ต่อ 1 คำร้อง',
+                        confirmButtonText: 'ตกลง'
+                    });
+                    this.value = 2;
+                }
             });
         });
     </script>

@@ -21,7 +21,7 @@ $role = $_SESSION['role'];
 // ดึงข้อมูลคำขอ
 if ($role === 'admin' || $role === 'employee') {
     $sql = "SELECT r.*, u.title_name, u.first_name, u.last_name, u.phone, u.email,
-            DATE_ADD(COALESCE(r.permit_date, r.created_at), INTERVAL r.duration_days DAY) as expire_date
+            r.end_date as expire_date
             FROM sign_requests r
             LEFT JOIN users u ON r.user_id = u.id
             WHERE r.id = ?";
@@ -29,7 +29,7 @@ if ($role === 'admin' || $role === 'employee') {
     $stmt->bind_param("i", $request_id);
 } else {
     $sql = "SELECT r.*, u.title_name, u.first_name, u.last_name, u.phone, u.email,
-            DATE_ADD(COALESCE(r.permit_date, r.created_at), INTERVAL r.duration_days DAY) as expire_date
+            r.end_date as expire_date
             FROM sign_requests r
             LEFT JOIN users u ON r.user_id = u.id
             WHERE r.id = ? AND r.user_id = ?";
@@ -450,16 +450,19 @@ $timeline_logs = getRequestLogs($conn, $request_id);
                                 <div class="detail-item">
                                     <div class="detail-label">ระยะเวลาติดตั้ง</div>
                                     <div class="detail-value text-primary">
-                                        <?php $base_dt = !empty($request['permit_date']) ? $request['permit_date'] : $request['created_at']; ?>
                                         <?php
                                         $thMonths = [1=>'ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'];
-                                        $ts1 = strtotime($base_dt);
-                                        $ts2 = strtotime($base_dt . " + {$request['duration_days']} days");
+                                        $ts1 = strtotime($request['install_date'] ?? $request['created_at']);
+                                        $ts2 = strtotime($request['end_date'] ?? $request['created_at']);
                                         echo date('j', $ts1) . ' ' . $thMonths[(int)date('n', $ts1)] . ' ' . (date('Y', $ts1)+543);
                                         echo ' - ';
                                         echo date('j', $ts2) . ' ' . $thMonths[(int)date('n', $ts2)] . ' ' . (date('Y', $ts2)+543);
                                         ?>
-                                        (<?= $request['duration_days'] ?> วัน)
+                                        <?php if (!empty($request['sign_purpose'])): ?>
+                                            <span class="badge <?= $request['sign_purpose'] === 'commercial' ? 'bg-warning text-dark' : 'bg-info' ?>">
+                                                <?= $request['sign_purpose'] === 'commercial' ? 'เป็นการค้า' : 'ไม่เป็นการค้า' ?>
+                                            </span>
+                                        <?php endif; ?>
                                     </div>
                                 </div>
                             </div>
@@ -495,8 +498,7 @@ $timeline_logs = getRequestLogs($conn, $request_id);
 
                 <!-- Expired Alert Banner -->
                 <?php if ($request['status'] === 'expired'):
-                    $exp_base = !empty($request['permit_date']) ? $request['permit_date'] : date('Y-m-d', strtotime($request['created_at']));
-                    $exp_expire = date('Y-m-d', strtotime($exp_base . ' + ' . $request['duration_days'] . ' days'));
+                    $exp_expire = $request['end_date'] ?? date('Y-m-d');
                     $exp_date_str = date('d/m/Y', strtotime($exp_expire));
                     $days_since = (int)((time() - strtotime($exp_expire)) / 86400);
                     $days_remain = max(0, 7 - $days_since);

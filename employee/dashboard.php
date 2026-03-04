@@ -64,21 +64,21 @@ while ($s = $status_query->fetch_assoc()) {
 $thai_months_short = ['', 'ม.ค.', 'ก.พ.', 'มี.ค.', 'เม.ย.', 'พ.ค.', 'มิ.ย.', 'ก.ค.', 'ส.ค.', 'ก.ย.', 'ต.ค.', 'พ.ย.', 'ธ.ค.'];
 
 $expiring_sql = "SELECT r.*, u.first_name, u.last_name,
-    DATE_ADD(COALESCE(r.permit_date, r.created_at), INTERVAL r.duration_days DAY) as expire_date
+    r.end_date as expire_date
     FROM sign_requests r
     JOIN users u ON r.user_id = u.id
     WHERE r.status = 'approved'
-    AND DATE_ADD(COALESCE(r.permit_date, r.created_at), INTERVAL r.duration_days DAY) BETWEEN CURDATE() AND DATE_ADD(CURDATE(), INTERVAL 7 DAY)
-    ORDER BY expire_date ASC";
+    AND r.end_date BETWEEN CURDATE() AND DATE_ADD(CURDATE(), INTERVAL 7 DAY)
+    ORDER BY r.end_date ASC";
 $expiring_result = $conn->query($expiring_sql);
 
 $expired_sql = "SELECT r.*, u.first_name, u.last_name,
-    DATE_ADD(COALESCE(r.permit_date, r.created_at), INTERVAL r.duration_days DAY) as expire_date
+    r.end_date as expire_date
     FROM sign_requests r
     JOIN users u ON r.user_id = u.id
     WHERE r.status = 'approved'
-    AND DATE_ADD(COALESCE(r.permit_date, r.created_at), INTERVAL r.duration_days DAY) < CURDATE()
-    ORDER BY expire_date DESC
+    AND r.end_date < CURDATE()
+    ORDER BY r.end_date DESC
     LIMIT 20";
 $expired_result = $conn->query($expired_sql);
 

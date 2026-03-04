@@ -83,7 +83,7 @@ $receipt_result = $receipt_stmt->get_result();
 
 // 5. ใบอนุญาตที่ออกแล้ว
 $permit_sql = "SELECT r.*, u.title_name, u.first_name, u.last_name,
-    DATE_ADD(COALESCE(r.permit_date, r.created_at), INTERVAL r.duration_days DAY) as expire_date
+    r.end_date as expire_date
     FROM sign_requests r JOIN users u ON r.user_id = u.id
     WHERE r.permit_no IS NOT NULL AND r.permit_no != '' AND $where_clause
     ORDER BY r.permit_date ASC, r.id ASC";
@@ -151,7 +151,7 @@ if (isset($_GET['export'])) {
     } elseif ($export_tab === 'permits') {
         header('Content-Disposition: attachment; filename="permits_' . $suffix . '.csv"');
         fputcsv($out, ['#', 'เลขที่ใบอนุญาต', 'วันที่ออก', 'ชื่อ-นามสกุล', 'ประเภทป้าย', 'ขนาด', 'ค่าธรรมเนียม', 'วันหมดอายุ']);
-        $ex_sql = "SELECT r.*, u.title_name, u.first_name, u.last_name, DATE_ADD(COALESCE(r.permit_date, r.created_at), INTERVAL r.duration_days DAY) as expire_date FROM sign_requests r JOIN users u ON r.user_id = u.id WHERE r.permit_no IS NOT NULL AND r.permit_no != '' AND $where_clause ORDER BY r.id";
+        $ex_sql = "SELECT r.*, u.title_name, u.first_name, u.last_name, r.end_date as expire_date FROM sign_requests r JOIN users u ON r.user_id = u.id WHERE r.permit_no IS NOT NULL AND r.permit_no != '' AND $where_clause ORDER BY r.id";
         $ex_stmt = $conn->prepare($ex_sql);
         $ex_stmt->bind_param($params_types, ...$params_values);
         $ex_stmt->execute();

@@ -93,7 +93,7 @@ if (!isset($_SESSION['user_id'])) {
                                 </thead>
                                 <tbody>
                                     <?php
-                                    $sql = "SELECT *, DATE_ADD(COALESCE(permit_date, created_at), INTERVAL duration_days DAY) as expire_date FROM sign_requests WHERE user_id=? ORDER BY id DESC";
+                                    $sql = "SELECT *, end_date as expire_date FROM sign_requests WHERE user_id=? ORDER BY id DESC";
                                     $stmt = $conn->prepare($sql);
                                     $stmt->bind_param("i", $_SESSION['user_id']);
                                     $stmt->execute();

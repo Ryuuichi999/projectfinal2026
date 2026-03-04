@@ -7,7 +7,7 @@ $approved_signs = [];
 $approved_rows = [];
 
 // ดึงเฉพาะคำขอที่อนุมัติแล้ว + มีพิกัด
-$result_signs = $conn->query("SELECT r.id, r.location_lat, r.location_lng, r.sign_type, r.permit_no, r.road_name, r.width, r.height, r.quantity, r.duration_days, r.permit_date, r.created_at
+$result_signs = $conn->query("SELECT r.id, r.location_lat, r.location_lng, r.sign_type, r.permit_no, r.road_name, r.width, r.height, r.quantity, r.duration_days, r.end_date, r.permit_date
     FROM sign_requests r
     WHERE r.status = 'approved' AND r.location_lat IS NOT NULL AND r.location_lng IS NOT NULL
     ORDER BY r.id DESC");
@@ -15,12 +15,8 @@ $result_signs = $conn->query("SELECT r.id, r.location_lat, r.location_lng, r.sig
 if ($result_signs && $result_signs->num_rows > 0) {
     while ($row = $result_signs->fetch_assoc()) {
         // กรองป้ายที่หมดอายุแล้วออก
-        $base = !empty($row['permit_date']) ? $row['permit_date'] : ($row['created_at'] ? date('Y-m-d', strtotime($row['created_at'])) : null);
-        $dur = (int)($row['duration_days'] ?? 0);
-        if ($base && $dur > 0) {
-            $expire = date('Y-m-d', strtotime($base . " + {$dur} days"));
-            if ($expire < date('Y-m-d')) continue;
-        }
+        if (!empty($row['end_date']) && $row['end_date'] < date('Y-m-d')) continue;
+        $expire_str = !empty($row['end_date']) ? date('d/m/Y', strtotime($row['end_date'])) : '-';
         $approved_signs[] = [
             'id' => (int) $row['id'],
             'lat' => (float) $row['location_lat'],
@@ -31,6 +27,7 @@ if ($result_signs && $result_signs->num_rows > 0) {
             'size' => $row['width'] . 'x' . $row['height'] . ' ม.',
             'qty' => (int) $row['quantity'],
             'duration' => (int) ($row['duration_days'] ?? 0),
+            'expire' => $expire_str,
             'permit_date' => $row['permit_date'] ? date('d/m/Y', strtotime($row['permit_date'])) : '-'
         ];
         $approved_rows[] = end($approved_signs);
@@ -272,7 +269,7 @@ $unique_roads = count(array_filter(array_unique(array_column($approved_signs, 'r
                                     <th>ประเภทป้าย</th>
                                     <th>ถนน/สถานที่</th>
                                     <th>ขนาด</th>
-                                    <th>ระยะเวลา</th>
+                                    <th>หมดอายุ</th>
                                 </tr>
                             </thead>
                             <tbody id="tableBody"></tbody>
@@ -432,7 +429,7 @@ $unique_roads = count(array_filter(array_unique(array_column($approved_signs, 'r
                         + '<td>' + r.type + '</td>'
                         + '<td class="road-cell" title="' + r.road + '">' + r.road + '</td>'
                         + '<td class="text-nowrap">' + r.size + '</td>'
-                        + '<td>' + (r.duration ? r.duration + ' วัน' : '-') + '</td>'
+                        + '<td>' + (r.expire || '-') + '</td>'
                         + '</tr>';
                 }).join('');
             }

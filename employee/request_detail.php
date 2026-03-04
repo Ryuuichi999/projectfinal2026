@@ -485,10 +485,19 @@ $result_docs = $stmt_docs->get_result();
                                     <div class="detail-item">
                                         <div class="detail-label">ระยะเวลาติดตั้ง</div>
                                         <div class="detail-value text-primary">
-                                            <?php $base = !empty($request['permit_date']) ? $request['permit_date'] : $request['created_at']; ?>
-                                            <?= date('d M Y', strtotime($base)) ?> -
-                                            <?= date('d M Y', strtotime($base . " + {$request['duration_days']} days")) ?>
-                                            (<?= $request['duration_days'] ?> วัน)
+                                            <?php
+                                            $thM = [1=>'ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'];
+                                            $ts_s = strtotime($request['install_date'] ?? $request['created_at']);
+                                            $ts_e = strtotime($request['end_date'] ?? $request['created_at']);
+                                            echo date('j', $ts_s) . ' ' . $thM[(int)date('n', $ts_s)] . ' ' . (date('Y', $ts_s)+543);
+                                            echo ' - ';
+                                            echo date('j', $ts_e) . ' ' . $thM[(int)date('n', $ts_e)] . ' ' . (date('Y', $ts_e)+543);
+                                            ?>
+                                            <?php if (!empty($request['sign_purpose'])): ?>
+                                                <span class="badge <?= $request['sign_purpose'] === 'commercial' ? 'bg-warning text-dark' : 'bg-info' ?>">
+                                                    <?= $request['sign_purpose'] === 'commercial' ? 'เป็นการค้า' : 'ไม่เป็นการค้า' ?>
+                                                </span>
+                                            <?php endif; ?>
                                         </div>
                                     </div>
                                 </div>

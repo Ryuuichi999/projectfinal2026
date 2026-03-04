@@ -15,7 +15,7 @@ $userId = isset($_SESSION['user_id']) ? (int) $_SESSION['user_id'] : 0;
 // ดึงข้อมูลคำร้องที่มีพิกัดและสถานะ เพื่อแสดงบนแผนที่
 // แสดงเฉพาะคำร้องของ user เอง ที่ได้รับอนุมัติแล้ว และยังไม่หมดอายุ
 $approved_signs = [];
-$stmt = $conn->prepare("SELECT id, location_lat, location_lng, sign_type, road_name, status, duration_days, permit_date, created_at 
+$stmt = $conn->prepare("SELECT id, location_lat, location_lng, sign_type, road_name, status, end_date 
                          FROM sign_requests 
                          WHERE user_id = ? 
                          AND status = 'approved' 
@@ -25,13 +25,8 @@ $stmt->execute();
 $result_signs = $stmt->get_result();
 if ($result_signs && $result_signs->num_rows > 0) {
     while ($row = $result_signs->fetch_assoc()) {
-        // คำนวณวันหมดอายุ — ถ้าหมดอายุแล้วไม่แสดง
-        $base = !empty($row['permit_date']) ? $row['permit_date'] : ($row['created_at'] ? date('Y-m-d', strtotime($row['created_at'])) : null);
-        $dur = (int)($row['duration_days'] ?? 0);
-        if ($base && $dur > 0) {
-            $expire = date('Y-m-d', strtotime($base . " + {$dur} days"));
-            if ($expire < date('Y-m-d')) continue; // หมดอายุแล้ว ข้าม
-        }
+        // กรองป้ายที่หมดอายุแล้วออก
+        if (!empty($row['end_date']) && $row['end_date'] < date('Y-m-d')) continue;
         $approved_signs[] = [
             'id' => (int) $row['id'],
             'lat' => (float) $row['location_lat'],
@@ -44,7 +39,7 @@ if ($result_signs && $result_signs->num_rows > 0) {
 }
 
 $approved_rows = [];
-$stmt_rows = $conn->prepare("SELECT r.id, r.sign_type, r.road_name, r.description, r.duration_days, r.permit_date, r.permit_no, r.created_at
+$stmt_rows = $conn->prepare("SELECT r.id, r.sign_type, r.road_name, r.description, r.duration_days, r.end_date, r.permit_no
                              FROM sign_requests r 
                              WHERE r.user_id = ? 
                              AND r.status = 'approved'
@@ -55,15 +50,9 @@ $stmt_rows->execute();
 $res_rows = $stmt_rows->get_result();
 if ($res_rows && $res_rows->num_rows > 0) {
     while ($row = $res_rows->fetch_assoc()) {
-        // คำนวณวันหมดอายุ — ถ้าหมดอายุแล้วไม่แสดง
-        $base = !empty($row['permit_date']) ? $row['permit_date'] : ($row['created_at'] ? date('Y-m-d', strtotime($row['created_at'])) : null);
-        $dur = (int)($row['duration_days'] ?? 0);
-        $expire_str = '';
-        if ($base && $dur > 0) {
-            $expire = date('Y-m-d', strtotime($base . " + {$dur} days"));
-            if ($expire < date('Y-m-d')) continue; // หมดอายุแล้ว ข้าม
-            $expire_str = date('d/m/Y', strtotime($expire));
-        }
+        // กรองป้ายที่หมดอายุแล้วออก
+        if (!empty($row['end_date']) && $row['end_date'] < date('Y-m-d')) continue;
+        $expire_str = !empty($row['end_date']) ? date('d/m/Y', strtotime($row['end_date'])) : '';
         $approved_rows[] = [
             'id' => (int) $row['id'],
             'type' => htmlspecialchars($row['sign_type']),
