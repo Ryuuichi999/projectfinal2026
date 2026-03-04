@@ -203,11 +203,6 @@ if (isset($_GET['export'])) {
         .print-header { display:none; }
         .pg-controls { display:flex; justify-content:start; align-items:center; flex-wrap:wrap; gap:8px; margin-bottom:10px; }
         .pg-controls select { width:auto; display:inline-block; font-size:.82rem; }
-       .pg-status {
-    font-size: 0.75rem;   /* เล็กลง */
-    color: #9aa0a6;       /* จางลง */
-    margin-top: 2px;
-}
         .pg-nav { display:flex; gap:4px; }
         .pg-nav button { border:1px solid #dee2e6; background:#fff; border-radius:6px; padding:4px 10px; font-size:.82rem; cursor:pointer; color:#333; }
         .pg-nav button:hover:not(:disabled) { background:#e9ecef; }
@@ -241,28 +236,33 @@ if (isset($_GET['export'])) {
     <div class="content fade-in-up">
         <h2 class="mb-4">📊 รายงาน</h2>
 
-        <!-- ─── ตัวกรอง ─── -->
+        <!-- ─── ตัวกรอง + แท็บ ─── -->
         <div class="filter-bar no-print">
-            <form method="GET" class="row g-3 align-items-end">
-                <input type="hidden" name="tab" value="<?= htmlspecialchars($tab) ?>">
-                <div class="col-auto">
-                    <label class="form-label small fw-bold">ปี</label>
-                    <select name="year" class="form-select form-select-sm" onchange="this.form.submit()">
+            <div class="d-flex align-items-center flex-wrap gap-2">
+                <form method="GET" class="d-flex align-items-center gap-2 mb-0 me-auto">
+                    <input type="hidden" name="tab" value="<?= htmlspecialchars($tab) ?>">
+                    <label class="form-label small fw-bold mb-0">ปี</label>
+                    <select name="year" class="form-select form-select-sm" style="width:auto;" onchange="this.form.submit()">
                         <?php foreach ($available_years as $y): ?>
                             <option value="<?= $y ?>" <?= $y == $year ? 'selected' : '' ?>><?= $y + 543 ?></option>
                         <?php endforeach; ?>
                     </select>
-                </div>
-                <div class="col-auto">
-                    <label class="form-label small fw-bold">เดือน</label>
-                    <select name="month" class="form-select form-select-sm" onchange="this.form.submit()">
+                    <label class="form-label small fw-bold mb-0">เดือน</label>
+                    <select name="month" class="form-select form-select-sm" style="width:auto;" onchange="this.form.submit()">
                         <option value="0" <?= $month == 0 ? 'selected' : '' ?>>ทั้งปี</option>
                         <?php for ($m = 1; $m <= 12; $m++): ?>
                             <option value="<?= $m ?>" <?= $m == $month ? 'selected' : '' ?>><?= $thai_months_full[$m] ?></option>
                         <?php endfor; ?>
                     </select>
-                </div>
-            </form>
+                </form>
+                <ul class="nav nav-tabs border-0 mb-0 mt-2" role="tablist" style="gap:5px;">
+                    <li class="nav-item"><a class="nav-link py-1 px-3 <?= $tab === 'summary' ? 'active' : '' ?>" href="?year=<?= $year ?>&month=<?= $month ?>&tab=summary"><i class="bi bi-graph-up me-1"></i>สรุปภาพรวม</a></li>
+                    <li class="nav-item"><a class="nav-link py-1 px-3 <?= $tab === 'revenue' ? 'active' : '' ?>" href="?year=<?= $year ?>&month=<?= $month ?>&tab=revenue"><i class="bi bi-cash-stack me-1"></i>รายได้</a></li>
+                    <li class="nav-item"><a class="nav-link py-1 px-3 <?= $tab === 'receipts' ? 'active' : '' ?>" href="?year=<?= $year ?>&month=<?= $month ?>&tab=receipts"><i class="bi bi-receipt me-1"></i>ใบเสร็จ <span class="badge bg-secondary"><?= $receipt_result->num_rows ?></span></a></li>
+                    <li class="nav-item"><a class="nav-link py-1 px-3 <?= $tab === 'permits' ? 'active' : '' ?>" href="?year=<?= $year ?>&month=<?= $month ?>&tab=permits"><i class="bi bi-file-earmark-check me-1"></i>ใบอนุญาต <span class="badge bg-secondary"><?= $permit_result->num_rows ?></span></a></li>
+                    <li class="nav-item"><a class="nav-link py-1 px-3 <?= $tab === 'requests' ? 'active' : '' ?>" href="?year=<?= $year ?>&month=<?= $month ?>&tab=requests"><i class="bi bi-list-ul me-1"></i>คำร้องทั้งหมด <span class="badge bg-secondary"><?= $all_result->num_rows ?></span></a></li>
+                </ul>
+            </div>
         </div>
 
         <!-- ─── สถิติสรุป ─── -->
@@ -274,15 +274,6 @@ if (isset($_GET['export'])) {
             <div class="col-md-2 col-6"><div class="stat-card"><div class="stat-number text-danger"><?= number_format($stats['rejected']) ?></div><div class="stat-label">ปฏิเสธ</div></div></div>
             <div class="col-md-2 col-6"><div class="stat-card" style="border-top:3px solid #28a745;"><div class="stat-number text-success"><?= number_format($stats['total_fee']) ?></div><div class="stat-label">ค่าธรรมเนียมรวม</div></div></div>
         </div>
-
-        <!-- ═══════ TABS ═══════ -->
-        <ul class="nav nav-tabs mb-3 no-print" role="tablist">
-            <li class="nav-item"><a class="nav-link <?= $tab === 'summary' ? 'active' : '' ?>" href="?year=<?= $year ?>&month=<?= $month ?>&tab=summary"><i class="bi bi-graph-up me-1"></i>สรุปภาพรวม</a></li>
-            <li class="nav-item"><a class="nav-link <?= $tab === 'revenue' ? 'active' : '' ?>" href="?year=<?= $year ?>&month=<?= $month ?>&tab=revenue"><i class="bi bi-cash-stack me-1"></i>รายได้</a></li>
-            <li class="nav-item"><a class="nav-link <?= $tab === 'receipts' ? 'active' : '' ?>" href="?year=<?= $year ?>&month=<?= $month ?>&tab=receipts"><i class="bi bi-receipt me-1"></i>ใบเสร็จ <span class="badge bg-secondary"><?= $receipt_result->num_rows ?></span></a></li>
-            <li class="nav-item"><a class="nav-link <?= $tab === 'permits' ? 'active' : '' ?>" href="?year=<?= $year ?>&month=<?= $month ?>&tab=permits"><i class="bi bi-file-earmark-check me-1"></i>ใบอนุญาต <span class="badge bg-secondary"><?= $permit_result->num_rows ?></span></a></li>
-            <li class="nav-item"><a class="nav-link <?= $tab === 'requests' ? 'active' : '' ?>" href="?year=<?= $year ?>&month=<?= $month ?>&tab=requests"><i class="bi bi-list-ul me-1"></i>คำร้องทั้งหมด <span class="badge bg-secondary"><?= $all_result->num_rows ?></span></a></li>
-        </ul>
 
         <!-- ═══════ TAB: สรุปภาพรวม ═══════ -->
         <?php if ($tab === 'summary'): ?>
@@ -389,6 +380,7 @@ if (isset($_GET['export'])) {
                 <a href="?year=<?= $year ?>&month=<?= $month ?>&export=revenue" class="btn btn-outline-success btn-sm tab-export-btn no-print" target="_blank"><i class="bi bi-file-earmark-spreadsheet me-1"></i>Export CSV</a>
             </div>
             <?php if ($month == 0): ?>
+            <h6 class="fw-bold mb-3">📅 สรุปรายได้รายเดือน ปี <?= $year + 543 ?></h6>
             <div class="table-responsive">
                 <table class="table table-bordered table-hover align-middle revenue-table">
                     <thead class="table-light">
@@ -412,7 +404,8 @@ if (isset($_GET['export'])) {
                     </tfoot>
                 </table>
             </div>
-            <div class="mt-4" style="max-height:350px;"><canvas id="revenueChart"></canvas></div>
+            <h6 class="fw-bold mt-4 mb-3">📈 กราฟรายได้รายเดือน ปี <?= $year + 543 ?></h6>
+            <div style="width:100%;"><canvas id="revenueChart"></canvas></div>
             <?php else: ?>
             <div class="text-center py-4">
                 <div class="display-4 text-success fw-bold"><?= number_format($stats['total_fee'], 2) ?> บาท</div>
@@ -610,83 +603,124 @@ if (isset($_GET['export'])) {
         });
     <?php endif; ?>
     // ─── Pagination ───
-    document.querySelectorAll('.pg-table').forEach(function(table) {
-        var tbody = table.querySelector('tbody');
-        if (!tbody) return;
-        var allRows = Array.from(tbody.querySelectorAll('tr'));
-        // Separate data rows from summary/total rows
-        var dataRows = allRows.filter(function(r) { return !r.classList.contains('table-success') && !r.querySelector('.text-muted.py-3'); });
-        var totalRow = allRows.find(function(r) { return r.classList.contains('table-success'); });
-        if (dataRows.length <= 10) return; // No pagination needed for small tables
+   document.querySelectorAll('.pg-table').forEach(function(table) {
 
-        var perPage = 10;
-        var currentPage = 1;
-        var totalPages = Math.ceil(dataRows.length / perPage);
+    var tbody = table.querySelector('tbody');
+    if (!tbody) return;
 
-        // Create bottom controls (dropdown + nav)
-        var navBottom = document.createElement('div');
-        navBottom.className = 'pg-nav-bottom d-flex justify-content-between align-items-center mt-2 no-print';
-        navBottom.innerHTML = '<div class="d-flex flex-column gap-1">' +
-            '<div class="d-flex align-items-center gap-2">' +
-            '<span class="pg-info">แสดง</span>' +
+    var allRows = Array.from(tbody.querySelectorAll('tr'));
+
+    // แยกแถวข้อมูลออกจากแถวรวม/ไม่มีข้อมูล
+    var dataRows = allRows.filter(function(r) {
+        return !r.classList.contains('table-success') &&
+               !r.querySelector('.text-muted.py-3');
+    });
+
+    var totalRow = allRows.find(function(r) {
+        return r.classList.contains('table-success');
+    });
+
+    if (dataRows.length <= 10) return;
+
+    var perPage = 10;
+    var currentPage = 1;
+    var totalPages = Math.ceil(dataRows.length / perPage);
+
+    // สร้าง nav ด้านล่าง (ไม่มี pg-status แล้ว)
+    var navBottom = document.createElement('div');
+    navBottom.className = 'pg-nav-bottom d-flex justify-content-between align-items-center mt-2 no-print';
+
+    navBottom.innerHTML =
+        '<div class="d-flex align-items-center gap-2">' +
+            '<span style="font-size:.85rem;">แสดง</span>' +
             '<select class="form-select form-select-sm pg-per-page" style="width:80px;">' +
-            '<option value="10">10</option><option value="25">25</option><option value="50">50</option><option value="0">ทั้งหมด</option>' +
+                '<option value="10">10</option>' +
+                '<option value="25">25</option>' +
+                '<option value="50">50</option>' +
+                '<option value="0">ทั้งหมด</option>' +
             '</select>' +
-            '<span class="pg-info">รายการ</span>' +
-            '</div>' +
-            '<div class="pg-status"></div>' +
-            '</div>' +
-            '<div class="pg-nav"></div>';
-        table.closest('.table-responsive').after(navBottom);
-        var navDiv = navBottom.querySelector('.pg-nav');
+            '<span style="font-size:.85rem;">รายการ</span>' +
+        '</div>' +
+        '<div class="pg-nav"></div>';
 
-        function render() {
-            totalPages = perPage === 0 ? 1 : Math.ceil(dataRows.length / perPage);
-            if (currentPage > totalPages) currentPage = totalPages;
-            if (currentPage < 1) currentPage = 1;
-            var start = perPage === 0 ? 0 : (currentPage - 1) * perPage;
-            var end = perPage === 0 ? dataRows.length : start + perPage;
+    table.closest('.table-responsive').after(navBottom);
 
-            dataRows.forEach(function(r, i) {
-                r.style.display = (i >= start && i < end) ? '' : 'none';
-            });
-            if (totalRow) totalRow.style.display = '';
+    var navDiv = navBottom.querySelector('.pg-nav');
 
-            navBottom.querySelector('.pg-status').textContent =
-                'แสดง ' + (start + 1) + '-' + Math.min(end, dataRows.length) + ' จาก ' + dataRows.length + ' รายการ';
+    function render() {
 
-            // Build nav buttons
-            var html = '<button class="pg-prev">&laquo;</button>';
-            var maxBtn = 5, half = Math.floor(maxBtn / 2);
-            var s = Math.max(1, currentPage - half);
-            var e = Math.min(totalPages, s + maxBtn - 1);
-            if (e - s < maxBtn - 1) s = Math.max(1, e - maxBtn + 1);
-            for (var p = s; p <= e; p++) {
-                html += '<button class="pg-page' + (p === currentPage ? ' active' : '') + '" data-p="' + p + '">' + p + '</button>';
-            }
-            html += '<button class="pg-next">&raquo;</button>';
-            navDiv.innerHTML = html;
-            navDiv.querySelector('.pg-prev').disabled = currentPage <= 1;
-            navDiv.querySelector('.pg-next').disabled = currentPage >= totalPages;
-            if (totalPages <= 1) navBottom.style.display = 'none'; else navBottom.style.display = '';
+        totalPages = perPage === 0 ? 1 : Math.ceil(dataRows.length / perPage);
+
+        if (currentPage > totalPages) currentPage = totalPages;
+        if (currentPage < 1) currentPage = 1;
+
+        var start = perPage === 0 ? 0 : (currentPage - 1) * perPage;
+        var end   = perPage === 0 ? dataRows.length : start + perPage;
+
+        dataRows.forEach(function(r, i) {
+            r.style.display = (i >= start && i < end) ? '' : 'none';
+        });
+
+        if (totalRow) totalRow.style.display = '';
+
+        // สร้างปุ่มเปลี่ยนหน้า
+        var html = '<button class="pg-prev">&laquo;</button>';
+
+        var maxBtn = 5;
+        var half = Math.floor(maxBtn / 2);
+
+        var s = Math.max(1, currentPage - half);
+        var e = Math.min(totalPages, s + maxBtn - 1);
+
+        if (e - s < maxBtn - 1) {
+            s = Math.max(1, e - maxBtn + 1);
         }
 
-        navBottom.querySelector('.pg-per-page').addEventListener('change', function() {
-            perPage = parseInt(this.value);
-            currentPage = 1;
-            render();
-        });
-        navDiv.addEventListener('click', function(ev) {
-            var btn = ev.target.closest('button');
-            if (!btn || btn.disabled) return;
-            if (btn.classList.contains('pg-prev')) currentPage--;
-            else if (btn.classList.contains('pg-next')) currentPage++;
-            else if (btn.dataset.p) currentPage = parseInt(btn.dataset.p);
-            render();
-        });
+        for (var p = s; p <= e; p++) {
+            html += '<button class="pg-page' + (p === currentPage ? ' active' : '') +
+                    '" data-p="' + p + '">' + p + '</button>';
+        }
+
+        html += '<button class="pg-next">&raquo;</button>';
+
+        navDiv.innerHTML = html;
+
+        navDiv.querySelector('.pg-prev').disabled = currentPage <= 1;
+        navDiv.querySelector('.pg-next').disabled = currentPage >= totalPages;
+
+        if (totalPages <= 1) {
+            navBottom.style.display = 'none';
+        } else {
+            navBottom.style.display = '';
+        }
+    }
+
+    // เปลี่ยนจำนวนต่อหน้า
+    navBottom.querySelector('.pg-per-page').addEventListener('change', function() {
+        perPage = parseInt(this.value);
+        currentPage = 1;
+        render();
+    });
+
+    // กดปุ่มเปลี่ยนหน้า
+    navDiv.addEventListener('click', function(ev) {
+
+        var btn = ev.target.closest('button');
+        if (!btn || btn.disabled) return;
+
+        if (btn.classList.contains('pg-prev')) {
+            currentPage--;
+        } else if (btn.classList.contains('pg-next')) {
+            currentPage++;
+        } else if (btn.dataset.p) {
+            currentPage = parseInt(btn.dataset.p);
+        }
 
         render();
     });
+
+    render();
+});
     </script>
 </body>
 

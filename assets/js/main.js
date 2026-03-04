@@ -38,12 +38,24 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 
-    // Sidebar Toggle
+    // Sidebar Toggle (persist state via localStorage)
     const sidebarToggle = document.getElementById('sidebarToggle');
     if (sidebarToggle) {
-        const toggleSidebar = () => document.body.classList.toggle('sidebar-collapsed');
+        // Restore sidebar state from localStorage (sync both html & body)
+        if (localStorage.getItem('sidebarCollapsed') === 'true') {
+            document.documentElement.classList.add('sidebar-collapsed');
+            document.body.classList.add('sidebar-collapsed');
+        } else {
+            document.documentElement.classList.remove('sidebar-collapsed');
+            document.body.classList.remove('sidebar-collapsed');
+        }
+        const toggleSidebar = () => {
+            var collapsed = !document.body.classList.contains('sidebar-collapsed');
+            document.body.classList.toggle('sidebar-collapsed', collapsed);
+            document.documentElement.classList.toggle('sidebar-collapsed', collapsed);
+            localStorage.setItem('sidebarCollapsed', collapsed);
+        };
         sidebarToggle.addEventListener('click', toggleSidebar);
-        // Fallback: also respond to Enter/Space
         sidebarToggle.addEventListener('keydown', (e) => {
             if (e.key === 'Enter' || e.key === ' ') {
                 e.preventDefault();

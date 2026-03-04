@@ -1,3 +1,4 @@
+<script>if(localStorage.getItem('sidebarCollapsed')==='true')document.body.classList.add('sidebar-collapsed');</script>
 <div class="sidebar">
     <div>
         <a href="/Project2026/users/index.php" class="logo-link d-block text-center mb-4">
