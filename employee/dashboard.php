@@ -126,7 +126,6 @@ $recent_result = $conn->query($sql_recent);
             <div class="col-md-2 col-6"><div class="stat-card" style="border-top:3px solid #17c7f3ff;"><div class="stat-number text-info"><?= number_format($waiting_payment) ?></div><div class="stat-label">รอชำระเงิน</div></div></div>
             <div class="col-md-2 col-6"><div class="stat-card" style="border-top:3px solid #29853fff;"><div class="stat-number text-success"><?= number_format($approved_requests) ?></div><div class="stat-label">อนุมัติแล้ว</div></div></div>
             <div class="col-md-2 col-6"><div class="stat-card" style="border-top:3px solid #ff0303ff;"><div class="stat-number text-danger"><?= number_format($rejected_requests) ?></div><div class="stat-label">ปฏิเสธ</div></div></div>
-            <div class="col-md-2 col-6"><div class="stat-card" style="border-top:3px solid #dc3545;"><div class="stat-number text-danger"><?= number_format($expired_requests) ?></div><div class="stat-label">หมดอายุ</div></div></div>
             <div class="col-md-2 col-6"><div class="stat-card" style="border-top:3px solid #28a745;"><div class="stat-number text-success"><?= number_format($receipts_issued) ?></div><div class="stat-label">ใบเสร็จที่ออก</div></div></div>
             <div class="col-md-2 col-6"><div class="stat-card" style="border-top:3px solid #17a2b8;"><div class="stat-number text-info"><?= number_format($permits_issued) ?></div><div class="stat-label">ใบอนุญาตที่ออก</div></div></div>
         </div>
@@ -192,7 +191,7 @@ $recent_result = $conn->query($sql_recent);
 
         <!-- ===== ป้ายใกล้หมดอายุ ===== -->
         <?php if ($expiring_result && $expiring_result->num_rows > 0): ?>
-            <div class="card shadow-sm p-4 mb-4" style="border-left: 4px solid #f59e0b;">
+            <div class="card shadow-sm p-4 mb-4">
                 <h5 class="mb-3"><i class="bi bi-clock-fill text-warning me-2"></i>ป้ายใกล้หมดอายุ (30 วันข้างหน้า)
                     <span class="badge bg-warning text-dark"><?= $expiring_result->num_rows ?></span>
                 </h5>
@@ -327,33 +326,36 @@ $recent_result = $conn->query($sql_recent);
         const statusLabels = {
             'pending': 'รอพิจารณา',
             'reviewing': 'กำลังพิจารณา',
-            'need_documents': 'ขอเอกสารเพิ่ม',
             'waiting_payment': 'รอชำระเงิน',
             'waiting_permit': 'รอออกใบอนุญาต',
             'approved': 'อนุมัติ',
-            'rejected': 'ไม่อนุมัติ',
-            'expired': 'หมดอายุ',
-            'cancelled_payment': 'ยกเลิก'
+            'rejected': 'ไม่อนุมัติ'
         };
         const statusColors = {
             'pending': '#f59e0b',
             'reviewing': '#3b82f6',
-            'need_documents': '#06b6d4',
             'waiting_payment': '#ef4444',
             'waiting_permit': '#db2777',
             'approved': '#22c55e',
-            'rejected': '#6b7280',
-            'expired': '#dc3545',
-            'cancelled_payment': '#9ca3af'
+            'rejected': '#6b7280'
         };
+
+        // กรองเฉพาะสถานะที่ต้องการแสดง
+        const allowedStatuses = ['pending', 'reviewing', 'waiting_payment', 'waiting_permit', 'approved', 'rejected'];
+        const filteredData = {};
+        Object.keys(statusData).forEach(key => {
+            if (allowedStatuses.includes(key)) {
+                filteredData[key] = statusData[key];
+            }
+        });
 
         new Chart(statusCtx, {
             type: 'doughnut',
             data: {
-                labels: Object.keys(statusData).map(k => statusLabels[k] || k),
+                labels: Object.keys(filteredData).map(k => statusLabels[k] || k),
                 datasets: [{
-                    data: Object.values(statusData),
-                    backgroundColor: Object.keys(statusData).map(k => statusColors[k] || '#999'),
+                    data: Object.values(filteredData),
+                    backgroundColor: Object.keys(filteredData).map(k => statusColors[k] || '#999'),
                     borderWidth: 2
                 }]
             },
