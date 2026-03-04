@@ -64,7 +64,7 @@ if (!function_exists('send_status_notification')) {
     function send_status_notification($request_id, $conn)
     {
         // 1. ดึงข้อมูลคำขอและอีเมล
-        $sql = "SELECT r.status, r.email, r.sign_type, r.applicant_name, r.fee 
+        $sql = "SELECT r.status, r.email, r.sign_type, r.applicant_name, r.fee, r.request_no
                 FROM sign_requests r 
                 WHERE r.id = ?";
         $stmt = $conn->prepare($sql);
@@ -77,8 +77,10 @@ if (!function_exists('send_status_notification')) {
         }
 
         $to = $request['email'];
+        // ใช้ request_no ถ้ามี ถ้าไม่มีใช้แบบเดิม
+        $request_display = !empty($request['request_no']) ? $request['request_no'] : "#{$request_id}";
         // Subject ภาษาไทย (Plain Text)
-        $plain_subject = "[เทศบาลเมืองศิลา] แจ้งสถานะคำร้องขอติดตั้งป้าย (รหัส: #{$request_id})";
+        $plain_subject = "[เทศบาลเมืองศิลา] แจ้งสถานะคำร้องขอติดตั้งป้าย (รหัส: {$request_display})";
 
         $status_text = get_status_label($request['status']);
         $status_color = get_status_color($request['status']);
@@ -123,7 +125,7 @@ if (!function_exists('send_status_notification')) {
                     <table class='details-table'>
                         <tr>
                             <th width='40%'>เลขที่คำร้อง:</th>
-                            <td>#{$request_id}</td>
+                            <td>{$request_display}</td>
                         </tr>
                         <tr>
                             <th>ประเภทป้าย:</th>
@@ -140,11 +142,11 @@ if (!function_exists('send_status_notification')) {
                     </table>
 
                     <p style='text-align:center; margin-top: 25px;'>
-                        <a href='http://localhost/Project2026/users/my_request.php' class='btn'>ตรวจสอบรายละเอียด</a>
+                        <a href='" . (isset($_SERVER['HTTPS']) ? 'https' : 'http') . '://' . $_SERVER['HTTP_HOST'] . BASE_URL . "/users/my_request.php' class='btn'>ตรวจสอบรายละเอียด</a>
                     </p>
                     
                     <p style='margin-top: 20px; font-size: 14px; color: #666;'>
-                        หากมีข้อสงสัย กรุณาติดต่อ เทศบาลเมืองศิลา โทร 043-xxx-xxx<br>
+                        หากมีข้อสงสัย กรุณาติดต่อ เทศบาลเมืองศิลา โทร 043-246-505-6<br>
                         ในวันและเวลาราชการ
                     </p>
                 </div>
@@ -170,7 +172,7 @@ if (!function_exists('send_status_notification')) {
         if (!file_exists($log_dir)) {
             mkdir($log_dir, 0755, true);
         }
-        $log_content = "[" . date('Y-m-d H:i:s') . "] ID: #{$request_id}, "
+        $log_content = "[" . date('Y-m-d H:i:s') . "] ID: {$request_display}, "
             . "Status: {$request['status']}, "
             . "Email: {$to}, "
             . "Sent: " . ($mail_sent ? "Yes (SMTP HTML)" : "No (SMTP Error)") . "\n";

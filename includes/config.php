@@ -28,4 +28,9 @@ define('LINE_LOGIN_CALLBACK_URL', 'http://localhost/Project2026/callback_line.ph
 define('THUNDER_API_TOKEN', '1a4e92a3-11d0-400e-9079-aa374779682a');
 
 // ─── Base URL ───
-define('BASE_URL', '/Project2026');
+// ตรวจสอบว่าใช้ ngrok หรือไม่
+if (isset($_SERVER['HTTP_HOST']) && strpos($_SERVER['HTTP_HOST'], 'ngrok') !== false) {
+    define('BASE_URL', ''); // ngrok ใช้ root path
+} else {
+    define('BASE_URL', '/Project2026'); // localhost/XAMPP
+}
