@@ -506,9 +506,19 @@ if (isset($_GET['export'])) {
                 <a href="?year=<?= $year ?>&month=<?= $month ?>&export=requests" class="btn btn-outline-success btn-sm tab-export-btn no-print" target="_blank"><i class="bi bi-file-earmark-spreadsheet me-1"></i>Export CSV</a>
             </div>
             <div class="table-responsive">
-                <table class="table table-bordered table-sm table-hover align-middle pg-table">
+                <table class="table table-bordered table-sm table-hover align-middle pg-table" style="table-layout:fixed;width:100%;">
                     <thead class="table-light">
-                        <tr><th>ลำดับ</th><th>เลขคำร้อง</th><th>วันที่ยื่น</th><th>ผู้ยื่น</th><th>ประเภทป้าย</th><th>ขนาด</th><th class="text-end">ค่าธรรมเนียม</th><th>สถานะ</th><th>เลขที่ใบอนุญาต</th></tr>
+                        <tr>
+                            <th style="width:5%;">ลำดับ</th>
+                            <th style="width:12%;">เลขคำร้อง</th>
+                            <th style="width:13%;">วันที่ยื่น</th>
+                            <th style="width:17%;">ผู้ยื่น</th>
+                            <th style="width:10%;">ประเภทป้าย</th>
+                            <th style="width:8%;">ขนาด</th>
+                            <th style="width:10%;" class="text-end">ค่าธรรมเนียม</th>
+                            <th style="width:14%;">สถานะ</th>
+                            <th style="width:12%;">เลขที่ใบอนุญาต</th>
+                        </tr>
                     </thead>
                     <tbody>
                         <?php $an = 1; while ($ar = $all_result->fetch_assoc()): ?>

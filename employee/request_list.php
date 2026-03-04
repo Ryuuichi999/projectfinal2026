@@ -182,10 +182,16 @@ pageLength: 10
 $("div.statusFilter").html(`
 <select id="statusFilterSelect" class="form-select form-select-sm w-auto">
 <option value="">ทุกสถานะ</option>
-<option value="pending">รอดำเนินการ</option>
+<option value="pending">รอกำลังพิจารณา</option>
+<option value="reviewing">กำลังพิจารณา</option>
+<option value="need_documents">ขอเอกสารเพิ่ม</option>
 <option value="waiting_payment">รอชำระเงิน</option>
+<option value="waiting_permit">รอออกใบอนุญาต</option>
+<option value="waiting_receipt">รอออกใบเสร็จ</option>
 <option value="approved">อนุมัติแล้ว</option>
-<option value="rejected">ปฏิเสธ</option>
+<option value="rejected">ไม่อนุมัติ</option>
+<option value="expired">หมดอายุ</option>
+<option value="cancelled_payment">ยกเลิก (ไม่ชำระเงิน)</option>
 </select>
 `);
 

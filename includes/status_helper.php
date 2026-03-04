@@ -9,54 +9,54 @@ if (!function_exists('get_status_badge')) {
     {
         switch ($status) {
             case 'pending':
-                $class = 'primary'; // Blue
-                $text = '⏳ รอกำลังพิจารณา';
+                $bg = '#eff6ff'; $color = '#1d4ed8'; $icon = 'bi-hourglass-split';
+                $text = 'รอกำลังพิจารณา';
                 break;
             case 'reviewing':
-                $class = 'info';
-                $text = '🔎 กำลังพิจารณา';
+                $bg = '#f0f9ff'; $color = '#0369a1'; $icon = 'bi-search';
+                $text = 'กำลังพิจารณา';
                 break;
             case 'need_documents':
-                $class = 'warning';
-                $text = '📑 ขอเอกสารเพิ่ม';
+                $bg = '#fffbeb'; $color = '#b45309'; $icon = 'bi-folder-plus';
+                $text = 'ขอเอกสารเพิ่ม';
                 break;
             case 'waiting_payment':
-                $class = 'danger';
-                $text = '⚠️ รอชำระเงิน';
+                $bg = '#fef2f2'; $color = '#dc2626'; $icon = 'bi-credit-card';
+                $text = 'รอชำระเงิน';
                 break;
             case 'waiting_permit':
-                $class = 'dark'; // Dark/Black for distinction
-                $text = '📜 รอออกใบอนุญาต';
+                $bg = '#faf5ff'; $color = '#7c3aed'; $icon = 'bi-file-earmark-text';
+                $text = 'รอออกใบอนุญาต';
                 break;
             case 'waiting_receipt':
-                $class = 'info';
-                $text = '🧾 รอออกใบเสร็จ';
+                $bg = '#f0fdfa'; $color = '#0d9488'; $icon = 'bi-receipt';
+                $text = 'รอออกใบเสร็จ';
                 break;
             case 'approved':
-                $class = 'success';
-                $text = '✅ อนุมัติแล้ว';
+                $bg = '#f0fdf4'; $color = '#16a34a'; $icon = 'bi-check-circle';
+                $text = 'อนุมัติแล้ว';
                 break;
             case 'rejected':
-                $class = 'secondary';
-                $text = '❌ ไม่อนุมัติ';
+                $bg = '#f9fafb'; $color = '#6b7280'; $icon = 'bi-x-circle';
+                $text = 'ไม่อนุมัติ';
                 break;
             case 'expired':
-                $class = 'dark';
-                $text = '⏰ หมดอายุ';
+                $bg = '#f9fafb'; $color = '#374151'; $icon = 'bi-clock-history';
+                $text = 'หมดอายุ';
                 break;
             case 'cancelled_payment':
-                $class = 'secondary';
-                $text = '❌ ยกเลิก (ไม่ชำระเงิน)';
+                $bg = '#f9fafb'; $color = '#6b7280'; $icon = 'bi-x-circle';
+                $text = 'ยกเลิก (ไม่ชำระเงิน)';
                 break;
             case '':
             case null:
-                $class = 'primary';
-                $text = '⏳ รอกำลังพิจารณา';
+                $bg = '#eff6ff'; $color = '#1d4ed8'; $icon = 'bi-hourglass-split';
+                $text = 'รอกำลังพิจารณา';
                 break;
             default:
-                $class = 'info';
+                $bg = '#f0f9ff'; $color = '#0369a1'; $icon = 'bi-info-circle';
                 $text = $status;
         }
-        return "<span class='badge bg-$class'>$text</span>";
+        return "<span style='display:inline-flex;align-items:center;gap:4px;background:$bg;color:$color;font-size:.78rem;font-weight:600;padding:3px 10px;border-radius:6px;white-space:nowrap;'><i class='bi $icon' style='font-size:.72rem;'></i>$text</span>";
     }
 }

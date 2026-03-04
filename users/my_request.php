@@ -177,8 +177,9 @@ if (!isset($_SESSION['user_id'])) {
                             <label class="me-2 fw-bold text-muted"><i class="bi bi-funnel"></i> สถานะ:</label>
                             <select id="statusFilter" class="form-select form-select-sm w-auto shadow-sm border-primary">
                                 <option value="">ทั้งหมด</option>
+                                <option value="รอกำลังพิจารณา">รอกำลังพิจารณา</option>
+                                <option value="กำลังพิจารณา">กำลังพิจารณา</option>
                                 <option value="รอชำระเงิน">รอชำระเงิน</option>
-                                <option value="รอตรวจสอบ">รอตรวจสอบ</option>
                                 <option value="อนุมัติแล้ว">อนุมัติแล้ว</option>
                                 <option value="ไม่อนุมัติ">ไม่อนุมัติ</option>
                                 <option value="หมดอายุ">หมดอายุ</option>
@@ -195,8 +196,8 @@ if (!isset($_SESSION['user_id'])) {
                     // Add Event Listener
                     $('#statusFilter').on('change', function () {
                         var val = $.fn.dataTable.util.escapeRegex($(this).val());
-                        // Column 4 is Status
-                        table.column(4).search(val ? '^' + val + '$' : '', true, false).draw();
+                        // Column 4 is Status (contains search for badge text)
+                        table.column(4).search(val ? val : '', true, false).draw();
                     });
                 }
             });
