@@ -183,7 +183,7 @@ if (isset($_GET['export'])) {
 
 <head>
     <meta charset="UTF-8">
-    <title>รายงาน - <?= $year + 543 ?></title>
+    <title>รายงาน</title>
     <?php include '../includes/header.php'; ?>
     <link rel="stylesheet" href="../assets/css/style.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
