@@ -201,9 +201,9 @@ if (isset($_GET['export'])) {
         .revenue-table th:first-child, .revenue-table td:first-child { text-align:left; }
         .revenue-total { background:#f0fdf4; font-weight:700; }
         .print-header { display:none; }
-        .pg-controls { display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; margin-bottom:10px; }
+        .pg-controls { display:flex; justify-content:start; align-items:center; flex-wrap:wrap; gap:8px; margin-bottom:10px; }
         .pg-controls select { width:auto; display:inline-block; font-size:.82rem; }
-        .pg-info { font-size:.82rem; color:#6c757d; }
+        .pg-info { font-size:.80rem; color:#6c757d; }
         .pg-nav { display:flex; gap:4px; }
         .pg-nav button { border:1px solid #dee2e6; background:#fff; border-radius:6px; padding:4px 10px; font-size:.82rem; cursor:pointer; color:#333; }
         .pg-nav button:hover:not(:disabled) { background:#e9ecef; }
@@ -619,23 +619,20 @@ if (isset($_GET['export'])) {
         var currentPage = 1;
         var totalPages = Math.ceil(dataRows.length / perPage);
 
-        // Create top controls
-        var controls = document.createElement('div');
-        controls.className = 'pg-controls no-print';
-        controls.innerHTML = '<div class="d-flex align-items-center gap-2">' +
+        // Create bottom controls (dropdown + nav)
+        var navBottom = document.createElement('div');
+        navBottom.className = 'pg-nav-bottom d-flex justify-content-between align-items-center mt-2 no-print';
+        navBottom.innerHTML = '<div class="d-flex flex-column gap-1">' +
+            '<div class="d-flex align-items-center gap-2">' +
             '<span class="pg-info">แสดง</span>' +
-            '<select class="form-select form-select-sm pg-per-page">' +
+            '<select class="form-select form-select-sm pg-per-page" style="width:80px;">' +
             '<option value="10">10</option><option value="25">25</option><option value="50">50</option><option value="0">ทั้งหมด</option>' +
             '</select>' +
             '<span class="pg-info">รายการ</span>' +
             '</div>' +
-            '<span class="pg-info pg-status"></span>';
-        table.closest('.table-responsive').before(controls);
-
-        // Create bottom nav
-        var navBottom = document.createElement('div');
-        navBottom.className = 'pg-nav-bottom d-flex justify-content-center mt-2 no-print';
-        navBottom.innerHTML = '<div class="pg-nav"></div>';
+            '<div class="pg-status"></div>' +
+            '</div>' +
+            '<div class="pg-nav"></div>';
         table.closest('.table-responsive').after(navBottom);
         var navDiv = navBottom.querySelector('.pg-nav');
 
@@ -651,7 +648,7 @@ if (isset($_GET['export'])) {
             });
             if (totalRow) totalRow.style.display = '';
 
-            controls.querySelector('.pg-status').textContent =
+            navBottom.querySelector('.pg-status').textContent =
                 'แสดง ' + (start + 1) + '-' + Math.min(end, dataRows.length) + ' จาก ' + dataRows.length + ' รายการ';
 
             // Build nav buttons
@@ -670,7 +667,7 @@ if (isset($_GET['export'])) {
             if (totalPages <= 1) navBottom.style.display = 'none'; else navBottom.style.display = '';
         }
 
-        controls.querySelector('.pg-per-page').addEventListener('change', function() {
+        navBottom.querySelector('.pg-per-page').addEventListener('change', function() {
             perPage = parseInt(this.value);
             currentPage = 1;
             render();
