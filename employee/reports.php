@@ -203,7 +203,11 @@ if (isset($_GET['export'])) {
         .print-header { display:none; }
         .pg-controls { display:flex; justify-content:start; align-items:center; flex-wrap:wrap; gap:8px; margin-bottom:10px; }
         .pg-controls select { width:auto; display:inline-block; font-size:.82rem; }
-        .pg-info { font-size:.80rem; color:#6c757d; }
+       .pg-status {
+    font-size: 0.75rem;   /* เล็กลง */
+    color: #9aa0a6;       /* จางลง */
+    margin-top: 2px;
+}
         .pg-nav { display:flex; gap:4px; }
         .pg-nav button { border:1px solid #dee2e6; background:#fff; border-radius:6px; padding:4px 10px; font-size:.82rem; cursor:pointer; color:#333; }
         .pg-nav button:hover:not(:disabled) { background:#e9ecef; }
