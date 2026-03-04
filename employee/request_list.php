@@ -159,10 +159,10 @@ search: "ค้นหา:",
 lengthMenu: "แสดง _MENU_ รายการ",
 info: "แสดง _START_ ถึง _END_ จาก _TOTAL_ รายการ",
 paginate: {
-first: "หน้าแรก",
-last: "หน้าสุดท้าย",
-next: "ถัดไป",
-previous: "ก่อนหน้า"
+first: "<<",
+last: ">>",
+next: ">>",
+previous: "<<"
 },
 zeroRecords: "ไม่พบข้อมูล"
 },

@@ -165,7 +165,13 @@ if (!isset($_SESSION['user_id'])) {
             var table = $('#myRequestsTable').DataTable({
                 "language": {
                     "url": "//cdn.datatables.net/plug-ins/1.13.7/i18n/th.json",
-                    "search": "ค้นหา:"
+                    "search": "ค้นหา:",
+                    "paginate": {
+                        "first": "<<",
+                        "last": ">>",
+                        "next": ">>",
+                        "previous": "<<"
+                    }
                 },
                 "order": [[0, "desc"]],
                 // Custom DOM to place filter buttons
