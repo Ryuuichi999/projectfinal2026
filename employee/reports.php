@@ -238,8 +238,8 @@ if (isset($_GET['export'])) {
 
         <!-- ─── ตัวกรอง + แท็บ ─── -->
         <div class="filter-bar no-print">
-            <div class="d-flex align-items-center flex-wrap gap-2">
-                <form method="GET" class="d-flex align-items-center gap-2 mb-0 me-auto">
+            <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
+                <form method="GET" class="d-flex align-items-center gap-2 mb-0">
                     <input type="hidden" name="tab" value="<?= htmlspecialchars($tab) ?>">
                     <label class="form-label small fw-bold mb-0">ปี</label>
                     <select name="year" class="form-select form-select-sm" style="width:auto;" onchange="this.form.submit()">
@@ -255,23 +255,23 @@ if (isset($_GET['export'])) {
                         <?php endfor; ?>
                     </select>
                 </form>
-                <ul class="nav nav-tabs border-0 mb-0 mt-2" role="tablist" style="gap:5px;">
+                <ul class="nav nav-tabs border-0 mb-0" role="tablist" style="gap:5px;">
                     <li class="nav-item"><a class="nav-link py-1 px-3 <?= $tab === 'summary' ? 'active' : '' ?>" href="?year=<?= $year ?>&month=<?= $month ?>&tab=summary"><i class="bi bi-graph-up me-1"></i>สรุปภาพรวม</a></li>
                     <li class="nav-item"><a class="nav-link py-1 px-3 <?= $tab === 'revenue' ? 'active' : '' ?>" href="?year=<?= $year ?>&month=<?= $month ?>&tab=revenue"><i class="bi bi-cash-stack me-1"></i>รายได้</a></li>
-                    <li class="nav-item"><a class="nav-link py-1 px-3 <?= $tab === 'receipts' ? 'active' : '' ?>" href="?year=<?= $year ?>&month=<?= $month ?>&tab=receipts"><i class="bi bi-receipt me-1"></i>ใบเสร็จ <span class="badge bg-secondary"><?= $receipt_result->num_rows ?></span></a></li>
-                    <li class="nav-item"><a class="nav-link py-1 px-3 <?= $tab === 'permits' ? 'active' : '' ?>" href="?year=<?= $year ?>&month=<?= $month ?>&tab=permits"><i class="bi bi-file-earmark-check me-1"></i>ใบอนุญาต <span class="badge bg-secondary"><?= $permit_result->num_rows ?></span></a></li>
-                    <li class="nav-item"><a class="nav-link py-1 px-3 <?= $tab === 'requests' ? 'active' : '' ?>" href="?year=<?= $year ?>&month=<?= $month ?>&tab=requests"><i class="bi bi-list-ul me-1"></i>คำร้องทั้งหมด <span class="badge bg-secondary"><?= $all_result->num_rows ?></span></a></li>
+                    <li class="nav-item"><a class="nav-link py-1 px-3 <?= $tab === 'receipts' ? 'active' : '' ?>" href="?year=<?= $year ?>&month=<?= $month ?>&tab=receipts"><i class="bi bi-receipt me-1"></i>ใบเสร็จ</a></li>
+                    <li class="nav-item"><a class="nav-link py-1 px-3 <?= $tab === 'permits' ? 'active' : '' ?>" href="?year=<?= $year ?>&month=<?= $month ?>&tab=permits"><i class="bi bi-file-earmark-check me-1"></i>ใบอนุญาต</a></li>
+                    <li class="nav-item"><a class="nav-link py-1 px-3 <?= $tab === 'requests' ? 'active' : '' ?>" href="?year=<?= $year ?>&month=<?= $month ?>&tab=requests"><i class="bi bi-list-ul me-1"></i>คำร้องทั้งหมด</a></li>
                 </ul>
             </div>
         </div>
 
         <!-- ─── สถิติสรุป ─── -->
         <div class="row g-3 mb-4">
-            <div class="col-md-2 col-6"><div class="stat-card"><div class="stat-number text-primary"><?= number_format($stats['total']) ?></div><div class="stat-label">คำร้องทั้งหมด</div></div></div>
-            <div class="col-md-2 col-6"><div class="stat-card"><div class="stat-number text-warning"><?= number_format($stats['pending']) ?></div><div class="stat-label">รอดำเนินการ</div></div></div>
-            <div class="col-md-2 col-6"><div class="stat-card"><div class="stat-number text-info"><?= number_format($stats['waiting_payment']) ?></div><div class="stat-label">รอชำระเงิน</div></div></div>
-            <div class="col-md-2 col-6"><div class="stat-card"><div class="stat-number text-success"><?= number_format($stats['approved']) ?></div><div class="stat-label">อนุมัติแล้ว</div></div></div>
-            <div class="col-md-2 col-6"><div class="stat-card"><div class="stat-number text-danger"><?= number_format($stats['rejected']) ?></div><div class="stat-label">ปฏิเสธ</div></div></div>
+            <div class="col-md-2 col-6"><div class="stat-card" style="border-top:3px solid #2848a7ff;"><div class="stat-number text-primary"><?= number_format($stats['total']) ?></div><div class="stat-label">คำร้องทั้งหมด</div></div></div>
+            <div class="col-md-2 col-6"><div class="stat-card" style="border-top:3px solid #ffb805ff;"><div class="stat-number text-warning"><?= number_format($stats['pending']) ?></div><div class="stat-label">รอดำเนินการ</div></div></div>
+            <div class="col-md-2 col-6"><div class="stat-card" style="border-top:3px solid #17c7f3ff;"><div class="stat-number text-info"><?= number_format($stats['waiting_payment']) ?></div><div class="stat-label">รอชำระเงิน</div></div></div>
+            <div class="col-md-2 col-6"><div class="stat-card" style="border-top:3px solid #29853fff;"><div class="stat-number text-success"><?= number_format($stats['approved']) ?></div><div class="stat-label">อนุมัติแล้ว</div></div></div>
+            <div class="col-md-2 col-6"><div class="stat-card" style="border-top:3px solid #ff0303ff;"><div class="stat-number text-danger"><?= number_format($stats['rejected']) ?></div><div class="stat-label">ปฏิเสธ</div></div></div>
             <div class="col-md-2 col-6"><div class="stat-card" style="border-top:3px solid #28a745;"><div class="stat-number text-success"><?= number_format($stats['total_fee']) ?></div><div class="stat-label">ค่าธรรมเนียมรวม</div></div></div>
         </div>
 
@@ -288,6 +288,12 @@ if (isset($_GET['export'])) {
                 <div class="card p-2 text-center">
                     <div class="text-muted small">ใบอนุญาตที่ออก</div>
                     <div class="fw-bold fs-5 text-success"><?= number_format($permit_result->num_rows) ?> <span class="fw-normal text-muted" style="font-size:.75rem">ฉบับ</span></div>
+                </div>
+            </div>
+            <div class="col-md-3 col-6">
+                <div class="card p-2 text-center">
+                    <div class="text-muted small">คำร้องทั้งหมด </div>
+                    <div class="fw-bold fs-5 text-primary"><?= number_format($stats['total']) ?> <span class="fw-normal text-muted" style="font-size:.75rem">รายการ</span></div>
                 </div>
             </div>
         </div>
@@ -433,7 +439,7 @@ if (isset($_GET['export'])) {
             <div class="table-responsive">
                 <table class="table table-bordered table-sm table-hover align-middle pg-table">
                     <thead class="table-light">
-                        <tr><th>#</th><th>เลขที่ใบเสร็จ</th><th>วันที่ออก</th><th>ชื่อ-นามสกุล</th><th>ประเภทป้าย</th><th>ขนาด</th><th class="text-end">ค่าธรรมเนียม (บาท)</th></tr>
+                        <tr><th>ลำดับ</th><th>เลขที่ใบเสร็จ</th><th>วันที่ออก</th><th>ชื่อ-นามสกุล</th><th>ประเภทป้าย</th><th>ขนาด</th><th class="text-end">ค่าธรรมเนียม (บาท)</th></tr>
                     </thead>
                     <tbody>
                         <?php $rn = 1; $receipt_fee_total = 0; while ($rc = $receipt_result->fetch_assoc()): $receipt_fee_total += $rc['fee']; ?>
@@ -475,7 +481,7 @@ if (isset($_GET['export'])) {
             <div class="table-responsive">
                 <table class="table table-bordered table-sm table-hover align-middle pg-table">
                     <thead class="table-light">
-                        <tr><th>#</th><th>เลขที่ใบอนุญาต</th><th>วันที่ออก</th><th>ผู้ได้รับอนุญาต</th><th>ประเภทป้าย</th><th>ขนาด</th><th class="text-end">ค่าธรรมเนียม</th><th>วันหมดอายุ</th></tr>
+                        <tr><th>ลำดับ</th><th>เลขที่ใบอนุญาต</th><th>วันที่ออก</th><th>ผู้ได้รับอนุญาต</th><th>ประเภทป้าย</th><th>ขนาด</th><th class="text-end">ค่าธรรมเนียม</th><th>วันหมดอายุ</th></tr>
                     </thead>
                     <tbody>
                         <?php $pn = 1; while ($pm = $permit_result->fetch_assoc()): ?>
@@ -508,7 +514,7 @@ if (isset($_GET['export'])) {
             <div class="table-responsive">
                 <table class="table table-bordered table-sm table-hover align-middle pg-table">
                     <thead class="table-light">
-                        <tr><th>#</th><th>เลขคำร้อง</th><th>วันที่ยื่น</th><th>ผู้ยื่น</th><th>ประเภทป้าย</th><th>ขนาด</th><th class="text-end">ค่าธรรมเนียม</th><th>สถานะ</th><th>เลขที่ใบอนุญาต</th></tr>
+                        <tr><th>ลำดับ</th><th>เลขคำร้อง</th><th>วันที่ยื่น</th><th>ผู้ยื่น</th><th>ประเภทป้าย</th><th>ขนาด</th><th class="text-end">ค่าธรรมเนียม</th><th>สถานะ</th><th>เลขที่ใบอนุญาต</th></tr>
                     </thead>
                     <tbody>
                         <?php $an = 1; while ($ar = $all_result->fetch_assoc()): ?>
