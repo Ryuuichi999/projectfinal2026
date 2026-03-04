@@ -382,7 +382,7 @@ if (isset($_GET['export'])) {
         <div class="card p-4">
             <div class="d-flex justify-content-between align-items-center mb-3">
                 <h5 class="mb-0"><i class="bi bi-cash-stack text-success me-2"></i>รายงานรายได้ค่าธรรมเนียม ปี <?= $year + 543 ?><?= $month > 0 ? ' ' . $thai_months_full[$month] : '' ?></h5>
-                <a href="?year=<?= $year ?>&month=<?= $month ?>&export=revenue" class="btn btn-outline-success btn-sm tab-export-btn no-print"><i class="bi bi-file-earmark-spreadsheet me-1"></i>Export CSV</a>
+                <a href="?year=<?= $year ?>&month=<?= $month ?>&export=revenue" class="btn btn-outline-success btn-sm tab-export-btn no-print" target="_blank"><i class="bi bi-file-earmark-spreadsheet me-1"></i>Export CSV</a>
             </div>
             <?php if ($month == 0): ?>
             <div class="table-responsive">
@@ -430,7 +430,7 @@ if (isset($_GET['export'])) {
                 <h5 class="mb-0"><i class="bi bi-receipt text-primary me-2"></i>รายงานการออกใบเสร็จ <?= $month > 0 ? $thai_months_full[$month] : '' ?> <?= $year + 543 ?></h5>
                 <div class="d-flex gap-2">
                     <button onclick="window.print()" class="btn btn-outline-primary btn-sm tab-export-btn"><i class="bi bi-printer me-1"></i>พิมพ์รายงาน</button>
-                    <a href="?year=<?= $year ?>&month=<?= $month ?>&export=receipts" class="btn btn-outline-success btn-sm tab-export-btn"><i class="bi bi-file-earmark-spreadsheet me-1"></i>Export CSV</a>
+                    <a href="?year=<?= $year ?>&month=<?= $month ?>&export=receipts" class="btn btn-outline-success btn-sm tab-export-btn" target="_blank"><i class="bi bi-file-earmark-spreadsheet me-1"></i>Export CSV</a>
                 </div>
             </div>
             <div class="table-responsive">
@@ -472,7 +472,7 @@ if (isset($_GET['export'])) {
                 <h5 class="mb-0"><i class="bi bi-file-earmark-check text-success me-2"></i>รายงานใบอนุญาตที่ออก <?= $month > 0 ? $thai_months_full[$month] : '' ?> <?= $year + 543 ?></h5>
                 <div class="d-flex gap-2">
                     <button onclick="window.print()" class="btn btn-outline-primary btn-sm tab-export-btn"><i class="bi bi-printer me-1"></i>พิมพ์รายงาน</button>
-                    <a href="?year=<?= $year ?>&month=<?= $month ?>&export=permits" class="btn btn-outline-success btn-sm tab-export-btn"><i class="bi bi-file-earmark-spreadsheet me-1"></i>Export CSV</a>
+                    <a href="?year=<?= $year ?>&month=<?= $month ?>&export=permits" class="btn btn-outline-success btn-sm tab-export-btn" target="_blank"><i class="bi bi-file-earmark-spreadsheet me-1"></i>Export CSV</a>
                 </div>
             </div>
             <div class="table-responsive">
@@ -506,7 +506,7 @@ if (isset($_GET['export'])) {
         <div class="card p-4">
             <div class="d-flex justify-content-between align-items-center mb-3">
                 <h5 class="mb-0"><i class="bi bi-list-ul text-primary me-2"></i>คำร้องทั้งหมด <?= $month > 0 ? $thai_months_full[$month] : '' ?> <?= $year + 543 ?></h5>
-                <a href="?year=<?= $year ?>&month=<?= $month ?>&export=requests" class="btn btn-outline-success btn-sm tab-export-btn no-print"><i class="bi bi-file-earmark-spreadsheet me-1"></i>Export CSV</a>
+                <a href="?year=<?= $year ?>&month=<?= $month ?>&export=requests" class="btn btn-outline-success btn-sm tab-export-btn no-print" target="_blank"><i class="bi bi-file-earmark-spreadsheet me-1"></i>Export CSV</a>
             </div>
             <div class="table-responsive">
                 <table class="table table-bordered table-sm table-hover align-middle pg-table">
