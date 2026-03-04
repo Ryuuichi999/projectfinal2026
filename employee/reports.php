@@ -282,19 +282,17 @@ if (isset($_GET['export'])) {
 
         <!-- ═══════ TAB: สรุปภาพรวม ═══════ -->
         <?php if ($tab === 'summary'): ?>
-        <div class="row g-3 mb-4">
-            <div class="col-md-6 col-6">
-                <div class="card p-3 text-center">
-                    <div class="text-muted small mb-1">ใบเสร็จที่ออก</div>
-                    <div class="fw-bold fs-3 text-info"><?= number_format($receipt_result->num_rows) ?></div>
-                    <div class="text-muted small">ฉบับ</div>
+        <div class="row g-3 mb-3">
+            <div class="col-md-3 col-6">
+                <div class="card p-2 text-center">
+                    <div class="text-muted small">ใบเสร็จที่ออก</div>
+                    <div class="fw-bold fs-5 text-info"><?= number_format($receipt_result->num_rows) ?> <span class="fw-normal text-muted" style="font-size:.75rem">ฉบับ</span></div>
                 </div>
             </div>
-            <div class="col-md-6 col-6">
-                <div class="card p-3 text-center">
-                    <div class="text-muted small mb-1">ใบอนุญาตที่ออก</div>
-                    <div class="fw-bold fs-3 text-success"><?= number_format($permit_result->num_rows) ?></div>
-                    <div class="text-muted small">ฉบับ</div>
+            <div class="col-md-3 col-6">
+                <div class="card p-2 text-center">
+                    <div class="text-muted small">ใบอนุญาตที่ออก</div>
+                    <div class="fw-bold fs-5 text-success"><?= number_format($permit_result->num_rows) ?> <span class="fw-normal text-muted" style="font-size:.75rem">ฉบับ</span></div>
                 </div>
             </div>
         </div>
@@ -312,9 +310,71 @@ if (isset($_GET['export'])) {
                     <div class="card p-4"><h5 class="mb-3">📋 ตามประเภทป้าย</h5><div class="chart-container"><canvas id="typeChart"></canvas></div></div>
                 </div>
                 <div class="col-md-6">
-                    <div class="card p-4"><h5 class="mb-3">� สัดส่วนสถานะ</h5><div class="chart-container"><canvas id="statusChart"></canvas></div></div>
+                    <div class="card p-4"><h5 class="mb-3">📊 สัดส่วนสถานะ</h5><div class="chart-container"><canvas id="statusChart"></canvas></div></div>
                 </div>
             <?php endif; ?>
+        </div>
+
+        <!-- ตารางใต้กราฟ -->
+        <?php $type_result->data_seek(0); ?>
+        <div class="row g-4 mt-2">
+            <?php if ($month == 0): ?>
+            <div class="col-md-12">
+                <div class="card p-4">
+                    <h5 class="mb-3">📅 คำร้องรายเดือน ปี <?= $year + 543 ?></h5>
+                    <div class="table-responsive">
+                        <table class="table table-sm table-bordered table-hover align-middle mb-0 pg-table">
+                            <thead class="table-light">
+                                <tr><th>เดือน</th><th class="text-center">คำร้อง</th><th class="text-center">อนุมัติ</th><th class="text-end">ค่าธรรมเนียม (บาท)</th></tr>
+                            </thead>
+                            <tbody>
+                                <?php $sum_total = 0; $sum_approved = 0; $sum_fee = 0;
+                                for ($mi = 1; $mi <= 12; $mi++):
+                                    $d = $monthly_data[$mi] ?? ['total' => 0, 'approved_count' => 0, 'fee_collected' => 0];
+                                    $sum_total += $d['total']; $sum_approved += $d['approved_count']; $sum_fee += $d['fee_collected'];
+                                ?>
+                                <tr>
+                                    <td><?= $thai_months_full[$mi] ?></td>
+                                    <td class="text-center"><?= $d['total'] ?></td>
+                                    <td class="text-center"><?= $d['approved_count'] ?></td>
+                                    <td class="text-end"><?= number_format($d['fee_collected'], 2) ?></td>
+                                </tr>
+                                <?php endfor; ?>
+                            </tbody>
+                            <tfoot>
+                                <tr class="table-secondary fw-bold">
+                                    <td>รวม</td>
+                                    <td class="text-center"><?= number_format($sum_total) ?></td>
+                                    <td class="text-center"><?= number_format($sum_approved) ?></td>
+                                    <td class="text-end"><?= number_format($sum_fee, 2) ?></td>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            <?php endif; ?>
+            <div class="col-md-12">
+                <div class="card p-4">
+                    <h5 class="mb-3">📋 สรุปตามประเภทป้าย</h5>
+                    <div class="table-responsive">
+                        <table class="table table-sm table-bordered table-hover align-middle mb-0 pg-table">
+                            <thead class="table-light">
+                                <tr><th>ประเภทป้าย</th><th class="text-center">จำนวน (รายการ)</th><th class="text-end">ค่าธรรมเนียมรวม (บาท)</th></tr>
+                            </thead>
+                            <tbody>
+                                <?php while ($tp = $type_result->fetch_assoc()): ?>
+                                <tr>
+                                    <td><?= htmlspecialchars($tp['sign_type']) ?></td>
+                                    <td class="text-center"><?= number_format($tp['cnt']) ?></td>
+                                    <td class="text-end"><?= number_format($tp['fee_total'], 2) ?></td>
+                                </tr>
+                                <?php endwhile; ?>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
         </div>
 
         <!-- ═══════ TAB: รายได้ ═══════ -->
