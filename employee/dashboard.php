@@ -56,6 +56,28 @@ while ($s = $status_query->fetch_assoc()) {
     $status_counts[$s['status']] = (int) $s['c'];
 }
 
+// ป้ายใกล้หมดอายุ (30 วัน)
+$thai_months_short = ['', 'ม.ค.', 'ก.พ.', 'มี.ค.', 'เม.ย.', 'พ.ค.', 'มิ.ย.', 'ก.ค.', 'ส.ค.', 'ก.ย.', 'ต.ค.', 'พ.ย.', 'ธ.ค.'];
+
+$expiring_sql = "SELECT r.*, u.first_name, u.last_name,
+    DATE_ADD(COALESCE(r.permit_date, r.created_at), INTERVAL r.duration_days DAY) as expire_date
+    FROM sign_requests r
+    JOIN users u ON r.user_id = u.id
+    WHERE r.status = 'approved'
+    AND DATE_ADD(COALESCE(r.permit_date, r.created_at), INTERVAL r.duration_days DAY) BETWEEN CURDATE() AND DATE_ADD(CURDATE(), INTERVAL 30 DAY)
+    ORDER BY expire_date ASC";
+$expiring_result = $conn->query($expiring_sql);
+
+$expired_sql = "SELECT r.*, u.first_name, u.last_name,
+    DATE_ADD(COALESCE(r.permit_date, r.created_at), INTERVAL r.duration_days DAY) as expire_date
+    FROM sign_requests r
+    JOIN users u ON r.user_id = u.id
+    WHERE r.status = 'approved'
+    AND DATE_ADD(COALESCE(r.permit_date, r.created_at), INTERVAL r.duration_days DAY) < CURDATE()
+    ORDER BY expire_date DESC
+    LIMIT 20";
+$expired_result = $conn->query($expired_sql);
+
 // คำร้องล่าสุด 5 รายการ
 $sql_recent = "SELECT r.id, r.request_no, r.sign_type, r.status, r.created_at, u.first_name, u.last_name 
                FROM sign_requests r JOIN users u ON r.user_id = u.id 
@@ -203,6 +225,87 @@ $recent_result = $conn->query($sql_recent);
                 </table>
             </div>
         </div>
+
+        <!-- ===== ป้ายใกล้หมดอายุ ===== -->
+        <?php if ($expiring_result && $expiring_result->num_rows > 0): ?>
+            <div class="card shadow-sm p-4 mb-4" style="border-left: 4px solid #f59e0b;">
+                <h5 class="mb-3"><i class="bi bi-clock-fill text-warning me-2"></i>ป้ายใกล้หมดอายุ (30 วันข้างหน้า)
+                    <span class="badge bg-warning text-dark"><?= $expiring_result->num_rows ?></span>
+                </h5>
+                <div class="table-responsive">
+                    <table class="table table-sm table-hover align-middle mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>ID</th>
+                                <th>ผู้ขอ</th>
+                                <th>ประเภท</th>
+                                <th>เลขที่ใบอนุญาต</th>
+                                <th>วันหมดอายุ</th>
+                                <th>เหลือ</th>
+                                <th></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <?php while ($exp = $expiring_result->fetch_assoc()):
+                                $days_left = ceil((strtotime($exp['expire_date']) - time()) / 86400);
+                                $badge_class = $days_left <= 7 ? 'bg-danger' : 'bg-warning text-dark';
+                                $exp_ts = strtotime($exp['expire_date']);
+                            ?>
+                                <tr>
+                                    <td>#<?= $exp['id'] ?></td>
+                                    <td><?= htmlspecialchars($exp['first_name'] . ' ' . $exp['last_name']) ?></td>
+                                    <td><?= htmlspecialchars($exp['sign_type']) ?></td>
+                                    <td><?= htmlspecialchars($exp['permit_no'] ?? '-') ?></td>
+                                    <td><?= date('j', $exp_ts) . ' ' . $thai_months_short[(int)date('n', $exp_ts)] . ' ' . (date('Y', $exp_ts)+543) ?></td>
+                                    <td><span class="badge <?= $badge_class ?>" style="font-size:0.75rem;"><?= $days_left ?> วัน</span></td>
+                                    <td><a href="request_detail.php?id=<?= $exp['id'] ?>" class="btn btn-sm btn-outline-primary"><i class="bi bi-eye"></i></a></td>
+                                </tr>
+                            <?php endwhile; ?>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        <?php endif; ?>
+
+        <!-- ===== ป้ายหมดอายุแล้ว ===== -->
+        <?php if ($expired_result && $expired_result->num_rows > 0): ?>
+            <div class="card shadow-sm p-4 mb-4" style="border-left: 4px solid #dc3545;">
+                <h5 class="mb-3"><i class="bi bi-x-circle-fill text-danger me-2"></i>ป้ายหมดอายุแล้ว
+                    <span class="badge bg-danger"><?= $expired_result->num_rows ?></span>
+                </h5>
+                <div class="table-responsive">
+                    <table class="table table-sm table-hover align-middle mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>ID</th>
+                                <th>ผู้ขอ</th>
+                                <th>ประเภท</th>
+                                <th>เลขที่ใบอนุญาต</th>
+                                <th>วันหมดอายุ</th>
+                                <th>หมดมาแล้ว</th>
+                                <th></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <?php while ($exd = $expired_result->fetch_assoc()):
+                                $days_over = abs(ceil((strtotime($exd['expire_date']) - time()) / 86400));
+                                $exd_ts = strtotime($exd['expire_date']);
+                            ?>
+                                <tr>
+                                    <td>#<?= $exd['id'] ?></td>
+                                    <td><?= htmlspecialchars($exd['first_name'] . ' ' . $exd['last_name']) ?></td>
+                                    <td><?= htmlspecialchars($exd['sign_type']) ?></td>
+                                    <td><?= htmlspecialchars($exd['permit_no'] ?? '-') ?></td>
+                                    <td><?= date('j', $exd_ts) . ' ' . $thai_months_short[(int)date('n', $exd_ts)] . ' ' . (date('Y', $exd_ts)+543) ?></td>
+                                    <td><span class="badge bg-danger" style="font-size:0.75rem;"><?= $days_over ?> วัน</span></td>
+                                    <td><a href="request_detail.php?id=<?= $exd['id'] ?>" class="btn btn-sm btn-outline-danger"><i class="bi bi-eye"></i></a></td>
+                                </tr>
+                            <?php endwhile; ?>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        <?php endif; ?>
 
         <!-- ===== ลิงก์จัดการ ===== -->
         <h4 class="mt-4 mb-3">⚙️ จัดการระบบ</h4>
