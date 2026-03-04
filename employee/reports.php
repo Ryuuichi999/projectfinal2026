@@ -290,12 +290,6 @@ if (isset($_GET['export'])) {
                     <div class="fw-bold fs-5 text-success"><?= number_format($permit_result->num_rows) ?> <span class="fw-normal text-muted" style="font-size:.75rem">ฉบับ</span></div>
                 </div>
             </div>
-            <div class="col-md-3 col-6">
-                <div class="card p-2 text-center">
-                    <div class="text-muted small">คำร้องทั้งหมด </div>
-                    <div class="fw-bold fs-5 text-primary"><?= number_format($stats['total']) ?> <span class="fw-normal text-muted" style="font-size:.75rem">รายการ</span></div>
-                </div>
-            </div>
         </div>
 
         <div class="row g-4">
