@@ -19,41 +19,28 @@ if (!isset($_SESSION['user_id'])) {
     <!-- DataTables CSS -->
     <link rel="stylesheet" href="https://cdn.datatables.net/1.13.7/css/dataTables.bootstrap5.min.css">
     <style>
-        /* CSS สำหรับป้ายสถานะเพื่อให้สวยงาม */
-        .badge {
-            padding: 0.5em 0.8em;
-        }
-
-        /* ปรับ layout ตารางให้กระชับ ไม่ตัดบรรทัด */
-        .table {
-            /* font-size: 0.8rem; REMOVED for consistency */
-        }
-
         .table th {
             white-space: nowrap;
             vertical-align: middle;
-            background-color: #f8f9fa;
+            font-weight: 600;
+            font-size: 0.88rem;
+            color: #475569;
+            letter-spacing: 0.01em;
         }
-
         .table td {
             vertical-align: middle;
-            padding: 0.4rem 0.5rem;
+            font-size: 0.9rem;
+            font-weight: 400;
+            color: #1e293b;
         }
-
-        /* คอลัมน์รายละเอียดไม่ให้ตัดบรรทัด + ปุ่มอยู่บรรทัดเดียว */
-        td.action-cell {
-            white-space: nowrap;
+        .req-no-main {
+            font-weight: 600;
+            color: #1e40af;
         }
-
-        td.action-cell .btn-group {
-            flex-wrap: nowrap;
+        .req-no-sub {
+            font-size: 0.75rem;
+            color: #94a3b8;
         }
-
-        td.action-cell .btn {
-            /* font-size: 0.85rem; REMOVED */
-            padding: 0.25rem 0.5rem;
-        }
-
         .badge-sm-expiry {
             font-size: 0.72rem !important;
             padding: 0.2rem 0.45rem !important;
@@ -130,8 +117,8 @@ if (!isset($_SESSION['user_id'])) {
 
                                             echo "<tr>";
                                             echo "<td class='req-no-cell'><div class='req-no-main'>" . htmlspecialchars($req_no) . "</div><div class='req-no-sub'>#{$row['id']}</div></td>";
-                                            echo "<td class='fw-bold'>{$row['sign_type']}</td>";
-                                            echo "<td><span class='badge bg-light text-dark border'>{$size}</span></td>";
+                                            echo "<td>" . htmlspecialchars($row['sign_type']) . "</td>";
+                                            echo "<td>{$size}</td>";
                                             echo "<td class='text-center'>{$fee}</td>";
                                             echo "<td class='text-center'>{$badge}{$expiry_html}</td>";
                                             echo "<td class='small'><i class='bi bi-calendar-event me-1'></i>{$date}</td>";
