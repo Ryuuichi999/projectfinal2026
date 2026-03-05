@@ -19,9 +19,10 @@ $fullName = ($userData['title_name'] ?? '') . ' ' . ($userData['first_name'] ?? 
 // 2. Fetch Stats
 $stats = [
     'pending' => 0,
+    'reviewing' => 0,
+    'waiting_payment' => 0,
     'approved' => 0,
     'rejected' => 0,
-    'waiting_payment' => 0,
     'total' => 0
 ];
 
@@ -404,6 +405,24 @@ function thaiDateShort($dateStr, $months) {
                 </div>
                 <div class="stat-icon bg-orange-light">
                     <i class="bi bi-clock"></i>
+                </div>
+            </div>
+            <div class="mini-stat-card">
+                <div class="stat-info">
+                    <h4>กำลังรอพิจารณา</h4>
+                    <h2 class="count-reviewing"><?= number_format($stats['reviewing']) ?></h2>
+                </div>
+                <div class="stat-icon" style="background: #f0f9ff; color: #0369a1;">
+                    <i class="bi bi-search"></i>
+                </div>
+            </div>
+            <div class="mini-stat-card">
+                <div class="stat-info">
+                    <h4>รอชำระเงิน</h4>
+                    <h2 class="count-waiting-payment"><?= number_format($stats['waiting_payment']) ?></h2>
+                </div>
+                <div class="stat-icon" style="background: #fef2f2; color: #dc2626;">
+                    <i class="bi bi-credit-card"></i>
                 </div>
             </div>
             <div class="mini-stat-card">
