@@ -23,6 +23,19 @@ if (!$request || $request['status'] != 'approved') {
     exit;
 }
 
+// ตรวจสอบว่าเคยดาวน์โหลดฉบับจริงหรือยัง
+$is_original = empty($request['receipt_downloaded_at']);
+
+// ถ้ามี action=mark_downloaded (AJAX) ให้บันทึกวันที่ดาวน์โหลดครั้งแรก
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'mark_downloaded' && $is_original) {
+    $stmt_mark = $conn->prepare("UPDATE sign_requests SET receipt_downloaded_at = NOW() WHERE id = ?");
+    $stmt_mark->bind_param("i", $request_id);
+    $stmt_mark->execute();
+    header('Content-Type: application/json');
+    echo json_encode(['success' => true]);
+    exit;
+}
+
 function getThaiDate($date)
 {
     if (!$date)
@@ -62,6 +75,50 @@ function getThaiDate($date)
             background: #eee;
         }
 
+        <?php if (!$is_original): ?>
+        /* === สำเนา: โทนเทา === */
+        .copy-watermark {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) rotate(-30deg);
+            font-size: 80pt;
+            color: rgba(200, 0, 0, 0.08);
+            font-weight: bold;
+            z-index: 10;
+            pointer-events: none;
+            white-space: nowrap;
+            letter-spacing: 15px;
+        }
+        th { background-color: #f0f0f0 !important; }
+        .logo-top { filter: grayscale(100%); opacity: 0.7; }
+        .watermark { filter: grayscale(100%); }
+        <?php else: ?>
+        /* === ฉบับจริง: สีดำทางการ === */
+        .page { border: none; }
+        th { background-color: #e8e8e8 !important; color: #000 !important; font-weight: bold; }
+        .title { color: #000; font-size: 22pt; }
+        .subtitle { color: #000; font-weight: 600; }
+        table { border-color: #000; }
+        th, td { border-color: #000; }
+        .total-row td { background-color: #f5f5f5; }
+        .header { border-bottom: none; padding-bottom: 15px; }
+        .original-badge {
+            position: absolute;
+            top: 20mm;
+            left: 20mm;
+            background: #e8e8e8;
+            color: #000;
+            padding: 5px 20px;
+            border-radius: 4px;
+            font-size: 11pt;
+            font-weight: bold;
+            z-index: 10;
+            letter-spacing: 2px;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+        }
+        <?php endif; ?>
+
         .page {
             width: 210mm;
             padding: 20mm;
@@ -95,6 +152,17 @@ function getThaiDate($date)
             @page {
                 size: A4;
                 margin: 0;
+            }
+
+            * {
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
+                color-adjust: exact !important;
+            }
+
+            th {
+                background-color: #e8e8e8 !important;
+                color: #000 !important;
             }
         }
 
@@ -134,6 +202,7 @@ function getThaiDate($date)
             font-size: 20pt;
             font-weight: bold;
             margin-bottom: 5px;
+            margin-top: 40px;
         }
 
         .subtitle {
@@ -198,12 +267,17 @@ function getThaiDate($date)
 </head>
 
 <body>
-    <div class="no-print" style="text-align: center; padding: 10px; display: flex; justify-content: center; gap: 10px;">
+    <div class="no-print" style="text-align: center; padding: 10px; display: flex; justify-content: center; gap: 10px; align-items: center; flex-wrap: wrap;">
+        <?php if ($is_original): ?>
+            <span style="background: #155724; color: white; padding: 6px 18px; border-radius: 20px; font-size: 14px; font-weight: bold;">✅ ฉบับจริง (ดาวน์โหลดครั้งแรก)</span>
+        <?php else: ?>
+            <span style="background: #6c757d; color: white; padding: 6px 18px; border-radius: 20px; font-size: 14px;">📋 สำเนา (เคยดาวน์โหลดแล้วเมื่อ <?= getThaiDate($request['receipt_downloaded_at']) ?>)</span>
+        <?php endif; ?>
         <button onclick="downloadPDF()"
             style="padding: 10px 20px; font-size: 14px; cursor: pointer; background: #28a745; color: white; border: none; border-radius: 5px;">
             ⬇ ดาวน์โหลด PDF
         </button>
-        <button onclick="window.print()"
+        <button onclick="handlePrint()"
             style="padding: 10px 20px; font-size: 14px; cursor: pointer; background: #007bff; color: white; border: none; border-radius: 5px;">
             🖨 พิมพ์ใบเสร็จ
         </button>
@@ -212,21 +286,26 @@ function getThaiDate($date)
     <div class="page">
         <!-- Watermark -->
         <img src="../image/logoใบเสร็จ.png" class="watermark" alt="watermark">
-
+        
+        <?php if (!$is_original): ?>
+            <div class="copy-watermark">สำเนา</div>
+        <?php endif; ?>
         <div class="content-layer">
             <!-- Logo Top -->
             <div style="text-align: center;">
-                <img src="../image/logoใบเสร็จ.png" class="logo-top" alt="Logo">
+                <img src="../image/<?= $is_original ? 'Logoจริง.png' : 'logoใบเสร็จ.png' ?>" class="logo-top" alt="Logo">
             </div>
 
             <div class="receipt-no">
-                <div><strong>เลขที่</strong> <?= htmlspecialchars($request['receipt_no'] ?? '-') ?></div>
-                <div><strong>วันที่</strong> <?= getThaiDate($request['receipt_date'] ?? date('Y-m-d')) ?></div>
+                <table style="border:none; border-collapse:collapse;">
+                    <tr><td style="border:none; padding:2px 2px; text-align:right;"><strong>เลขที่</strong></td><td style="border:none; padding:2px 5px;"><?= htmlspecialchars($request['receipt_no'] ?? '-') ?></td></tr>
+                    <tr><td style="border:none; padding:2px 5px; text-align:right;"><strong>วันที่</strong></td><td style="border:none; padding:2px 5px;"><?= getThaiDate($request['receipt_date'] ?? date('Y-m-d')) ?></td></tr>
+                </table>
             </div>
 
             <div class="header">
                 <div class="title">ใบเสร็จรับเงิน</div>
-                <div class="subtitle" style="margin-top: 20px;">เทศบาลเมืองศิลา อำเภอเมืองขอนแก่น จังหวัดขอนแก่น</div>
+                <div class="subtitle" style="margin-top: 50px;">เทศบาลเมืองศิลา อำเภอเมืองขอนแก่น จังหวัดขอนแก่น</div>
             </div>
 
             <div class="info-row">
@@ -304,11 +383,25 @@ function getThaiDate($date)
         </div>
     </div>
 
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <script>
+        var isOriginal = <?= $is_original ? 'true' : 'false' ?>;
+
+        function markAsDownloaded() {
+            if (!isOriginal) return Promise.resolve();
+            return fetch('view_receipt.php?id=<?= $request_id ?>', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                body: 'action=mark_downloaded'
+            })
+                .then(function(r) { return r.json(); })
+                .then(function() { isOriginal = false; });
+        }
+
         function downloadPDF() {
+            var wasOriginal = isOriginal;
             const element = document.querySelector('.page');
-            // Save & temporarily reset styles for clean capture
             const origMargin = element.style.margin;
             const origMinHeight = element.style.minHeight;
             element.style.margin = '0';
@@ -316,9 +409,10 @@ function getThaiDate($date)
             element.style.height = '297mm';
             element.style.overflow = 'hidden';
 
+            var suffix = isOriginal ? '' : '_copy';
             const opt = {
                 margin: 0,
-                filename: 'receipt_<?= $request['receipt_no'] ?>.pdf',
+                filename: 'receipt_<?= $request['receipt_no'] ?>' + suffix + '.pdf',
                 image: { type: 'jpeg', quality: 0.98 },
                 html2canvas: {
                     scale: 2,
@@ -331,12 +425,39 @@ function getThaiDate($date)
             };
 
             html2pdf().set(opt).from(element).save().then(function () {
-                // Restore
                 element.style.margin = origMargin;
                 element.style.minHeight = origMinHeight;
                 element.style.height = '';
                 element.style.overflow = '';
+                if (wasOriginal) {
+                    markAsDownloaded().then(function() {
+                        setTimeout(function() { location.reload(); }, 500);
+                    });
+                }
             });
+        }
+
+        function handlePrint() {
+            window.print();
+            if (!isOriginal) return;
+            // ถามยืนยันหลังพิมพ์ — ไม่ mark ทันที
+            setTimeout(function() {
+                Swal.fire({
+                    icon: 'question',
+                    title: 'พิมพ์สำเร็จหรือไม่?',
+                    text: 'หากท่านพิมพ์ฉบับจริงสำเร็จแล้ว กรุณากดยืนยัน ครั้งถัดไปจะเป็นสำเนา',
+                    showCancelButton: true,
+                    confirmButtonText: 'พิมพ์สำเร็จแล้ว',
+                    cancelButtonText: 'ยังไม่ได้พิมพ์',
+                    confirmButtonColor: '#1a3c5e'
+                }).then(function(result) {
+                    if (result.isConfirmed) {
+                        markAsDownloaded().then(function() {
+                            location.reload();
+                        });
+                    }
+                });
+            }, 500);
         }
     </script>
 </body>
