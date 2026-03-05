@@ -40,10 +40,13 @@ if (isset($_POST['submit'])) {
         $message_type = 'danger';
     }
 
-    // ตรวจสอบขนาดพื้นที่ ≤1 ตร.ม.
-    $area = $width * $height;
-    if ($area > 1) {
-        $message = "ขนาดพื้นที่ป้ายต้องไม่เกิน 1 ตร.ม. (ปัจจุบัน: " . number_format($area, 2) . " ตร.ม.)";
+    // ตรวจสอบขนาด: กว้าง ≤1.20 ม., สูง ≤2.40 ม.
+    if ($width > 1.20) {
+        $message = "ความกว้างป้ายต้องไม่เกิน 1.20 เมตร (ท่านระบุ {$width} ม.)";
+        $message_type = 'danger';
+    }
+    if (empty($message) && $height > 2.40) {
+        $message = "ความสูงป้ายต้องไม่เกิน 2.40 เมตร (ท่านระบุ {$height} ม.)";
         $message_type = 'danger';
     }
 
@@ -87,8 +90,9 @@ if (isset($_POST['submit'])) {
     if (!empty($message)) {
         // หยุดไม่ให้ดำเนินการต่อถ้ามี error
     } else {
-        // 2. คำนวณค่าธรรมเนียม (แก้ไข: คิดเหมาป้ายละ 200 บาท ไม่คิดตามขนาด/วัน)
-        $fee = 200 * $quantity;
+        // 2. คำนวณค่าธรรมเนียมตามประเภทการใช้งาน
+        $fee_per_sign = ($sign_purpose === 'commercial') ? 200 : 100;
+        $fee = $fee_per_sign * $quantity;
 
         // 3. Insert ลง DB
         $conn->begin_transaction();
@@ -444,13 +448,13 @@ if (isset($_POST['submit'])) {
 
                 <div class="form-line">
                     <label>ขนาดป้าย กว้าง</label>
-                    <input type="number" step="0.01" name="width" id="width" class="form-input-line w-100px" required max="1" min="0.01">
+                    <input type="number" step="0.01" name="width" id="width" class="form-input-line w-100px" required max="1.2" min="0.01">
                     <label>เมตร x ยาว/สูง</label>
-                    <input type="number" step="0.01" name="height" id="height" class="form-input-line w-100px" required max="1" min="0.01">
+                    <input type="number" step="0.01" name="height" id="height" class="form-input-line w-100px" required max="2.4" min="0.01">
                     <label>เมตร</label>
                     <span id="areaInfo" class="ms-2 badge bg-secondary">พื้นที่: 0 ตร.ม.</span>
                 </div>
-                <div class="text-muted small ms-4 mb-2"><i class="bi bi-info-circle"></i> พื้นที่ป้ายต้องไม่เกิน 1 ตร.ม. / น้ำหนัก ≤10 กก. / ด้านยาวไม่เกิน 1 ม. (ใกล้ทางสาธารณะ)</div>
+                <div class="text-muted small ms-4 mb-2"><i class="bi bi-info-circle"></i> ขนาดสูงสุด: กว้างไม่เกิน 1.20 ม. × สูงไม่เกิน 2.40 ม. ทุกประเภท</div>
 
                 <div class="form-line">
                     <label>จำนวน</label>
@@ -505,11 +509,11 @@ if (isset($_POST['submit'])) {
                     <label class="me-3">ประเภทการใช้งาน:</label>
                     <div class="form-check form-check-inline">
                         <input class="form-check-input" type="radio" name="sign_purpose" id="purposeNon" value="non_commercial" required checked>
-                        <label class="form-check-label" for="purposeNon">ไม่เป็นการค้า (สูงสุด 30 วัน)</label>
+                        <label class="form-check-label" for="purposeNon">ไม่เป็นการค้า (100 บาท/ป้าย, สูงสุด 30 วัน)</label>
                     </div>
                     <div class="form-check form-check-inline">
                         <input class="form-check-input" type="radio" name="sign_purpose" id="purposeCom" value="commercial">
-                        <label class="form-check-label" for="purposeCom">เป็นการค้า (สูงสุด 60 วัน)</label>
+                        <label class="form-check-label" for="purposeCom">เป็นการค้า (200 บาท/ป้าย, สูงสุด 60 วัน)</label>
                     </div>
                 </div>
                 <div class="form-line">
@@ -747,7 +751,16 @@ if (isset($_POST['submit'])) {
                 var area = w * h;
                 var badge = document.getElementById('areaInfo');
                 badge.textContent = 'พื้นที่: ' + area.toFixed(2) + ' ตร.ม.';
-                badge.className = area > 1 ? 'ms-2 badge bg-danger' : 'ms-2 badge bg-success';
+                var overSize = (w > 1.2 || h > 2.4);
+                badge.className = overSize ? 'ms-2 badge bg-danger' : 'ms-2 badge bg-success';
+                if (overSize && (w > 0 || h > 0)) {
+                    Swal.fire({
+                        icon: 'warning',
+                        title: 'ขนาดเกินกำหนด',
+                        html: 'ขนาดสูงสุด: กว้างไม่เกิน <b>1.20</b> ม. × สูงไม่เกิน <b>2.40</b> ม.',
+                        confirmButtonText: 'ตกลง'
+                    });
+                }
             }
             document.getElementById('width').addEventListener('input', calcArea);
             document.getElementById('height').addEventListener('input', calcArea);
