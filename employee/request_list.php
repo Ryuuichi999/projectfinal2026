@@ -180,11 +180,13 @@ pageLength: 10
 /* ===== Filter สถานะ ===== */
 
 $("div.statusFilter").html(`
-<select id="statusFilterSelect" class="form-select form-select-sm w-auto">
-<option value="">ทุกสถานะ</option>
+<div class="d-flex align-items-center">
+<label class="me-2 fw-bold text-muted"><i class="bi bi-funnel"></i> สถานะ:</label>
+<select id="statusFilterSelect" class="form-select form-select-sm w-auto shadow-sm border-primary">
+<option value="">ทั้งหมด</option>
 <option value="pending">รอกำลังพิจารณา</option>
 <option value="reviewing">กำลังพิจารณา</option>
-<option value="need_documents">ขอเอกสารเพิ่ม</option>
+<option value="need_documents">ขอเอกสารเพิ่มเติม</option>
 <option value="waiting_payment">รอชำระเงิน</option>
 <option value="waiting_permit">รอออกใบอนุญาต</option>
 <option value="waiting_receipt">รอออกใบเสร็จ</option>
@@ -193,6 +195,7 @@ $("div.statusFilter").html(`
 <option value="expired">หมดอายุ</option>
 <option value="cancelled_payment">ยกเลิก (ไม่ชำระเงิน)</option>
 </select>
+</div>
 `);
 
 $.fn.dataTable.ext.search.push(function(settings, data, dataIndex) {
