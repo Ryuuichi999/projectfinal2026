@@ -22,7 +22,8 @@ $result_signs = $conn->query("SELECT id, location_lat, location_lng, sign_type, 
 if ($result_signs && $result_signs->num_rows > 0) {
     while ($row = $result_signs->fetch_assoc()) {
         // กรองป้ายที่หมดอายุแล้วออก
-        if (!empty($row['end_date']) && $row['end_date'] < date('Y-m-d')) continue;
+        if (!empty($row['end_date']) && $row['end_date'] < date('Y-m-d'))
+            continue;
         $approved_signs[] = [
             'id' => (int) $row['id'],
             'lat' => (float) $row['location_lat'],
@@ -44,7 +45,8 @@ $res_rows = $conn->query("SELECT r.id, r.sign_type, r.road_name, r.description, 
 if ($res_rows && $res_rows->num_rows > 0) {
     while ($row = $res_rows->fetch_assoc()) {
         // กรองป้ายที่หมดอายุแล้วออก
-        if (!empty($row['end_date']) && $row['end_date'] < date('Y-m-d')) continue;
+        if (!empty($row['end_date']) && $row['end_date'] < date('Y-m-d'))
+            continue;
         $expire_str = !empty($row['end_date']) ? date('d/m/Y', strtotime($row['end_date'])) : '';
         $approved_rows[] = [
             'id' => (int) $row['id'],
@@ -163,7 +165,8 @@ if ($res_rows && $res_rows->num_rows > 0) {
                 <p class="text-muted mb-3">แสดงขอบเขตตำแหน่งป้ายในเขต ทม.ศิลา</p>
 
                 <div class="d-flex align-items-center gap-2 flex-wrap mb-2">
-                    <span class="badge-legend" style="background-color: #16a34a; color: white;">🪧 ป้ายที่อนุมัติแล้ว</span>
+                    <span class="badge-legend" style="background-color: #16a34a; color: white;">🪧
+                        ป้ายที่อนุมัติแล้ว</span>
                     <small class="text-muted">แสดงเฉพาะป้ายที่อนุมัติและยังไม่หมดอายุ</small>
                 </div>
             </div>
@@ -177,54 +180,53 @@ if ($res_rows && $res_rows->num_rows > 0) {
                     <div class="list-card overflow-hidden">
                         <div class="p-3 border-bottom d-flex align-items-center justify-content-between bg-light">
                             <h5 class="mb-0 fw-bold">📋 รายการคำร้องบนแผนที่</h5>
-                            <div class="d-flex align-items-center gap-3">
-                                <div class="d-flex align-items-center gap-2">
-                                    <label class="small text-muted mb-0">แสดง</label>
-                                    <select id="pageSize" class="form-select form-select-sm w-auto">
-                                        <option value="5">5</option>
-                                        <option value="10" selected>10</option>
-                                        <option value="20">20</option>
-                                    </select>
-                                </div>
-                                <div class="input-group input-group-sm" style="width: 280px;">
-                                    <span class="input-group-text bg-white border-end-0"><i
-                                            class="bi bi-search"></i></span>
-                                    <input id="searchInput" type="text" class="form-control border-start-0"
-                                        placeholder="ค้นหา ชื่อ/ที่อยู่/ประเภท...">
-                                </div>
+                            <div class="input-group input-group-sm" style="width: 280px;">
+                                <span class="input-group-text bg-white border-end-0"><i class="bi bi-search"></i></span>
+                                <input id="searchInput" type="text" class="form-control border-start-0"
+                                    placeholder="ค้นหา ชื่อ/ที่อยู่/ประเภท...">
                             </div>
                         </div>
-                        <div class="fixed-card-body p-0">
-                            <div class="table-wrap">
-                                <table class="table table-hover mb-0">
-                                    <thead>
-                                        <tr>
-                                            <th>เลขคำขอ</th>
-                                            <th>ประเภทป้าย</th>
-                                            <th>ถนน</th>
-                                            <th>ชื่อผู้ขอ</th>
-                                            <th>หมดอายุ</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody id="tableBody"></tbody>
-                                </table>
-                            </div>
+                    </div>
+                    <div class="fixed-card-body p-0">
+                        <div class="table-wrap">
+                            <table class="table table-hover mb-0">
+                                <thead>
+                                    <tr>
+                                        <th>เลขคำขอ</th>
+                                        <th>ประเภทป้าย</th>
+                                        <th>ถนน</th>
+                                        <th>ชื่อผู้ขอ</th>
+                                        <th>หมดอายุ</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="tableBody"></tbody>
+                            </table>
                         </div>
-                        <div class="p-3 border-top d-flex justify-content-between align-items-center bg-light">
+                    </div>
+                    <div class="p-3 border-top d-flex justify-content-between align-items-center bg-light">
+                        <div class="d-flex align-items-center gap-2">
+                            <select id="pageSize" class="form-select form-select-sm" style="width:70px;">
+                                <option value="5">5</option>
+                                <option value="10" selected>10</option>
+                                <option value="20">20</option>
+                            </select>
+
                             <div id="pageInfo" class="text-muted small"></div>
-                            <nav aria-label="Page navigation">
-                                <ul class="pagination pagination-sm mb-0">
-                                    <li class="page-item"><button id="prevBtn" class="page-link"><i
-                                                class="bi bi-chevron-left"></i> ย้อนกลับ</button></li>
-                                    <li class="page-item"><button id="nextBtn" class="page-link">ถัดไป <i
-                                                class="bi bi-chevron-right"></i></button></li>
-                                </ul>
-                            </nav>
                         </div>
+                        <div id="pageInfo" class="text-muted small"></div>
+                        <nav aria-label="Page navigation">
+                            <ul class="pagination pagination-sm mb-0">
+                                <li class="page-item"><button id="prevBtn" class="page-link"><i
+                                            class="bi bi-chevron-left"></i> ย้อนกลับ</button></li>
+                                <li class="page-item"><button id="nextBtn" class="page-link">ถัดไป <i
+                                            class="bi bi-chevron-right"></i></button></li>
+                            </ul>
+                        </nav>
                     </div>
                 </div>
             </div>
         </div>
+    </div>
     </div>
 
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
