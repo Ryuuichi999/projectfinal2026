@@ -39,7 +39,7 @@ while ($row = $resultStats->fetch_assoc()) {
 
 // 3. Fetch Recent Requests (Max 5)
 $recentRequests = [];
-$sqlRecent = "SELECT id, status, sign_type, width, height, created_at, road_name 
+$sqlRecent = "SELECT id, request_no, status, sign_type, width, height, created_at, road_name 
                FROM sign_requests 
                WHERE user_id = ? 
                ORDER BY created_at DESC LIMIT 5";
@@ -52,7 +52,7 @@ while ($row = $resultRecent->fetch_assoc()) {
 }
 
 // 4. ป้ายใกล้หมดอายุของผู้ใช้
-$expiring_sql = "SELECT id, sign_type, permit_no, road_name,
+$expiring_sql = "SELECT id, request_no, sign_type, permit_no, road_name,
     end_date as expire_date
     FROM sign_requests
     WHERE user_id = ? AND status = 'approved'
@@ -64,7 +64,7 @@ $stmtExp->execute();
 $expiringPermits = $stmtExp->get_result();
 
 // 5. คำร้องที่หมดอายุแล้ว
-$expired_sql = "SELECT id, sign_type, road_name,
+$expired_sql = "SELECT id, request_no, sign_type, road_name,
     end_date as expire_date
     FROM sign_requests
     WHERE user_id = ? AND status = 'expired'
@@ -477,7 +477,7 @@ function thaiDateShort($dateStr, $months) {
                             </div>
                             <div class="request-item-content">
                                 <div class="request-item-title">
-                                    <span class="request-item-id">#<?= $req['id'] ?></span>
+                                    <span class="request-item-id"><?= htmlspecialchars($req['request_no'] ?: '#' . $req['id']) ?></span>
                                     <?= get_status_badge($req['status']) ?>
                                 </div>
                                 <div class="request-item-info">
@@ -514,7 +514,7 @@ function thaiDateShort($dateStr, $months) {
                         </div>
                         <div class="request-item-content">
                             <div class="request-item-title">
-                                <span class="request-item-id">#<?= $exp['id'] ?></span>
+                                <span class="request-item-id"><?= htmlspecialchars($exp['request_no'] ?: '#' . $exp['id']) ?></span>
                                 <span class="badge <?= $days_left <= 7 ? 'bg-danger' : 'bg-warning text-dark' ?>">
                                     เหลือ <?= $days_left ?> วัน
                                 </span>
@@ -547,7 +547,7 @@ function thaiDateShort($dateStr, $months) {
                             </div>
                             <div class="request-item-content">
                                 <div class="request-item-title">
-                                    <span class="request-item-id">#<?= $exp['id'] ?></span>
+                                    <span class="request-item-id"><?= htmlspecialchars($exp['request_no'] ?: '#' . $exp['id']) ?></span>
                                     <?php if ($collect_remain > 0): ?>
                                         <span class="badge bg-danger">เก็บป้ายภายใน <?= $collect_remain ?> วัน</span>
                                     <?php else: ?>
