@@ -454,6 +454,25 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             pointer-events: none;
         }
 
+        /* ─── Back Button ─── */
+        .btn-back {
+            color: #64748b;
+            font-weight: 500;
+            font-size: 0.9rem;
+            text-decoration: none;
+            padding: 6px 12px;
+            border-radius: 6px;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .btn-back:hover {
+            background: #e2e8f0;
+            color: #334155;
+        }
+
         /* ─── Responsive ─── */
         @media (max-width: 640px) {
             .profile-banner { padding: 1.5rem; flex-direction: column; text-align: center; }
@@ -470,6 +489,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <?php include '../includes/user_navbar.php'; ?>
 
     <div class="profile-wrapper">
+        <!-- Back Button -->
+        <a href="index.php" class="btn-back">
+            <i class="bi bi-chevron-left me-1"></i> ย้อนกลับ
+        </a>
 
         <!-- ── Banner ── -->
         <div class="profile-banner">
