@@ -136,7 +136,7 @@ $permit_sig = getSetting($conn, 'permit_signature_path', '');
 
     <div class="content fade-in-up">
         <div class="container py-4">
-            <h2 class="mb-4">⚙️ ตั้งค่าระบบเอกสาร (ใบเสร็จ/ใบอนุญาต)</h2>
+            <h2 class="mb-4">⚙️ ตั้งค่าระบบใบเสร็จและใบอนุญาต</h2>
 
             <?php if ($success): ?>
                 <div class="alert alert-success">
