@@ -67,3 +67,15 @@
 [2026-03-05 09:49:55] ID: REQ-6903-00006, Status: reviewing, Email: riwlove7890@gmail.com, Sent: Yes (SMTP HTML)
 [2026-03-05 09:50:21] ID: REQ-6903-00006, Status: need_documents, Email: riwlove7890@gmail.com, Sent: Yes (SMTP HTML)
 [2026-03-05 09:52:36] ID: REQ-6903-00006, Status: waiting_payment, Email: riwlove7890@gmail.com, Sent: Yes (SMTP HTML)
+[2026-03-05 10:04:31] ID: REQ-6903-00005, Status: reviewing, Email: riwlove7890@gmail.com, Sent: Yes (SMTP Async)
+[2026-03-05 10:05:00] ID: REQ-6903-00005, Status: waiting_payment, Email: riwlove7890@gmail.com, Sent: Yes (SMTP Async)
+[2026-03-05 10:26:03] ID: REQ-6903-00002, Status: reviewing, Email: riwlove7890@gmail.com, Sent: Yes (Background Worker)
+[2026-03-05 10:27:35] Queue: ID=49, PHP=C:\xampp\apache\bin\httpd.exe, CMD=start /B "" "C:\xampp\apache\bin\httpd.exe" "C:\xampp\htdocs\Project2026\includes/send_email_worker.php" 49
+[2026-03-05 10:28:51] Queue: ID=26, PHP=C:\xampp\php\php.exe, CMD=start /B "" "C:\xampp\php\php.exe" "C:\xampp\htdocs\Project2026\includes/send_email_worker.php" 26
+[2026-03-05 10:30:49] Queue: ID=54, PHP=C:\xampp\php\php.exe, CMD=start /B "" "C:\xampp\php\php.exe" "C:\xampp\htdocs\Project2026\includes/send_email_worker.php" 54
+[2026-03-05 10:30:54] ID: REQ-6903-00007, Status: reviewing, Email: riwlove7890@gmail.com, Sent: Yes (Background Worker)
+[2026-03-05 10:32:40] ID: REQ-6903-00007, Status: reviewing, Email: riwlove7890@gmail.com, Sent: Yes (Background Worker)
+[2026-03-05 10:33:39] Queue: ID=55, PHP=C:\xampp\php\php.exe, CMD=start /B "" "C:\xampp\php\php.exe" "C:\xampp\htdocs\Project2026\includes/send_email_worker.php" 55
+[2026-03-05 10:33:43] ID: REQ-6903-00008, Status: reviewing, Email: riwlove7890@gmail.com, Sent: Yes (Background Worker)
+[2026-03-05 10:36:18] Queue: ID=55, PHP=C:\xampp\php\php.exe, CMD=start /B "" "C:\xampp\php\php.exe" "C:\xampp\htdocs\Project2026\includes/send_email_worker.php" 55
+[2026-03-05 10:36:22] ID: REQ-6903-00008, Status: waiting_payment, Email: riwlove7890@gmail.com, Sent: Yes (Background Worker)

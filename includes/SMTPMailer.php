@@ -5,7 +5,7 @@ class SMTPMailer
     private $port = 465;
     private $username;
     private $password;
-    private $timeout = 30;
+    private $timeout = 10;
     private $socket;
     private $debug = false;
     private $logs = [];

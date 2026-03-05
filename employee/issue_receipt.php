@@ -75,7 +75,7 @@ if (isset($_POST['issue_permit_confirm'])) {
         logRequestAction($conn, $request_id, 'approved', 'ออกใบอนุญาตและอนุมัติ', $_SESSION['user_id'], "เลขที่ใบอนุญาต: $permit_no");
 
         // Send Email
-        send_status_notification($request_id, $conn);
+        queue_status_notification($request_id, $conn);
 
         // Redirect
         echo "<script>

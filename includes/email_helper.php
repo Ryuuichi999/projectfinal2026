@@ -186,4 +186,34 @@ if (!function_exists('send_status_notification')) {
         return $mail_sent;
     }
 }
+
+/**
+ * ส่งอีเมลแบบ Background Process — เปิด PHP process แยกส่งอีเมล
+ * หน้าเว็บไม่ต้องรอเลย กดปุ่มปั๊บตอบกลับทันที
+ */
+if (!function_exists('queue_status_notification')) {
+    function queue_status_notification($request_id, $conn)
+    {
+        $request_id = (int) $request_id;
+        $worker = __DIR__ . '/send_email_worker.php';
+        // PHP_BINARY บน Apache จะคืน httpd.exe ซึ่งใช้ไม่ได้ ต้องใช้ php.exe CLI ตรงๆ
+        $php = 'C:\\xampp\\php\\php.exe';
+
+        $log_dir = __DIR__ . '/../logs/';
+        if (!file_exists($log_dir)) mkdir($log_dir, 0755, true);
+
+        if (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') {
+            $cmd = 'start /B "" "' . $php . '" "' . $worker . '" ' . $request_id;
+            file_put_contents($log_dir . 'email_log.txt',
+                "[" . date('Y-m-d H:i:s') . "] Queue: ID={$request_id}, PHP={$php}, CMD={$cmd}\n", FILE_APPEND);
+            $handle = popen($cmd, 'r');
+            if ($handle) {
+                pclose($handle);
+            }
+        } else {
+            $cmd = '"' . $php . '" "' . $worker . '" ' . $request_id . ' > /dev/null 2>&1 &';
+            exec($cmd);
+        }
+    }
+}
 ?>

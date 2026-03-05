@@ -39,7 +39,7 @@ if (isset($_POST['approve_confirm'])) {
     $stmt_up->bind_param("ii", $approver_id, $request_id);
 
     if ($stmt_up->execute()) {
-        send_status_notification($request_id, $conn);
+        queue_status_notification($request_id, $conn);
         logRequestAction($conn, $request_id, 'waiting_payment', 'อนุมัติคำร้อง — รอชำระค่าธรรมเนียม', $approver_id, 'ตรวจสอบเอกสารเบื้องต้นผ่านแล้ว');
         require_once '../includes/audit_helper.php';
         logAudit($conn, 'approve', 'sign_requests', $request_id, 'อนุมัติคำร้องให้รอชำระเงิน');

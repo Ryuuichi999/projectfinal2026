@@ -38,7 +38,7 @@ if (isset($_POST['action']) && isset($_POST['request_id'])) {
         }
 
         if ($stmt->execute()) {
-            send_status_notification($request_id, $conn);
+            queue_status_notification($request_id, $conn);
             logRequestAction($conn, $request_id, $status, $msg, $_SESSION['user_id']);
             $success = $msg;
         } else {

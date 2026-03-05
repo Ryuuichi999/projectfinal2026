@@ -57,7 +57,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
             $stmt2 = $conn->prepare("UPDATE sign_requests SET status = 'reviewing' WHERE id = ?");
             $stmt2->bind_param("i", $request_id);
             if ($stmt2->execute()) {
-                send_status_notification($request_id, $conn);
+                queue_status_notification($request_id, $conn);
                 $success = "เริ่มตรวจสอบคำขอแล้ว";
                 $request['status'] = 'reviewing';
             } else {
@@ -71,7 +71,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
         $stmt2 = $conn->prepare("UPDATE sign_requests SET status = 'need_documents', decision_note = ? WHERE id = ?");
         $stmt2->bind_param("si", $note, $request_id);
         if ($stmt2->execute()) {
-            send_status_notification($request_id, $conn);
+            queue_status_notification($request_id, $conn);
             $success = "ส่งคำขอเอกสารเพิ่มเติมแล้ว";
             $request['status'] = 'need_documents';
             $request['decision_note'] = $note;
@@ -84,7 +84,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
             $approver_id = $_SESSION['user_id'];
             $stmt2->bind_param("ii", $approver_id, $request_id);
             if ($stmt2->execute()) {
-                send_status_notification($request_id, $conn);
+                queue_status_notification($request_id, $conn);
                 logRequestAction($conn, $request_id, 'waiting_payment', 'อนุมัติคำร้อง — รอชำระค่าธรรมเนียม', $approver_id, 'ตรวจสอบเอกสารเบื้องต้นผ่านแล้ว');
                 logAudit($conn, 'approve', 'sign_requests', $request_id, 'อนุมัติคำร้องให้รอชำระเงิน');
                 $success = "อนุมัติคำขอเรียบร้อย สถานะเปลี่ยนเป็นรอชำระเงิน";
@@ -100,7 +100,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
         $stmt2 = $conn->prepare("UPDATE sign_requests SET status = 'rejected', decision_note = ? WHERE id = ?");
         $stmt2->bind_param("si", $note, $request_id);
         if ($stmt2->execute()) {
-            send_status_notification($request_id, $conn);
+            queue_status_notification($request_id, $conn);
             $success = "ปฏิเสธคำขอเรียบร้อย";
             $request['status'] = 'rejected';
             $request['decision_note'] = $note;
