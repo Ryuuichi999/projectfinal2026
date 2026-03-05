@@ -429,9 +429,9 @@ if (session_status() === PHP_SESSION_NONE) {
                     </div>
                 </div>
                 <div class="col-lg-6 text-center" data-aos="fade-left">
-                    <img src="https://img.freepik.com/free-vector/city-skyline-concept-illustration_114360-8923.jpg"
-                        class="img-fluid rounded-4 shadow-lg floating-hero-img" alt="Municipality Service"
-                        style="max-height: 420px; border: 8px solid white;"> <!-- Reduced max-height -->
+                    <img src="image/hero.jpg"
+                        class="img-fluid rounded-4 shadow-lg floating-hero-img" alt="บริการออนไลน์และระบบดิจิทัล"
+                        style="max-height: 420px; border: 8px solid white;">
                 </div>
             </div>
         </div>
