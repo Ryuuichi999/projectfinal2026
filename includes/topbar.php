@@ -33,14 +33,16 @@ elseif ($role === 'user')
 $notifItems = [];
 $notifBadgeCount = 0;
 if ($role === 'user' && $userId) {
-    $stmtN = $conn->prepare("SELECT id, status, created_at FROM sign_requests WHERE user_id = ? ORDER BY id DESC LIMIT 50");
+    $stmtN = $conn->prepare("SELECT id, status, created_at FROM sign_requests WHERE user_id = ? ORDER BY id DESC LIMIT 5");
     $stmtN->bind_param("i", $userId);
     $stmtN->execute();
     $rs = $stmtN->get_result();
     while ($row = $rs->fetch_assoc()) {
         $status = $row['status'];
         $label = $status;
-        if ($status === 'waiting_payment')
+        if ($status === 'pending')
+            $label = 'รอดำเนินการ';
+        elseif ($status === 'waiting_payment')
             $label = 'รอชำระเงิน';
         elseif ($status === 'approved')
             $label = 'อนุมัติแล้ว';
@@ -52,27 +54,25 @@ if ($role === 'user' && $userId) {
             $label = 'ขอเอกสารเพิ่ม';
         elseif ($status === 'reviewing')
             $label = 'กำลังพิจารณา';
-        if (in_array($status, ['reviewing', 'waiting_payment', 'waiting_receipt', 'approved', 'rejected', 'need_documents'])) {
-            $notifItems[] = ['id' => (int) $row['id'], 'label' => $label, 'date' => $row['created_at']];
-        }
+        
+        $notifItems[] = ['id' => (int) $row['id'], 'label' => $label, 'date' => $row['created_at']];
     }
     $currentCount = count($notifItems);
     $lastView = $_SESSION['notif_last_view_user'] ?? 0;
     $notifBadgeCount = max(0, $currentCount - $lastView);
 } else {
-    $q = $conn->query("SELECT id, status, created_at, receipt_date FROM sign_requests ORDER BY id DESC LIMIT 50");
+    $q = $conn->query("SELECT id, status, created_at, receipt_date FROM sign_requests WHERE status IN ('pending', 'waiting_receipt') ORDER BY id DESC LIMIT 5");
     while ($row = $q->fetch_assoc()) {
         $status = $row['status'];
         $label = $status;
         if ($status === 'pending')
             $label = 'คำขอใหม่';
         elseif ($status === 'waiting_receipt')
-            $label = 'ชำระเงินแล้ว';
+            $label = 'ชำระเงินแล้ว (รอออกใบเสร็จ)';
         elseif ($status === 'approved')
             $label = 'อนุมัติแล้ว';
-        if (in_array($status, ['pending', 'waiting_receipt'])) {
-            $notifItems[] = ['id' => (int) $row['id'], 'label' => $label, 'date' => $row['created_at']];
-        }
+        
+        $notifItems[] = ['id' => (int) $row['id'], 'label' => $label, 'date' => $row['created_at']];
     }
     $currentCount = count($notifItems);
     $lastView = $_SESSION['notif_last_view_emp'] ?? 0;
@@ -209,8 +209,8 @@ if ($role === 'user' && $userId) {
                 <li>
                     <hr class="dropdown-divider">
                 </li>
-                <li><a class="dropdown-item text-center text-primary small py-1"
-                        href="<?= ($role === 'user' ? '/Project2026/users/my_request.php' : '/Project2026/employee/request_list.php') ?>">ดูรายการทั้งหมด</a>
+                <li><a class="dropdown-item text-center text-primary fw-bold small py-1"
+                        href="<?= ($role === 'user' ? '/Project2026/users/my_request.php' : '/Project2026/employee/request_list.php') ?>">ดูคำขอทั้งหมด</a>
                 </li>
             </ul>
         </div>

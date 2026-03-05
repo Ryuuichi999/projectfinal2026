@@ -35,7 +35,9 @@ if ($userId && $role === 'user') {
     while ($row = $rs->fetch_assoc()) {
         $status = $row['status'];
         $label = $status;
-        if ($status === 'waiting_payment')
+        if ($status === 'pending')
+            $label = 'รอดำเนินการ';
+        elseif ($status === 'waiting_payment')
             $label = 'รอชำระเงิน';
         elseif ($status === 'approved')
             $label = 'อนุมัติแล้ว';
@@ -248,7 +250,7 @@ if ($userId && $role === 'user') {
                         <li>
                             <hr class="dropdown-divider">
                         </li>
-                        <li><a class="dropdown-item text-center text-primary small py-1"
+                        <li><a class="dropdown-item text-center text-primary fw-bold small py-1"
                                 href="/Project2026/users/my_request.php">ดูคำขอทั้งหมด</a></li>
                     </ul>
                 </div>
