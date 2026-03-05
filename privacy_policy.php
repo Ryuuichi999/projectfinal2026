@@ -20,6 +20,23 @@ if (session_status() === PHP_SESSION_NONE) {
             padding: 36px 40px;
             margin-bottom: 32px;
         }
+
+        /* Footer */
+        footer {
+            background: #0f172a;
+            color: white;
+            padding: 80px 0 40px;
+        }
+
+        .footer-link {
+            color: #94a3b8;
+            text-decoration: none;
+            transition: 0.2s;
+        }
+
+        .footer-link:hover {
+            color: white;
+        }
         .policy-header h1 { font-weight: 700; margin-bottom: 6px; }
         .policy-header p { opacity: 0.85; margin-bottom: 0; }
 
@@ -201,7 +218,7 @@ if (session_status() === PHP_SESSION_NONE) {
                 หน่วยงานอาจปรับปรุงนโยบายฉบับนี้เป็นครั้งคราว
                 หากมีการเปลี่ยนแปลงที่สำคัญ จะแจ้งให้ท่านทราบผ่านทางระบบหรือช่องทางที่เหมาะสม
             </p>
-            <p class="text-muted small mb-0">ปรับปรุงล่าสุด: 2 มีนาคม 2569</p>
+            <p class="text-muted small mb-0">ปรับปรุดล่าสุด: 2 มีนาคม 2569</p>
         </div>
 
         <div class="policy-card">
