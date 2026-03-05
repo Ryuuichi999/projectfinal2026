@@ -591,8 +591,8 @@ if (isset($_GET['export'])) {
         new Chart(document.getElementById('statusChart'), {
             type: 'pie',
             data: {
-                labels: ['รอดำเนินการ','รอชำระเงิน','อนุมัติ','ปฏิเสธ'],
-                datasets: [{ data: [<?= $stats['pending'] ?>,<?= $stats['waiting_payment'] ?>,<?= $stats['approved'] ?>,<?= $stats['rejected'] ?>], backgroundColor: ['#ffc107','#17a2b8','#28a745','#dc3545'] }]
+                labels: ['รอกำลังพิจารณา','รอชำระเงิน','รอออกใบอนุญาต','อนุมัติแล้ว','ไม่อนุมัติ'],
+                datasets: [{ data: [<?= $stats['pending'] ?>,<?= $stats['waiting_payment'] ?>,<?= $stats['waiting_permit'] ?>,<?= $stats['approved'] ?>,<?= $stats['rejected'] ?>], backgroundColor: ['#1d4ed8','#dc2626','#7c3aed','#16a34a','#6b7280'] }]
             },
             options: { responsive:true, maintainAspectRatio:false, plugins:{legend:{position:'bottom'}} }
         });
