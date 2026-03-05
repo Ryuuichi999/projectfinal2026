@@ -43,13 +43,18 @@ $warned_count = 0;
 // ส่วนที่ 1: ใบอนุญาตที่หมดอายุแล้ว → เปลี่ยนสถานะเป็น expired
 // ═══════════════════════════════════════════════
 $sql_expired = "SELECT sr.id, sr.email, sr.applicant_name, sr.sign_type, sr.fee,
-                       sr.duration_days, sr.permit_date, sr.created_at, sr.road_name, sr.end_date
+                       sr.duration_days, sr.permit_date, sr.created_at, sr.road_name, sr.end_date,
+                       sr.request_no
                 FROM sign_requests sr
                 WHERE sr.status = 'approved'
                 AND sr.end_date IS NOT NULL
                 AND sr.end_date < CURDATE()";
 
 $result_expired = $conn->query($sql_expired);
+if (!$result_expired) {
+    cronLog("SQL Error (expired): " . $conn->error, $log_file);
+    exit;
+}
 
 while ($row = $result_expired->fetch_assoc()) {
     $request_id = $row['id'];
@@ -85,7 +90,8 @@ while ($row = $result_expired->fetch_assoc()) {
 $warn_date = date('Y-m-d', strtotime("+{$WARN_BEFORE_DAYS} days"));
 
 $sql_warning = "SELECT sr.id, sr.email, sr.applicant_name, sr.sign_type, sr.fee,
-                       sr.duration_days, sr.permit_date, sr.created_at, sr.road_name, sr.end_date
+                       sr.duration_days, sr.permit_date, sr.created_at, sr.road_name, sr.end_date,
+                       sr.request_no
                 FROM sign_requests sr
                 WHERE sr.status = 'approved'
                 AND sr.end_date = ?";
@@ -124,7 +130,8 @@ $followup_count = 0;
 $followup_date = date('Y-m-d', strtotime('-7 days'));
 
 $sql_followup = "SELECT sr.id, sr.email, sr.applicant_name, sr.sign_type, sr.fee,
-                       sr.duration_days, sr.permit_date, sr.created_at, sr.road_name, sr.end_date
+                       sr.duration_days, sr.permit_date, sr.created_at, sr.road_name, sr.end_date,
+                       sr.request_no
                 FROM sign_requests sr
                 WHERE sr.status = 'expired'
                 AND sr.end_date = ?";
@@ -163,6 +170,7 @@ function sendExpiryEmail($request, $expire_date, $type, $conn) {
     
     $to = $request['email'];
     $request_id = $request['id'];
+    $request_display = !empty($request['request_no']) ? $request['request_no'] : "#{$request_id}";
     
     // แปลงวันที่เป็นไทย
     $months_th = [1=>'ม.ค.',2=>'ก.พ.',3=>'มี.ค.',4=>'เม.ย.',5=>'พ.ค.',6=>'มิ.ย.',
@@ -170,36 +178,34 @@ function sendExpiryEmail($request, $expire_date, $type, $conn) {
     $ts = strtotime($expire_date);
     $expire_th = date('j', $ts) . ' ' . $months_th[(int)date('n', $ts)] . ' ' . (date('Y', $ts) + 543);
     
+    $base_url = defined('BASE_URL') ? BASE_URL : '/Project2026';
+    $btn_url = 'http://localhost' . $base_url . '/users/request_detail.php?id=' . $request_id;
+    $btn_text = 'ดูรายละเอียดคำร้อง';
+
     if ($type === 'expired') {
-        $subject = "[เทศบาลเมืองศิลา] ใบอนุญาตป้าย #{$request_id} หมดอายุแล้ว";
+        $subject = "[เทศบาลเมืองศิลา] ใบอนุญาตป้าย {$request_display} หมดอายุแล้ว — กรุณาเก็บป้าย";
         $header_bg = '#dc3545';
         $header_text = 'ใบอนุญาตหมดอายุ';
-        $body_text = "ใบอนุญาตติดตั้งป้ายของท่าน <strong>เลขที่ #{$request_id}</strong> 
+        $body_text = "ใบอนุญาตติดตั้งป้ายของท่าน <strong>เลขที่ {$request_display}</strong> 
                       ได้<span style='color:#dc3545;font-weight:bold;'>หมดอายุ</span>แล้ว 
                       เมื่อวันที่ <strong>{$expire_th}</strong>
-                      <br><br>กรุณาดำเนินการถอดป้ายออกภายใน 7 วัน มิฉะนั้นอาจถูกดำเนินการตามกฎหมาย";
-        $btn_text = 'ดูรายละเอียด';
-        $btn_url = 'http://localhost/Project2026/users/request_detail.php?id=' . $request_id;
+                      <br><br><strong>กรุณาดำเนินการเก็บป้ายออกภายใน 7 วัน</strong> นับจากวันหมดอายุ มิฉะนั้นอาจถูกดำเนินการตามกฎหมาย";
     } elseif ($type === 'followup_7days') {
-        $subject = "[เทศบาลเมืองศิลา] ⚠️ เกินกำหนดเก็บป้าย #{$request_id} — กรุณาถอดป้ายทันที";
+        $subject = "[เทศบาลเมืองศิลา] เกินกำหนดเก็บป้าย {$request_display} — กรุณาเก็บป้ายทันที";
         $header_bg = '#1f2937';
         $header_text = 'เกินกำหนดเก็บป้าย';
-        $body_text = "ใบอนุญาตติดตั้งป้ายของท่าน <strong>เลขที่ #{$request_id}</strong> 
+        $body_text = "ใบอนุญาตติดตั้งป้ายของท่าน <strong>เลขที่ {$request_display}</strong> 
                       ได้หมดอายุเมื่อวันที่ <strong>{$expire_th}</strong> 
                       ซึ่ง<span style='color:#dc3545;font-weight:bold;'>เกินระยะเวลาเก็บป้าย 7 วันแล้ว</span>
-                      <br><br><strong>กรุณาดำเนินการถอดป้ายออกทันที</strong> มิฉะนั้นเทศบาลจะดำเนินการตามกฎหมายต่อไป";
-        $btn_text = 'ดูรายละเอียด';
-        $btn_url = 'http://localhost/Project2026/users/request_detail.php?id=' . $request_id;
+                      <br><br><strong>กรุณาดำเนินการเก็บป้ายออกทันที</strong> มิฉะนั้นเทศบาลจะดำเนินการตามกฎหมายต่อไป";
     } else {
-        $subject = "[เทศบาลเมืองศิลา] ใบอนุญาตป้าย #{$request_id} จะหมดอายุเร็วๆ นี้";
+        $subject = "[เทศบาลเมืองศิลา] ใบอนุญาตป้าย {$request_display} จะหมดอายุเร็วๆ นี้ — เตรียมเก็บป้าย";
         $header_bg = '#f59e0b';
         $header_text = 'แจ้งเตือนใบอนุญาตใกล้หมดอายุ';
-        $body_text = "ใบอนุญาตติดตั้งป้ายของท่าน <strong>เลขที่ #{$request_id}</strong> 
+        $body_text = "ใบอนุญาตติดตั้งป้ายของท่าน <strong>เลขที่ {$request_display}</strong> 
                       จะ<span style='color:#f59e0b;font-weight:bold;'>หมดอายุ</span>ในวันที่ 
                       <strong>{$expire_th}</strong>
-                      <br><br>เมื่อหมดอายุแล้ว กรุณาดำเนินการถอดป้ายออกภายใน 7 วัน มิฉะนั้นอาจถูกดำเนินการตามกฎหมาย";
-        $btn_text = 'ดูรายละเอียด';
-        $btn_url = 'http://localhost/Project2026/users/request_detail.php?id=' . $request_id;
+                      <br><br>เมื่อหมดอายุแล้ว <strong>กรุณาดำเนินการเก็บป้ายออกภายใน 7 วัน</strong> มิฉะนั้นอาจถูกดำเนินการตามกฎหมาย";
     }
     
     $message = "

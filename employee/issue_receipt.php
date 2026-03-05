@@ -77,11 +77,19 @@ if (isset($_POST['issue_permit_confirm'])) {
         // Send Email
         queue_status_notification($request_id, $conn);
 
-        // Redirect
-        echo "<script>
-            alert('บันทึกข้อมูลและออกใบอนุญาตเรียบร้อยแล้ว');
-            window.location.href = 'request_list.php';
-        </script>";
+        // ดึง request_no สำหรับแสดงใน SweetAlert
+        $display_no = !empty($request['request_no']) ? $request['request_no'] : "#{$request_id}";
+
+        // Redirect with SweetAlert
+        echo '<!DOCTYPE html><html lang="th"><head><meta charset="UTF-8"><script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script></head><body><script>
+        Swal.fire({
+            icon: "success",
+            title: "ออกใบอนุญาตสำเร็จ",
+            html: "คำร้อง <b>' . htmlspecialchars($display_no, ENT_QUOTES) . '</b><br>เลขที่ใบอนุญาต: <b>' . htmlspecialchars($permit_no, ENT_QUOTES) . '</b><br>ระบบส่งอีเมลแจ้งผู้ยื่นคำร้องเรียบร้อยแล้ว",
+            confirmButtonColor: "#198754",
+            confirmButtonText: "ตกลง"
+        }).then(() => { window.location.href = "request_list.php"; });
+        </script></body></html>';
         exit;
     } else {
         $error = "เกิดข้อผิดพลาดในการบันทึก กรุณาลองใหม่อีกครั้ง";

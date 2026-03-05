@@ -15,3 +15,8 @@ if ($conn->connect_error) {
     error_log("DB Connection failed: " . $conn->connect_error);
     die("ไม่สามารถเชื่อมต่อฐานข้อมูลได้ กรุณาลองใหม่ภายหลัง");
 }
+
+// Auto-run cron jobs วันละ 1 ครั้ง (ไม่บล็อกหน้าเว็บ)
+if (php_sapi_name() !== 'cli') {
+    @include_once __DIR__ . '/cron_runner.php';
+}
