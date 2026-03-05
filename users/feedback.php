@@ -55,19 +55,19 @@ $avg_stats = $avg_result->fetch_assoc();
     <link rel="stylesheet" href="../assets/css/style.css">
     <style>
         :root {
-            --navy:       #0f2044;
-            --navy-mid:   #1a3560;
-            --gold:       #c9a84c;
-            --gold-light: #e8c97a;
-            --ivory:      #f7f5f0;
+            --primary:    #1a56db;
+            --primary-dark:#1a4fa0;
+            --primary-light:#3b82f6;
+            --accent:     #0d6efd;
+            --ivory:      #f8fafc;
             --white:      #ffffff;
-            --border:     #ddd8ce;
-            --text-main:  #1a1a2e;
-            --text-muted: #6b7280;
-            --success:    #1a6b3c;
-            --danger:     #8b1a1a;
-            --success-bg: #edf7f2;
-            --danger-bg:  #fdf2f2;
+            --border:     #e2e8f0;
+            --text-main:  #1e293b;
+            --text-muted: #64748b;
+            --success:    #16a34a;
+            --danger:     #dc2626;
+            --success-bg: #f0fdf4;
+            --danger-bg:  #fef2f2;
         }
 
         body {
@@ -89,7 +89,7 @@ $avg_stats = $avg_result->fetch_assoc();
         }
 
         .feedback-header {
-            background: var(--navy);
+            background: linear-gradient(135deg, var(--primary-dark), var(--primary));
             border-radius: 14px 14px 0 0;
             padding: 2.2rem 2.5rem 2rem;
             position: relative;
@@ -101,21 +101,13 @@ $avg_stats = $avg_result->fetch_assoc();
             content: '';
             position: absolute;
             inset: 0;
-            background:
-                radial-gradient(ellipse 60% 80% at 85% 50%, rgba(201,168,76,.14) 0%, transparent 70%),
-                repeating-linear-gradient(
-                    -45deg,
-                    transparent,
-                    transparent 28px,
-                    rgba(255,255,255,.025) 28px,
-                    rgba(255,255,255,.025) 29px
-                );
+            background: linear-gradient(180deg, rgba(255,255,255,0.05) 0%, rgba(0,0,0,0.1) 100%);
             pointer-events: none;
         }
 
         .feedback-header-icon {
             font-size: 2.5rem;
-            color: var(--gold-light);
+            color: rgba(255,255,255,0.85);
             margin-bottom: 0.5rem;
             position: relative;
             z-index: 1;
@@ -189,29 +181,29 @@ $avg_stats = $avg_result->fetch_assoc();
         .form-label {
             font-size: .85rem;
             font-weight: 700;
-            color: var(--navy);
+            color: var(--text-main);
             margin-bottom: .5rem;
             letter-spacing: .02em;
             display: block;
         }
 
         .form-control, .form-select {
-            border: 1.5px solid #ccc8be;
+            border: 1px solid #dee2e6;
             border-radius: 8px;
             padding: 0.8rem 1rem;
             font-size: .95rem;
             font-family: 'Sarabun', sans-serif;
             color: var(--text-main);
-            background-color: #fdfdfc;
+            background-color: #fff;
             transition: all .2s;
-            box-shadow: inset 0 1px 2px rgba(0,0,0,.02);
+            box-shadow: none;
             width: 100%;
         }
 
         .form-control:focus, .form-select:focus {
-            border-color: var(--navy-mid);
+            border-color: #0d6efd;
             background-color: var(--white);
-            box-shadow: 0 0 0 3px rgba(15,32,68,.08), inset 0 1px 2px rgba(0,0,0,.02);
+            box-shadow: 0 0 0 3px rgba(13, 110, 253, 0.15);
             outline: none;
         }
 
@@ -221,7 +213,7 @@ $avg_stats = $avg_result->fetch_assoc();
         }
 
         .btn-action-confirm {
-            background: var(--navy);
+            background: var(--primary);
             border: none;
             border-radius: 8px;
             padding: 0.8rem 2rem;
@@ -232,17 +224,17 @@ $avg_stats = $avg_result->fetch_assoc();
             transition: all .2s;
             width: 100%;
             margin-top: 1rem;
-            box-shadow: 0 4px 10px rgba(15,32,68,0.15);
+            box-shadow: 0 4px 10px rgba(26, 86, 219, 0.2);
         }
 
         .btn-action-confirm:hover:not(:disabled) {
-            background: var(--navy-mid);
+            background: #0d47a1;
             transform: translateY(-2px);
-            box-shadow: 0 6px 15px rgba(15,32,68,0.2);
+            box-shadow: 0 6px 15px rgba(26, 86, 219, 0.3);
         }
 
         .btn-action-confirm:disabled {
-            background: #ccc8be;
+            background: #cbd5e1;
             cursor: not-allowed;
             box-shadow: none;
             transform: none;
@@ -261,7 +253,7 @@ $avg_stats = $avg_result->fetch_assoc();
         .stats-title {
             font-size: 1.1rem;
             font-weight: 700;
-            color: var(--navy);
+            color: var(--text-main);
             margin-bottom: 1rem;
             display: flex;
             align-items: center;
@@ -272,10 +264,10 @@ $avg_stats = $avg_result->fetch_assoc();
         .avg-display {
             font-size: 3.5rem;
             font-weight: 700;
-            color: var(--gold);
+            color: var(--primary);
             line-height: 1;
             margin-bottom: 0.5rem;
-            text-shadow: 0 2px 4px rgba(201,168,76,0.2);
+            text-shadow: 0 2px 4px rgba(26, 86, 219, 0.15);
         }
 
         .satisfaction-bar {

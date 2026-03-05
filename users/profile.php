@@ -100,19 +100,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     <style>
         :root {
-            --navy:       #0f2044;
-            --navy-mid:   #1a3560;
-            --gold:       #c9a84c;
-            --gold-light: #e8c97a;
-            --ivory:      #f7f5f0;
+            --primary:    #1a56db;
+            --primary-dark:#1a4fa0;
+            --primary-light:#3b82f6;
+            --accent:     #0d6efd;
+            --ivory:      #f8fafc;
             --white:      #ffffff;
-            --border:     #ddd8ce;
-            --text-main:  #1a1a2e;
-            --text-muted: #6b7280;
-            --success:    #1a6b3c;
-            --danger:     #8b1a1a;
-            --success-bg: #edf7f2;
-            --danger-bg:  #fdf2f2;
+            --border:     #e2e8f0;
+            --text-main:  #1e293b;
+            --text-muted: #64748b;
+            --success:    #16a34a;
+            --danger:     #dc2626;
+            --success-bg: #f0fdf4;
+            --danger-bg:  #fef2f2;
         }
 
         body {
@@ -136,7 +136,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         /* ─── Header banner ─── */
         .profile-banner {
-            background: var(--navy);
+            background: linear-gradient(135deg, var(--primary-dark), var(--primary));
             border-radius: 14px 14px 0 0;
             padding: 2.2rem 2.5rem 2rem;
             display: flex;
@@ -150,15 +150,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             content: '';
             position: absolute;
             inset: 0;
-            background:
-                radial-gradient(ellipse 60% 80% at 85% 50%, rgba(201,168,76,.14) 0%, transparent 70%),
-                repeating-linear-gradient(
-                    -45deg,
-                    transparent,
-                    transparent 28px,
-                    rgba(255,255,255,.025) 28px,
-                    rgba(255,255,255,.025) 29px
-                );
+            background: linear-gradient(180deg, rgba(255,255,255,0.05) 0%, rgba(0,0,0,0.1) 100%);
             pointer-events: none;
         }
 
@@ -168,14 +160,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             width: 72px;
             height: 72px;
             border-radius: 50%;
-            border: 2.5px solid var(--gold);
-            background: rgba(201,168,76,.12);
+            border: 2.5px solid rgba(255,255,255,0.4);
+            background: rgba(255,255,255,0.15);
             display: flex;
             align-items: center;
             justify-content: center;
             font-size: 1.6rem;
             font-weight: 700;
-            color: var(--gold-light);
+            color: #fff;
             letter-spacing: 1px;
             position: relative;
             z-index: 1;
@@ -188,7 +180,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             font-weight: 600;
             letter-spacing: .14em;
             text-transform: uppercase;
-            color: var(--gold);
+            color: rgba(255,255,255,0.7);
             margin-bottom: .3rem;
         }
 
@@ -204,12 +196,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             display: inline-flex;
             align-items: center;
             gap: .45rem;
-            background: rgba(255,255,255,.08);
-            border: 1px solid rgba(255,255,255,.15);
+            background: rgba(255,255,255,0.08);
+            border: 1px solid rgba(255,255,255,0.15);
             border-radius: 20px;
             padding: .2rem .75rem;
             font-size: .8rem;
-            color: rgba(255,255,255,.7);
+            color: rgba(255,255,255,0.7);
         }
 
         .profile-meta .id-badge svg {
@@ -240,14 +232,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         .profile-tabs a.active,
         .profile-tabs a[data-active="true"] {
-            color: var(--navy);
-            border-bottom-color: var(--gold);
-            background: var(--ivory);
+            color: var(--primary);
+            border-bottom-color: var(--primary);
+            background: #f0f4ff;
         }
 
         .profile-tabs a:hover:not(.active) {
-            color: var(--navy-mid);
-            background: #f8f8f8;
+            color: var(--primary-dark);
+            background: #f8fafc;
         }
 
         /* ─── Tab content card ─── */
@@ -265,7 +257,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             font-weight: 700;
             letter-spacing: .14em;
             text-transform: uppercase;
-            color: var(--gold);
+            color: var(--primary);
             margin-bottom: 1.2rem;
             padding-bottom: .5rem;
             border-bottom: 1px solid var(--border);
@@ -275,7 +267,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         .form-label {
             font-size: .78rem;
             font-weight: 700;
-            color: var(--navy);
+            color: var(--text-main);
             margin-bottom: .4rem;
             letter-spacing: .06em;
             text-transform: uppercase;
@@ -288,16 +280,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         .form-control,
         .form-select {
             height: 46px;
-            border: 1.5px solid #ccc8be;
-            border-radius: 6px;
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
             padding: 0 1rem;
             font-size: .92rem;
             font-family: 'Sarabun', sans-serif;
             color: var(--text-main);
-            background-color: #fdfdfc;
+            background-color: #fff;
             transition: border-color .2s, box-shadow .2s, background .2s;
             line-height: 46px;
-            box-shadow: inset 0 1px 2px rgba(0,0,0,.04);
+            box-shadow: none;
             width: 100%;
             display: block;
         }
@@ -321,9 +313,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         .form-control:focus,
         .form-select:focus {
-            border-color: var(--navy-mid);
+            border-color: #0d6efd;
             background-color: var(--white);
-            box-shadow: 0 0 0 3px rgba(15,32,68,.1), inset 0 1px 2px rgba(0,0,0,.04);
+            box-shadow: 0 0 0 3px rgba(13, 110, 253, 0.15);
             outline: none;
         }
 
@@ -396,8 +388,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
 
         .btn-form-primary {
-            background: var(--navy);
-            border: 1.5px solid var(--navy);
+            background: var(--primary);
+            border: 1.5px solid var(--primary);
             border-radius: 8px;
             padding: .55rem 1.6rem;
             font-size: .88rem;
@@ -410,8 +402,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
 
         .btn-form-primary:hover {
-            background: var(--navy-mid);
-            border-color: var(--navy-mid);
+            background: #0d47a1;
+            border-color: #0d47a1;
             transform: translateY(-1px);
         }
 
