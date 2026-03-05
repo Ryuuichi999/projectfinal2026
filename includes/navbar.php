@@ -35,7 +35,9 @@ if ($userId && $role === 'user') {
     while ($row = $rs->fetch_assoc()) {
         $status = $row['status'];
         $label = $status;
-        if ($status === 'waiting_payment')
+        if ($status === 'pending')
+            $label = 'รอดำเนินการ';
+        elseif ($status === 'waiting_payment')
             $label = 'รอชำระเงิน';
         elseif ($status === 'approved')
             $label = 'อนุมัติแล้ว';
@@ -43,10 +45,16 @@ if ($userId && $role === 'user') {
             $label = 'ไม่อนุมัติ';
         elseif ($status === 'waiting_receipt')
             $label = 'รอออกใบเสร็จ';
+        elseif ($status === 'waiting_permit')
+            $label = 'รอออกใบอนุญาต';
         elseif ($status === 'need_documents')
             $label = 'ขอเอกสารเพิ่ม';
         elseif ($status === 'reviewing')
             $label = 'กำลังพิจารณา';
+        elseif ($status === 'expired')
+            $label = 'หมดอายุ';
+        elseif ($status === 'cancelled_payment')
+            $label = 'ยกเลิก (ไม่ชำระเงิน)';
         $notifItems[] = ['id' => (int) $row['id'], 'label' => $label, 'date' => $row['created_at']];
     }
     $currentCount = count($notifItems);
