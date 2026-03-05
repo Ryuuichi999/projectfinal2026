@@ -3,6 +3,7 @@ require '../includes/db.php';
 require '../includes/email_helper.php';
 require_once '../includes/status_helper.php';
 require_once '../includes/log_helper.php';
+require_once '../includes/csrf_helper.php';
 
 if (!isset($_SESSION['user_id']) || ($_SESSION['role'] !== 'admin' && $_SESSION['role'] !== 'employee')) {
     header("Location: ../login.php");
@@ -13,6 +14,7 @@ if (!isset($_SESSION['user_id']) || ($_SESSION['role'] !== 'admin' && $_SESSION[
    จัดการ Quick Action
 ================================ */
 if (isset($_POST['action']) && isset($_POST['request_id'])) {
+    csrf_check();
 
     $request_id = (int)$_POST['request_id'];
     $action = $_POST['action'];
@@ -122,11 +124,13 @@ data-bs-toggle="tooltip" title="ดูรายละเอียด">
 </button>
 
 <form id="approveForm<?= $row['id'] ?>" method="post" class="d-none">
+<?= csrf_field() ?>
 <input type="hidden" name="request_id" value="<?= $row['id'] ?>">
 <input type="hidden" name="action" value="approve">
 </form>
 
 <form id="rejectForm<?= $row['id'] ?>" method="post" class="d-none">
+<?= csrf_field() ?>
 <input type="hidden" name="request_id" value="<?= $row['id'] ?>">
 <input type="hidden" name="action" value="reject">
 </form>
