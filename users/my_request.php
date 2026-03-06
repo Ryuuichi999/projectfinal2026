@@ -164,8 +164,13 @@ if (!isset($_SESSION['user_id'])) {
         $(document).ready(function () {
             var table = $('#myRequestsTable').DataTable({
                 "language": {
-                    "url": "//cdn.datatables.net/plug-ins/1.13.7/i18n/th.json",
                     "search": "ค้นหา:",
+                    "lengthMenu": "แสดง _MENU_ รายการ",
+                    "info": "แสดง _START_ ถึง _END_ จาก _TOTAL_ รายการ",
+                    "infoEmpty": "แสดง 0 ถึง 0 จาก 0 รายการ",
+                    "infoFiltered": "(กรองจาก _MAX_ รายการทั้งหมด)",
+                    "zeroRecords": "ไม่พบข้อมูลที่ค้นหา",
+                    "emptyTable": "ไม่มีข้อมูลในตาราง",
                     "paginate": {
                         "first": "<<",
                         "last": ">>",

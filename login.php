@@ -310,7 +310,7 @@ if (isset($_POST['login'])) {
                 <?php if (isset($success) && $success): ?>
                     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
                     <script>
-                        const Toast=Swal.mixin({toast:true,position:"top-end",showConfirmButton:false,timer:3000,timerProgressBar:true,didOpen:(t)=>{t.onmouseenter=Swal.stopTimer;t.onmouseleave=Swal.resumeTimer}});
+                        const Toast=Swal.mixin({toast:true,position:"top-end",showConfirmButton:false,timer:1500,timerProgressBar:true,didOpen:(t)=>{t.onmouseenter=Swal.stopTimer;t.onmouseleave=Swal.resumeTimer}});
                         Toast.fire({
                             icon: 'success',
                             title: 'เข้าสู่ระบบสำเร็จ'
