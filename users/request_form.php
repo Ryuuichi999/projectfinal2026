@@ -188,12 +188,10 @@ if (isset($_POST['submit'])) {
             <body>
                 <script>
                     document.addEventListener("DOMContentLoaded", function() {
-                        Swal.fire({
+                        const Toast=Swal.mixin({toast:true,position:"top-end",showConfirmButton:false,timer:1500,timerProgressBar:true,didOpen:(t)=>{t.onmouseenter=Swal.stopTimer;t.onmouseleave=Swal.resumeTimer}});
+                        Toast.fire({
                             icon: "success",
-                            title: "ยื่นคำร้องสำเร็จ",
-                            text: "เจ้าหน้าที่จะดำเนินการตรวจสอบข้อมูลของท่าน",
-                            showConfirmButton: false,
-                            timer: 2000
+                            title: "ยื่นคำร้องสำเร็จ"
                         }).then(() => {
                             window.location.href = "my_request.php";
                         });
@@ -767,7 +765,7 @@ if ($result_signs && $result_signs->num_rows > 0) {
                     if (!checkBoundary(lat, lng)) {
                         var hint = document.getElementById('roadHint');
                         if (hint) { hint.textContent = "อยู่นอกเขตเทศบาล"; hint.className = "badge bg-danger"; }
-                        Swal.fire({ icon: 'warning', title: 'อยู่นอกเขตพื้นที่', text: 'พิกัดที่ท่านระบุอยู่นอกเขตเทศบาลเมืองศิลา', confirmButtonText: 'ตกลง' });
+                        Toast.fire({ icon: 'warning', title: 'พิกัดอยู่นอกเขตเทศบาล' });
                     } else {
                         var hint = document.getElementById('roadHint');
                         if (hint) { hint.textContent = "กำหนดพิกัดเอง"; hint.className = "badge bg-info text-dark"; }
@@ -801,7 +799,7 @@ if ($result_signs && $result_signs->num_rows > 0) {
             map.on('click', function () {
                 var hint = document.getElementById('roadHint');
                 if (hint) { hint.textContent = "อยู่นอกเขตเทศบาล (กรุณาคลิกในขอบเขตสีน้ำเงิน)"; hint.className = "badge bg-danger"; }
-                Swal.fire({ icon: 'warning', title: 'อยู่นอกเขตพื้นที่', text: 'จุดที่ท่านเลือกอยู่นอกเขตเทศบาลเมืองศิลา กรุณาเลือกจุดติดตั้งใหม่ภายในขอบเขตสีน้ำเงิน', confirmButtonText: 'ตกลง' });
+                Toast.fire({ icon: 'warning', title: 'จุดที่เลือกอยู่นอกเขตเทศบาล' });
             });
 
             // === คำนวณพื้นที่ป้าย realtime ===
@@ -814,7 +812,7 @@ if ($result_signs && $result_signs->num_rows > 0) {
                 var overSize = (w > 1.2 || h > 2.4);
                 badge.className = overSize ? 'ms-2 badge bg-danger' : 'ms-2 badge bg-success';
                 if (overSize && (w > 0 || h > 0)) {
-                    Swal.fire({ icon: 'warning', title: 'ขนาดเกินกำหนด', html: 'ขนาดสูงสุด: กว้างไม่เกิน <b>1.20</b> ม. × สูงไม่เกิน <b>2.40</b> ม.', confirmButtonText: 'ตกลง' });
+                    Toast.fire({ icon: 'warning', title: 'ขนาดเกินกำหนด (ไม่เกิน 1.20×2.40 ม.)' });
                 }
             }
             document.getElementById('width').addEventListener('input', calcArea);
@@ -872,7 +870,7 @@ if ($result_signs && $result_signs->num_rows > 0) {
             document.getElementById('quantity').addEventListener('input', function() {
                 var qty = parseInt(this.value) || 0;
                 if (qty > 2) {
-                    Swal.fire({ icon: 'warning', title: 'จำนวนเกินกำหนด', text: 'สูงสุด 2 ผืน/แผ่น ต่อ 1 คำร้อง', confirmButtonText: 'ตกลง' });
+                    Toast.fire({ icon: 'warning', title: 'สูงสุด 2 ผืน/แผ่น ต่อ 1 คำร้อง' });
                     this.value = 2;
                 }
                 calcFee();

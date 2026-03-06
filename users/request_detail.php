@@ -40,7 +40,7 @@ $stmt->execute();
 $result = $stmt->get_result();
 
 if ($result->num_rows === 0) {
-    echo '<!DOCTYPE html><html lang="th"><head><meta charset="UTF-8"><script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script></head><body><script>Swal.fire({icon:"warning",title:"ไม่พบข้อมูลคำขอ",text:"ไม่พบข้อมูลหรือคุณไม่มีสิทธิ์เข้าถึง",confirmButtonText:"กลับ"}).then(()=>{window.location.href="my_request.php";});</script></body></html>';
+    echo '<!DOCTYPE html><html lang="th"><head><meta charset="UTF-8"><script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script></head><body><script>const Toast=Swal.mixin({toast:true,position:"top-end",showConfirmButton:false,timer:1500,timerProgressBar:true,didOpen:(t)=>{t.onmouseenter=Swal.stopTimer;t.onmouseleave=Swal.resumeTimer}});Toast.fire({icon:"warning",title:"ไม่พบข้อมูลคำขอ"}).then(()=>{window.location.href="my_request.php";});</script></body></html>';
     exit;
 }
 

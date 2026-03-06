@@ -91,12 +91,9 @@ function get_role_badge($role)
         <?php if (isset($success_msg)): ?>
             <script>
                 document.addEventListener('DOMContentLoaded', () => {
-                    Swal.fire({
+                    Toast.fire({
                         icon: 'success',
-                        title: 'สำเร็จ',
-                        text: '<?= htmlspecialchars($success_msg) ?>',
-                        timer: 2000,
-                        showConfirmButton: false
+                        title: '<?= htmlspecialchars($success_msg) ?>'
                     }).then(() => {
                         window.location.href = 'users_list.php';
                     });
@@ -107,12 +104,9 @@ function get_role_badge($role)
         <?php if (isset($error_msg)): ?>
             <script>
                 document.addEventListener('DOMContentLoaded', () => {
-                    Swal.fire({
+                    Toast.fire({
                         icon: 'error',
-                        title: 'ผิดพลาด',
-                        text: '<?= htmlspecialchars($error_msg) ?>',
-                        confirmButtonColor: '#3085d6',
-                        confirmButtonText: 'ตกลง'
+                        title: '<?= htmlspecialchars($error_msg) ?>'
                     });
                 });
             </script>

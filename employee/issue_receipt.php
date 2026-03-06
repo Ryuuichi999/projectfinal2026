@@ -26,13 +26,13 @@ $stmt->execute();
 $request = $stmt->get_result()->fetch_assoc();
 
 if (!$request) {
-    echo '<!DOCTYPE html><html lang="th"><head><meta charset="UTF-8"><script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script></head><body><script>Swal.fire({icon:"error",title:"ไม่พบข้อมูลคำขอ",text:"กรุณาตรวจสอบหมายเลขคำขออีกครั้ง",confirmButtonText:"กลับ"}).then(()=>{window.location.href="request_list.php";});</script></body></html>';
+    echo '<!DOCTYPE html><html lang="th"><head><meta charset="UTF-8"><script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script></head><body><script>const Toast=Swal.mixin({toast:true,position:"top-end",showConfirmButton:false,timer:1500,timerProgressBar:true,didOpen:(t)=>{t.onmouseenter=Swal.stopTimer;t.onmouseleave=Swal.resumeTimer}});Toast.fire({icon:"error",title:"ไม่พบข้อมูลคำขอ"}).then(()=>{window.location.href="request_list.php";});</script></body></html>';
     exit;
 }
 
 // Check Status
 if ($request['status'] !== 'waiting_permit' && $request['status'] !== 'waiting_receipt') {
-    echo '<!DOCTYPE html><html lang="th"><head><meta charset="UTF-8"><script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script></head><body><script>Swal.fire({icon:"error",title:"ผิดพลาด: คำขอนี้ไม่ได้อยู่ในสถานะรอออกใบอนุญาต",text:"สถานะปัจจุบัน: ' . htmlspecialchars($request['status']) . '",confirmButtonText:"กลับ"}).then(()=>{window.location.href="request_list.php";});</script></body></html>';
+    echo '<!DOCTYPE html><html lang="th"><head><meta charset="UTF-8"><script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script></head><body><script>const Toast=Swal.mixin({toast:true,position:"top-end",showConfirmButton:false,timer:1500,timerProgressBar:true,didOpen:(t)=>{t.onmouseenter=Swal.stopTimer;t.onmouseleave=Swal.resumeTimer}});Toast.fire({icon:"error",title:"คำขอนี้ไม่ได้อยู่ในสถานะรอออกใบอนุญาต"}).then(()=>{window.location.href="request_list.php";});</script></body></html>';
     exit;
 }
 
@@ -130,12 +130,10 @@ if (isset($_POST['issue_permit_confirm'])) {
 
         // Redirect with SweetAlert
         echo '<!DOCTYPE html><html lang="th"><head><meta charset="UTF-8"><script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script></head><body><script>
-        Swal.fire({
+        const Toast=Swal.mixin({toast:true,position:"top-end",showConfirmButton:false,timer:1500,timerProgressBar:true,didOpen:(t)=>{t.onmouseenter=Swal.stopTimer;t.onmouseleave=Swal.resumeTimer}});
+        Toast.fire({
             icon: "success",
-            title: "ออกใบอนุญาตสำเร็จ",
-            html: "คำร้อง <b>' . htmlspecialchars($display_no, ENT_QUOTES) . '</b><br>เลขที่ใบอนุญาต: <b>' . htmlspecialchars($permit_no, ENT_QUOTES) . '</b><br>ระบบส่งอีเมลแจ้งผู้ยื่นคำร้องเรียบร้อยแล้ว",
-            confirmButtonColor: "#198754",
-            confirmButtonText: "ตกลง"
+            title: "ออกใบอนุญาตสำเร็จ"
         }).then(() => { window.location.href = "request_list.php"; });
         </script></body></html>';
         exit;

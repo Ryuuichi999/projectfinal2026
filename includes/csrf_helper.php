@@ -51,8 +51,8 @@ function csrf_check(): void
             echo '<!DOCTYPE html><html lang="th"><head><meta charset="UTF-8">
             <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script></head><body>
             <script>document.addEventListener("DOMContentLoaded",function(){
-                Swal.fire({icon:"error",title:"คำขอไม่ถูกต้อง",text:"เซสชันหมดอายุหรือคำขอไม่ถูกต้อง กรุณาลองใหม่",
-                confirmButtonText:"ตกลง"}).then(()=>{window.history.back();});
+                const Toast=Swal.mixin({toast:true,position:"top-end",showConfirmButton:false,timer:1500,timerProgressBar:true,didOpen:(t)=>{t.onmouseenter=Swal.stopTimer;t.onmouseleave=Swal.resumeTimer}});
+                Toast.fire({icon:"error",title:"เซสชันหมดอายุ กรุณาลองใหม่"}).then(()=>{window.history.back();});
             });</script></body></html>';
             exit;
         }

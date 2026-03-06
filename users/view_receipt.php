@@ -4,7 +4,7 @@ require '../includes/db.php';
 require '../includes/thaibaht.php';
 
 if (!isset($_GET['id'])) {
-    echo '<!DOCTYPE html><html lang="th"><head><meta charset="UTF-8"><script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script></head><body><script>Swal.fire({icon:"error",title:"ไม่พบข้อมูล",text:"กรุณาระบุเลขที่คำขอ",confirmButtonText:"กลับ"}).then(()=>{history.back();});</script></body></html>';
+    echo '<!DOCTYPE html><html lang="th"><head><meta charset="UTF-8"><script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script></head><body><script>const Toast=Swal.mixin({toast:true,position:"top-end",showConfirmButton:false,timer:1500,timerProgressBar:true,didOpen:(t)=>{t.onmouseenter=Swal.stopTimer;t.onmouseleave=Swal.resumeTimer}});Toast.fire({icon:"error",title:"ไม่พบข้อมูล"}).then(()=>{history.back();});</script></body></html>';
     exit;
 }
 
@@ -23,12 +23,12 @@ $request = $stmt->get_result()->fetch_assoc();
 
 // ตรวจสิทธิ์: เจ้าของคำร้อง หรือ admin/employee เท่านั้น
 if (!$request || ($request['user_id'] != $user_id && !in_array($role, ['admin', 'employee']))) {
-    echo '<!DOCTYPE html><html lang="th"><head><meta charset="UTF-8"><script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script></head><body><script>Swal.fire({icon:"error",title:"ไม่มีสิทธิ์เข้าถึง",text:"คุณไม่มีสิทธิ์ดูเอกสารนี้",confirmButtonText:"กลับ"}).then(()=>{history.back();});</script></body></html>';
+    echo '<!DOCTYPE html><html lang="th"><head><meta charset="UTF-8"><script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script></head><body><script>const Toast=Swal.mixin({toast:true,position:"top-end",showConfirmButton:false,timer:1500,timerProgressBar:true,didOpen:(t)=>{t.onmouseenter=Swal.stopTimer;t.onmouseleave=Swal.resumeTimer}});Toast.fire({icon:"error",title:"ไม่มีสิทธิ์เข้าถึง"}).then(()=>{history.back();});</script></body></html>';
     exit;
 }
 
 if (!in_array($request['status'], ['approved', 'expired'])) {
-    echo '<!DOCTYPE html><html lang="th"><head><meta charset="UTF-8"><script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script></head><body><script>Swal.fire({icon:"warning",title:"ใบเสร็จยังไม่พร้อมใช้งาน",text:"คำขอยังไม่ได้รับการอนุมัติ",confirmButtonText:"กลับ"}).then(()=>{history.back();});</script></body></html>';
+    echo '<!DOCTYPE html><html lang="th"><head><meta charset="UTF-8"><script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script></head><body><script>const Toast=Swal.mixin({toast:true,position:"top-end",showConfirmButton:false,timer:1500,timerProgressBar:true,didOpen:(t)=>{t.onmouseenter=Swal.stopTimer;t.onmouseleave=Swal.resumeTimer}});Toast.fire({icon:"warning",title:"ใบเสร็จยังไม่พร้อมใช้งาน"}).then(()=>{history.back();});</script></body></html>';
     exit;
 }
 

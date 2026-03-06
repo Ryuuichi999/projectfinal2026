@@ -25,7 +25,7 @@ $stmt->execute();
 $result = $stmt->get_result();
 
 if ($result->num_rows === 0) {
-    echo '<!DOCTYPE html><html lang="th"><head><meta charset="UTF-8"><script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script></head><body><script>Swal.fire({icon:"error",title:"ไม่พบข้อมูลคำขอ",text:"กรุณาตรวจสอบหมายเลขคำขออีกครั้ง",confirmButtonText:"กลับ"}).then(()=>{window.location.href="request_list.php";});</script></body></html>';
+    echo '<!DOCTYPE html><html lang="th"><head><meta charset="UTF-8"><script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script></head><body><script>const Toast=Swal.mixin({toast:true,position:"top-end",showConfirmButton:false,timer:1500,timerProgressBar:true,didOpen:(t)=>{t.onmouseenter=Swal.stopTimer;t.onmouseleave=Swal.resumeTimer}});Toast.fire({icon:"error",title:"ไม่พบข้อมูลคำขอ"}).then(()=>{window.location.href="request_list.php";});</script></body></html>';
     exit;
 }
 
@@ -53,12 +53,10 @@ if (isset($_POST['approve_confirm'])) {
 <body>
     <script>
         document.addEventListener("DOMContentLoaded", function() {
-            Swal.fire({
+            const Toast=Swal.mixin({toast:true,position:"top-end",showConfirmButton:false,timer:1500,timerProgressBar:true,didOpen:(t)=>{t.onmouseenter=Swal.stopTimer;t.onmouseleave=Swal.resumeTimer}});
+            Toast.fire({
                 icon: "success",
-                title: "อนุมัติเรียบร้อย",
-                text: "สถานะเปลี่ยนเป็นรอชำระเงิน",
-                showConfirmButton: false,
-                timer: 2000
+                title: "อนุมัติเรียบร้อย"
             }).then(() => {
                 window.location.href = "request_list.php";
             });

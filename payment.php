@@ -46,9 +46,8 @@ if ($request['status'] !== 'waiting_payment') {
     echo '<!DOCTYPE html><html lang="th"><head><meta charset="UTF-8">';
     echo '<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script></head><body>';
     echo '<script>document.addEventListener("DOMContentLoaded",function(){';
-    echo 'Swal.fire({icon:"info",title:"ไม่สามารถชำระเงินได้",';
-    echo 'text:"คำร้องนี้อยู่ในสถานะ: ' . $status_th . ' ไม่ได้รอชำระเงิน",';
-    echo 'confirmButtonText:"ตกลง"}).then(()=>{window.location.href="users/my_request.php";});';
+    echo 'const Toast=Swal.mixin({toast:true,position:"top-end",showConfirmButton:false,timer:3000,timerProgressBar:true,didOpen:(t)=>{t.onmouseenter=Swal.stopTimer;t.onmouseleave=Swal.resumeTimer}});';
+    echo 'Toast.fire({icon:"info",title:"ไม่สามารถชำระเงินได้"}).then(()=>{window.location.href="users/my_request.php";});';
     echo '});</script></body></html>';
     exit;
 }
@@ -150,12 +149,9 @@ if (isset($_POST['upload_slip'])) {
                                 <body>
                                     <script>
                                         document.addEventListener('DOMContentLoaded', function () {
-                                            Swal.fire({
+                                            Toast.fire({
                                                 icon: 'success',
-                                                title: 'ชำระเงินสำเร็จ!',
-                                                html: 'ระบบตรวจสอบยอดเงินเรียบร้อยแล้ว<br>ออกใบเสร็จเลขที่: <strong><?= $receipt_no ?></strong><br>สถานะ: <strong>รอเจ้าหน้าที่ออกใบอนุญาต</strong>',
-                                                showConfirmButton: true,
-                                                confirmButtonText: 'ตกลง'
+                                                title: 'ชำระเงินสำเร็จ!'
                                             }).then(() => {
                                                 window.location.href = 'users/my_request.php';
                                             });

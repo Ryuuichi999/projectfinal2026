@@ -269,22 +269,18 @@ document.getElementById('rejectForm'+id).submit();
 
 <?php if (isset($success)): ?>
 <script>
-Swal.fire({
+Toast.fire({
 icon: 'success',
-title: 'สำเร็จ',
-text: '<?= $success ?>',
-timer: 2000,
-showConfirmButton: false
+title: '<?= $success ?>'
 });
 </script>
 <?php endif; ?>
 
 <?php if (isset($error)): ?>
 <script>
-Swal.fire({
+Toast.fire({
 icon: 'error',
-title: 'ผิดพลาด',
-text: '<?= $error ?>'
+title: '<?= $error ?>'
 });
 </script>
 <?php endif; ?>

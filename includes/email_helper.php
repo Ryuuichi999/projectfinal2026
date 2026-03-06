@@ -146,8 +146,7 @@ if (!function_exists('send_status_notification')) {
                     </p>
                     
                     <p style='margin-top: 20px; font-size: 14px; color: #666;'>
-                        หากมีข้อสงสัย กรุณาติดต่อ เทศบาลเมืองศิลา โทร 043-246-505-6<br>
-                        ในวันและเวลาราชการ
+                        หากมีข้อสงสัย กรุณาติดต่อ เทศบาลเมืองศิลา <br> โทร 043-246-505-6 ในวันและเวลาราชการ
                     </p>
                 </div>
                 <div class='footer'>

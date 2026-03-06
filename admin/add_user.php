@@ -46,12 +46,9 @@ if (isset($_POST['submit'])) {
         if ($stmt->execute()) {
             echo "<script>
                 document.addEventListener('DOMContentLoaded', function() {
-                    Swal.fire({
+                    Toast.fire({
                         icon: 'success',
-                        title: 'สำเร็จ',
-                        text: 'เพิ่มผู้ใช้งานเรียบร้อยแล้ว',
-                        showConfirmButton: false,
-                        timer: 2000
+                        title: 'เพิ่มผู้ใช้งานเรียบร้อยแล้ว'
                     }).then(() => {
                         window.location.href = 'users_list.php';
                     });

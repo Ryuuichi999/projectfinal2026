@@ -23,7 +23,7 @@ $stmt->bind_param("ii", $request_id, $user_id);
 $stmt->execute();
 $result = $stmt->get_result();
 if ($result->num_rows === 0) {
-    echo '<!DOCTYPE html><html lang="th"><head><meta charset="UTF-8"><script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script></head><body><script>Swal.fire({icon:"warning",title:"ไม่พบคำขอ",text:"ไม่พบคำขอของคุณหรือคุณไม่มีสิทธิ์เข้าถึง",confirmButtonText:"กลับ"}).then(()=>{window.location.href="my_request.php";});</script></body></html>';
+    echo '<!DOCTYPE html><html lang="th"><head><meta charset="UTF-8"><script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script></head><body><script>const Toast=Swal.mixin({toast:true,position:"top-end",showConfirmButton:false,timer:1500,timerProgressBar:true,didOpen:(t)=>{t.onmouseenter=Swal.stopTimer;t.onmouseleave=Swal.resumeTimer}});Toast.fire({icon:"warning",title:"ไม่พบคำขอ"}).then(()=>{window.location.href="my_request.php";});</script></body></html>';
     exit;
 }
 $request = $result->fetch_assoc();
@@ -105,12 +105,10 @@ if (isset($_POST['submit'])) {
         <body>
             <script>
                 document.addEventListener("DOMContentLoaded", function() {
-                    Swal.fire({
+                    const Toast=Swal.mixin({toast:true,position:"top-end",showConfirmButton:false,timer:1500,timerProgressBar:true,didOpen:(t)=>{t.onmouseenter=Swal.stopTimer;t.onmouseleave=Swal.resumeTimer}});
+                    Toast.fire({
                         icon: "success",
-                        title: "ส่งเอกสารเพิ่มเติมเรียบร้อย",
-                        text: "เจ้าหน้าที่จะตรวจสอบข้อมูลที่คุณส่งมา",
-                        showConfirmButton: false,
-                        timer: 2000
+                        title: "ส่งเอกสารเพิ่มเติมเรียบร้อย"
                     }).then(() => {
                         window.location.href = "request_detail.php?id=' . $request_id . '";
                     });

@@ -391,14 +391,14 @@ $result_docs = $stmt_docs->get_result();
             <?php if ($success): ?>
                 <script>
                     document.addEventListener('DOMContentLoaded', () => {
-                        Swal.fire({ icon: 'success', title: 'สำเร็จ', text: '<?= $success ?>', timer: 1800, showConfirmButton: false });
+                        Toast.fire({ icon: 'success', title: '<?= $success ?>' });
                     });
                 </script>
             <?php endif; ?>
             <?php if ($error): ?>
                 <script>
                     document.addEventListener('DOMContentLoaded', () => {
-                        Swal.fire({ icon: 'error', title: 'ผิดพลาด', text: '<?= $error ?>' });
+                        Toast.fire({ icon: 'error', title: '<?= $error ?>' });
                     });
                 </script>
             <?php endif; ?>
