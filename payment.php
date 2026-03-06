@@ -79,8 +79,29 @@ if (isset($_POST['upload_slip'])) {
                 $slipAmount = (float) $apiResult['amount'];
                 $requiredAmount = (float) $amount;
 
-                if (abs($slipAmount - $requiredAmount) > 0.01) {
+                // ตรวจสอบสลิปซ้ำ (transRef เคยใช้แล้วหรือยัง)
+                $stmt_dup = $conn->prepare("SELECT id FROM sign_documents WHERE trans_ref = ?");
+                $stmt_dup->bind_param("s", $transRef);
+                $stmt_dup->execute();
+                $dup_result = $stmt_dup->get_result();
+
+                // ตรวจสอบชื่อผู้รับ / เลข PromptPay
+                $receiverName  = $apiResult['receiver_name'] ?? '';
+                $receiverProxy = $apiResult['receiver_proxy'] ?? '';
+                $expectedName  = 'รัชชานนท์';
+                $expectedProxy = '0990740305';
+
+                // ตรวจ: ชื่อต้องมี "รัชชานนท์" หรือเลข PromptPay ต้องตรง
+                $nameMatch  = (mb_strpos($receiverName, $expectedName) !== false);
+                $proxyMatch = (str_replace(['-', ' '], '', $receiverProxy) === $expectedProxy);
+                $receiverValid = ($nameMatch || $proxyMatch);
+
+                if ($dup_result->num_rows > 0) {
+                    $error = "สลิปนี้เคยถูกใช้แล้ว (TransRef: {$transRef}) กรุณาโอนเงินใหม่และใช้สลิปใหม่";
+                } elseif (abs($slipAmount - $requiredAmount) > 0.01) {
                     $error = "จำนวนเงินในสลิปไม่ตรง: สลิประบุ " . number_format($slipAmount, 2) . " บาท แต่ต้องชำระ " . number_format($requiredAmount, 2) . " บาท กรุณาตรวจสอบอีกครั้ง";
+                } elseif (!$receiverValid) {
+                    $error = "ผู้รับเงินไม่ถูกต้อง: สลิประบุผู้รับ \"" . htmlspecialchars($receiverName) . "\" กรุณาโอนเงินไปยังบัญชี PromptPay หมายเลข {$expectedProxy} (นาย รัชชานนท์ อินกันหา) เท่านั้น";
                 } else {
                     $upload_dir = "uploads/slips/";
                     if (!file_exists($upload_dir)) {
@@ -182,11 +203,16 @@ function checkSlip($filePath, $token)
         if (isset($json['data']['transRef'])) {
             $senderName = $json['data']['sender']['account']['name']['th'] ??
                 $json['data']['sender']['account']['name']['en'] ?? 'Unknown';
+            $receiverName = $json['data']['receiver']['account']['name']['th'] ??
+                $json['data']['receiver']['account']['name']['en'] ?? '';
+            $receiverProxy = $json['data']['receiver']['proxy']['value'] ?? '';
             return [
-                'status'      => 'success',
-                'transRef'    => $json['data']['transRef'],
-                'amount'      => $json['data']['amount']['amount'],
-                'sender_name' => $senderName
+                'status'        => 'success',
+                'transRef'      => $json['data']['transRef'],
+                'amount'        => $json['data']['amount']['amount'],
+                'sender_name'   => $senderName,
+                'receiver_name' => $receiverName,
+                'receiver_proxy'=> $receiverProxy
             ];
         } else {
             return ['status' => 'error', 'message' => 'ไม่พบข้อมูล Data ใน Response'];
@@ -666,6 +692,7 @@ $qr_url = "https://promptpay.io/{$promptpay_id}/{$amount}.png";
                             <ol>
                                 <li>ระบบจะตรวจสอบความถูกต้องของสลิปโอนเงินโดยอัตโนมัติ</li>
                                 <li>ยอดเงินในสลิปต้องตรงกับ <strong><?= number_format($amount, 2) ?> บาท</strong> เท่านั้น</li>
+                                <li>ผู้รับเงินต้องเป็น <strong>นาย รัชชานนท์ อินกันหา (PromptPay: 0990740305)</strong></li>
                                 <li>ห้ามใช้สลิปซ้ำหรือสลิปที่ดัดแปลงแก้ไขโดยเด็ดขาด</li>
                                 <li>รองรับไฟล์นามสกุล .jpg, .jpeg, .png ขนาดไม่เกิน 5 MB</li>
                             </ol>
