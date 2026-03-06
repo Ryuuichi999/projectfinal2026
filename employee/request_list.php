@@ -21,30 +21,41 @@ if (isset($_POST['action']) && isset($_POST['request_id'])) {
     $status = '';
     $msg = '';
 
-    if ($action === 'approve') {
-        $status = 'waiting_payment';
-        $approved_by = $_SESSION['user_id'];
-        $msg = 'อนุมัติคำขอเรียบร้อยแล้ว สถานะเปลี่ยนเป็นรอชำระเงิน';
-    } elseif ($action === 'reject') {
-        $status = 'rejected';
-        $msg = 'ปฏิเสธคำขอเรียบร้อยแล้ว';
-    }
+    // ตรวจสอบสถานะปัจจุบันก่อนดำเนินการ
+    $stmt_chk = $conn->prepare("SELECT status FROM sign_requests WHERE id = ?");
+    $stmt_chk->bind_param("i", $request_id);
+    $stmt_chk->execute();
+    $current = $stmt_chk->get_result()->fetch_assoc();
+    $allowed_statuses = ['pending', 'reviewing', 'need_documents'];
 
-    if ($status) {
+    if (!$current || !in_array($current['status'], $allowed_statuses)) {
+        $error = "ไม่สามารถดำเนินการได้ สถานะปัจจุบันไม่อนุญาต";
+    } else {
         if ($action === 'approve') {
-            $stmt = $conn->prepare("UPDATE sign_requests SET status=?, approved_by=? WHERE id=?");
-            $stmt->bind_param("sii", $status, $approved_by, $request_id);
-        } else {
-            $stmt = $conn->prepare("UPDATE sign_requests SET status=? WHERE id=?");
-            $stmt->bind_param("si", $status, $request_id);
+            $status = 'waiting_payment';
+            $approved_by = $_SESSION['user_id'];
+            $msg = 'อนุมัติคำขอเรียบร้อยแล้ว สถานะเปลี่ยนเป็นรอชำระเงิน';
+        } elseif ($action === 'reject') {
+            $status = 'rejected';
+            $msg = 'ปฏิเสธคำขอเรียบร้อยแล้ว';
         }
 
-        if ($stmt->execute()) {
-            queue_status_notification($request_id, $conn);
-            logRequestAction($conn, $request_id, $status, $msg, $_SESSION['user_id']);
-            $success = $msg;
-        } else {
-            $error = "เกิดข้อผิดพลาด กรุณาลองใหม่อีกครั้ง";
+        if ($status) {
+            if ($action === 'approve') {
+                $stmt = $conn->prepare("UPDATE sign_requests SET status=?, approved_by=? WHERE id=?");
+                $stmt->bind_param("sii", $status, $approved_by, $request_id);
+            } else {
+                $stmt = $conn->prepare("UPDATE sign_requests SET status=? WHERE id=?");
+                $stmt->bind_param("si", $status, $request_id);
+            }
+
+            if ($stmt->execute()) {
+                queue_status_notification($request_id, $conn);
+                logRequestAction($conn, $request_id, $status, $msg, $_SESSION['user_id']);
+                $success = $msg;
+            } else {
+                $error = "เกิดข้อผิดพลาด กรุณาลองใหม่อีกครั้ง";
+            }
         }
     }
 }

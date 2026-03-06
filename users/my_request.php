@@ -185,7 +185,9 @@ if (!isset($_SESSION['user_id'])) {
                                 <option value="">ทั้งหมด</option>
                                 <option value="รอกำลังพิจารณา">รอกำลังพิจารณา</option>
                                 <option value="กำลังพิจารณา">กำลังพิจารณา</option>
+                                <option value="ขอเอกสารเพิ่ม">ขอเอกสารเพิ่ม</option>
                                 <option value="รอชำระเงิน">รอชำระเงิน</option>
+                                <option value="รอออกใบอนุญาต">รอออกใบอนุญาต</option>
                                 <option value="อนุมัติแล้ว">อนุมัติแล้ว</option>
                                 <option value="ไม่อนุมัติ">ไม่อนุมัติ</option>
                                 <option value="หมดอายุ">หมดอายุ</option>

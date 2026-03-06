@@ -46,20 +46,36 @@ if (!$request) {
     showPermitError('ไม่พบข้อมูลใบอนุญาต', 'ไม่พบข้อมูลใบอนุญาตในระบบ กรุณาตรวจสอบเลขที่อีกครั้ง');
 }
 
+// คำนวณวันหมดอายุ (ใช้ได้ทุกสถานะ)
+$expire_date = !empty($request['end_date']) ? $request['end_date'] : date('Y-m-d', strtotime((!empty($request['permit_date']) ? $request['permit_date'] : $request['created_at']) . ' + ' . $request['duration_days'] . ' days'));
+
 // Calculate status color/text
 $status_badge = '';
 $is_valid = false;
+$status_labels = [
+    'pending'            => 'รอพิจารณา',
+    'reviewing'          => 'กำลังพิจารณา',
+    'need_documents'     => 'ขอเอกสารเพิ่มเติม',
+    'waiting_payment'    => 'รอชำระเงิน',
+    'waiting_permit'     => 'รอออกใบอนุญาต',
+    'approved'           => 'อนุมัติแล้ว',
+    'rejected'           => 'ไม่อนุมัติ',
+    'expired'            => 'หมดอายุ',
+    'cancelled_payment'  => 'ยกเลิก (ไม่ชำระเงิน)',
+];
+
 if ($request['status'] == 'approved') {
-    // Check expiry based on permit_date (official issue date)
-    $expire_date = !empty($request['end_date']) ? $request['end_date'] : date('Y-m-d', strtotime((!empty($request['permit_date']) ? $request['permit_date'] : $request['created_at']) . ' + ' . $request['duration_days'] . ' days'));
     if (date('Y-m-d') <= $expire_date) {
         $status_badge = '<span class="badge bg-success fs-5"><i class="bi bi-check-circle-fill"></i> ใบอนุญาตถูกต้อง</span>';
         $is_valid = true;
     } else {
         $status_badge = '<span class="badge bg-danger fs-5"><i class="bi bi-x-circle-fill"></i> ใบอนุญาตหมดอายุ</span>';
     }
+} elseif ($request['status'] == 'expired') {
+    $status_badge = '<span class="badge bg-danger fs-5"><i class="bi bi-x-circle-fill"></i> ใบอนุญาตหมดอายุ</span>';
 } else {
-    $status_badge = '<span class="badge bg-secondary fs-5">สถานะ: ' . htmlspecialchars($request['status']) . '</span>';
+    $status_th = $status_labels[$request['status']] ?? $request['status'];
+    $status_badge = '<span class="badge bg-secondary fs-5">สถานะ: ' . htmlspecialchars($status_th) . '</span>';
 }
 
 $lat = $request['location_lat'] ?? '16.482780';

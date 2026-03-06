@@ -9,6 +9,9 @@ if (!isset($_GET['id'])) {
 }
 
 $request_id = (int) $_GET['id'];
+$user_id = $_SESSION['user_id'];
+$role = $_SESSION['role'] ?? 'user';
+
 $sql = "SELECT r.*, u.title_name, u.first_name, u.last_name 
         FROM sign_requests r 
         JOIN users u ON r.user_id = u.id 
@@ -18,7 +21,13 @@ $stmt->bind_param("i", $request_id);
 $stmt->execute();
 $request = $stmt->get_result()->fetch_assoc();
 
-if (!$request || $request['status'] != 'approved') {
+// ตรวจสิทธิ์: เจ้าของคำร้อง หรือ admin/employee เท่านั้น
+if (!$request || ($request['user_id'] != $user_id && !in_array($role, ['admin', 'employee']))) {
+    echo '<!DOCTYPE html><html lang="th"><head><meta charset="UTF-8"><script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script></head><body><script>Swal.fire({icon:"error",title:"ไม่มีสิทธิ์เข้าถึง",text:"คุณไม่มีสิทธิ์ดูเอกสารนี้",confirmButtonText:"กลับ"}).then(()=>{history.back();});</script></body></html>';
+    exit;
+}
+
+if (!in_array($request['status'], ['approved', 'expired'])) {
     echo '<!DOCTYPE html><html lang="th"><head><meta charset="UTF-8"><script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script></head><body><script>Swal.fire({icon:"warning",title:"เอกสารไม่พร้อมใช้งาน",text:"คำขอยังไม่ได้รับการอนุมัติ",confirmButtonText:"กลับ"}).then(()=>{history.back();});</script></body></html>';
     exit;
 }

@@ -53,6 +53,12 @@ if ($request['status'] !== 'waiting_payment') {
     exit;
 }
 
+// Auto-migrate: เพิ่ม UNIQUE index บน trans_ref (ป้องกันสลิปซ้ำระดับ DB)
+$idx_check = $conn->query("SHOW INDEX FROM sign_documents WHERE Key_name = 'uq_trans_ref'");
+if ($idx_check && $idx_check->num_rows === 0) {
+    $conn->query("ALTER TABLE sign_documents ADD UNIQUE INDEX uq_trans_ref (trans_ref)");
+}
+
 if (isset($_POST['upload_slip'])) {
     csrf_check();
     if (isset($_FILES['slip_file']) && $_FILES['slip_file']['error'] == UPLOAD_ERR_OK) {
@@ -132,6 +138,7 @@ if (isset($_POST['upload_slip'])) {
                                 logRequestAction($conn, $request_id, 'receipt_issued', 'ออกใบเสร็จอัตโนมัติ', null, 'เลขที่: ' . $receipt_no);
                                 logRequestAction($conn, $request_id, 'waiting_permit', 'รอออกใบอนุญาต', null, 'ชำระเงินแล้ว รอเจ้าหน้าที่ออกใบอนุญาต');
                                 queue_status_notification($request_id, $conn);
+                                csrf_regenerate();
                                 ?>
                                 <!DOCTYPE html>
                                 <html lang="th">

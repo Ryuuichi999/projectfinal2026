@@ -5,7 +5,7 @@ require_once '../includes/receipt_helper.php';
 require_once '../includes/csrf_helper.php';
 
 if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'user') {
-    header("Location: login.php");
+    header("Location: ../login.php");
     exit;
 }
 

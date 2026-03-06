@@ -1,6 +1,8 @@
 <?php
 require '../includes/db.php';
 require_once '../includes/csrf_helper.php';
+require_once '../includes/log_helper.php';
+require_once '../includes/email_helper.php';
 
 if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'user') {
     header("Location: ../login.php");
@@ -88,6 +90,10 @@ if (isset($_POST['submit'])) {
         $stmt_status->execute();
 
         $conn->commit();
+
+        // บันทึก Log + แจ้งเจ้าหน้าที่
+        logRequestAction($conn, $request_id, 'reviewing', 'ส่งเอกสารเพิ่มเติม', $user_id, 'ผู้ใช้ส่งเอกสารเพิ่มเติมตามที่ร้องขอ');
+        queue_status_notification($request_id, $conn);
 
         echo '<!DOCTYPE html>
         <html lang="th">
