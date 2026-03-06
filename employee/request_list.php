@@ -146,6 +146,12 @@ data-bs-toggle="tooltip" title="ดูรายละเอียด">
 <input type="hidden" name="action" value="reject">
 </form>
 <?php endif; ?>
+
+<?php if ($row['status'] == 'waiting_permit'): ?>
+<a href="issue_receipt.php?id=<?= $row['id'] ?>" class="btn btn-sm btn-primary">
+<i class="bi bi-file-earmark-check-fill"></i>
+</a>
+<?php endif; ?>
 </td>
 </tr>
 <?php endwhile; ?>
