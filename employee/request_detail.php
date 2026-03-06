@@ -635,9 +635,20 @@ $result_docs = $stmt_docs->get_result();
                             <h5 class="info-card-title">เอกสารแนบ</h5>
                         </div>
                         <div class="info-card-body p-3">
-                            <?php if ($result_docs->num_rows > 0): ?>
+                            <?php
+                            $valid_docs = [];
+                            if ($result_docs->num_rows > 0) {
+                                while ($doc = $result_docs->fetch_assoc()) {
+                                    $real_path = __DIR__ . '/../' . ltrim($doc['file_path'], '/');
+                                    if (file_exists($real_path)) {
+                                        $valid_docs[] = $doc;
+                                    }
+                                }
+                            }
+                            ?>
+                            <?php if (!empty($valid_docs)): ?>
                                 <ul class="doc-list">
-                                    <?php while ($doc = $result_docs->fetch_assoc()): ?>
+                                    <?php foreach ($valid_docs as $doc): ?>
                                         <li>
                                             <a href="../<?= ltrim($doc['file_path'], '/') ?>" target="_blank"
                                                 class="text-decoration-none">
@@ -651,7 +662,7 @@ $result_docs = $stmt_docs->get_result();
                                                 </div>
                                             </a>
                                         </li>
-                                    <?php endwhile; ?>
+                                    <?php endforeach; ?>
                                 </ul>
                             <?php else: ?>
                                 <div class="text-center text-muted small py-3">ไม่มีเอกสารแนบ</div>

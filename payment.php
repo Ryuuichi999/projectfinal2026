@@ -55,7 +55,12 @@ if ($request['status'] !== 'waiting_payment') {
 // Auto-migrate: เพิ่ม UNIQUE index บน trans_ref (ป้องกันสลิปซ้ำระดับ DB)
 $idx_check = $conn->query("SHOW INDEX FROM sign_documents WHERE Key_name = 'uq_trans_ref'");
 if ($idx_check && $idx_check->num_rows === 0) {
-    $conn->query("ALTER TABLE sign_documents ADD UNIQUE INDEX uq_trans_ref (trans_ref)");
+    // ลบ trans_ref ที่ซ้ำก่อน (เก็บแถวแรกไว้)
+    $conn->query("DELETE d1 FROM sign_documents d1
+                   INNER JOIN sign_documents d2
+                   WHERE d1.id > d2.id AND d1.trans_ref = d2.trans_ref AND d1.trans_ref IS NOT NULL AND d1.trans_ref != ''");
+    // ลองสร้าง index ถ้าไม่ได้ก็ข้ามไป
+    @$conn->query("ALTER TABLE sign_documents ADD UNIQUE INDEX uq_trans_ref (trans_ref)");
 }
 
 if (isset($_POST['upload_slip'])) {

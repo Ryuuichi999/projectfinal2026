@@ -28,7 +28,7 @@ if ($userId) {
 $notifItems = [];
 $notifBadgeCount = 0;
 if ($userId && $role === 'user') {
-    $stmtN = $conn->prepare("SELECT id, status, created_at FROM sign_requests WHERE user_id = ? ORDER BY id DESC LIMIT 5");
+    $stmtN = $conn->prepare("SELECT id, request_no, status, created_at FROM sign_requests WHERE user_id = ? ORDER BY id DESC LIMIT 5");
     $stmtN->bind_param("i", $userId);
     $stmtN->execute();
     $rs = $stmtN->get_result();
@@ -56,7 +56,8 @@ if ($userId && $role === 'user') {
         elseif ($status === 'cancelled_payment')
             $label = 'ยกเลิก (ไม่ชำระเงิน)';
 
-        $notifItems[] = ['id' => (int) $row['id'], 'label' => $label, 'date' => $row['created_at']];
+        $requestNo = $row['request_no'] ? $row['request_no'] : '#' . $row['id'];
+        $notifItems[] = ['id' => (int) $row['id'], 'request_no' => $requestNo, 'label' => $label, 'date' => $row['created_at']];
     }
     $currentCount = count($notifItems);
     $lastView = $_SESSION['notif_last_view_user'] ?? 0;
@@ -239,9 +240,7 @@ if ($userId && $role === 'user') {
                                     <a class="dropdown-item p-2 rounded-3"
                                         href="/Project2026/users/request_detail.php?id=<?= $n['id'] ?>">
                                         <div class="d-flex justify-content-between align-items-center mb-1">
-                                            <span class="fw-bold text-primary small">#
-                                                <?= $n['id'] ?>
-                                            </span>
+                                            <span class="fw-bold text-primary small"><?= htmlspecialchars($n['request_no']) ?></span>
                                             <small class="text-muted" style="font-size: 0.75rem;">
                                                 <?= date('d/m/Y', strtotime($n['date'])) ?>
                                             </small>

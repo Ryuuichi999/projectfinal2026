@@ -7,10 +7,14 @@
         </a>
 
         <?php if (isset($_SESSION['role']) && $_SESSION['role'] === 'admin'): ?>
-            <!-- เมนูสำหรับผู้ดูแลระบบ (Admin) — จัดการ User เท่านั้น -->
+            <!-- เมนูสำหรับผู้ดูแลระบบ (Admin) -->
+            <a href="/Project2026/admin/dashboard.php"
+                class="<?= basename($_SERVER['PHP_SELF']) == 'dashboard.php' ? 'active' : '' ?>">
+                📊 ภาพรวมระบบ
+            </a>
             <a href="/Project2026/admin/users_list.php"
                 class="<?= in_array(basename($_SERVER['PHP_SELF']), ['users_list.php', 'add_user.php']) ? 'active' : '' ?>">
-                � จัดการผู้ใช้งาน
+                👥 จัดการผู้ใช้งาน
             </a>
 
         <?php elseif (isset($_SESSION['role']) && $_SESSION['role'] === 'employee'): ?>
