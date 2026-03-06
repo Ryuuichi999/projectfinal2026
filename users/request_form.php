@@ -133,6 +133,7 @@ if (isset($_POST['submit'])) {
             $uploaded_files = [
                 'file_sign_plan' => 'แบบป้าย/รูปภาพโฆษณา', // รวมแผนผังและรูป
                 'file_id_card' => 'สำเนาบัตรประชาชน',
+                'file_house_reg' => 'สำเนาทะเบียนบ้าน',
                 'file_land_doc' => 'หนังสือยินยอมเจ้าของที่/สัญญาเช่า',
                 'file_other' => 'เอกสารอื่นๆ'
             ];
@@ -548,17 +549,22 @@ if ($result_signs && $result_signs->num_rows > 0) {
                         <img id="preview1" class="file-preview d-none">
                     </div>
                     <div class="col-md-6">
-                        <label class="form-label small">2. สำเนาบัตรประชาชนผู้ขออนุญาต *</label>
+                        <label class="form-label small">2. สำเนาบัตรประชาชน *</label>
                         <input type="file" name="file_id_card" class="form-control form-control-sm" required accept="image/*,.pdf" onchange="previewFile(this,'preview2')">
                         <img id="preview2" class="file-preview d-none">
                     </div>
                     <div class="col-md-6">
-                        <label class="form-label small">3. หนังสือยินยอมเจ้าของที่ (ถ้าตั้งในที่เอกชน)</label>
+                        <label class="form-label small">3. สำเนาทะเบียนบ้าน *</label>
+                        <input type="file" name="file_house_reg" class="form-control form-control-sm" required accept="image/*,.pdf" onchange="previewFile(this,'preview2b')">
+                        <img id="preview2b" class="file-preview d-none">
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label small">4. หนังสือยินยอมเจ้าของที่ (ถ้าตั้งในที่เอกชน)</label>
                         <input type="file" name="file_land_doc" class="form-control form-control-sm" accept="image/*,.pdf" onchange="previewFile(this,'preview3')">
                         <img id="preview3" class="file-preview d-none">
                     </div>
                     <div class="col-md-6">
-                        <label class="form-label small">4. เอกสารอื่นๆ (ถ้ามี)</label>
+                        <label class="form-label small">5. เอกสารอื่นๆ (ถ้ามี)</label>
                         <input type="file" name="file_other" class="form-control form-control-sm" accept="image/*,.pdf" onchange="previewFile(this,'preview4')">
                         <img id="preview4" class="file-preview d-none">
                     </div>

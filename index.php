@@ -548,6 +548,15 @@ if (session_status() === PHP_SESSION_NONE) {
                             </div>
                             <div class="doc-item">
                                 <div class="doc-icon-box">
+                                    <i class="bi bi-house-door"></i>
+                                </div>
+                                <div class="doc-content">
+                                    <h6>สำเนาทะเบียนบ้าน</h6>
+                                    <p>สำเนาทะเบียนบ้านของผู้ยื่นคำร้อง พร้อมลงนามรับรองสำเนาถูกต้อง</p>
+                                </div>
+                            </div>
+                            <div class="doc-item">
+                                <div class="doc-icon-box">
                                     <i class="bi bi-image"></i>
                                 </div>
                                 <div class="doc-content">
@@ -591,7 +600,7 @@ if (session_status() === PHP_SESSION_NONE) {
                                 </div>
                                 <div class="doc-content">
                                     <h6>ขนาดป้ายที่อนุญาต</h6>
-                                    <p>ป้ายชั่วคราว (ผ้า/กระดาษ/พลาสติก) ขนาดไม่เกิน <b>2.40 × 1.20 เมตร</b> สูงจากพื้นไม่น้อยกว่า 1 เมตร และสูงรวมไม่เกิน 3 เมตร</p>
+                                    <p>ป้ายชั่วคราว (ผ้าใบ/ไวนิล/ไม้อัด) ขนาดไม่เกิน <b>1.20 × 2.40 </b></p>
                                 </div>
                             </div>
                             <div class="doc-item">
@@ -609,7 +618,7 @@ if (session_status() === PHP_SESSION_NONE) {
                                 </div>
                                 <div class="doc-content">
                                     <h6>สถานที่ที่ห้ามติดตั้ง</h6>
-                                    <p>ห้ามติดตั้งบน เกาะกลางถนน ต้นไม้ รั้วริมถนน ป้ายจราจร สัญญาณไฟ ป้ายราชการ และศาลาผู้โดยสาร</p>
+                                    <p>ห้ามติดตั้งบน เกาะกลางถนน ต้นไม้ รั้วริมถนน ป้ายจราจร สัญญาณไฟ ป้ายราชการ ศาลาผู้โดยสาร อาคารราชการ สถานศึกษา วัด โบสถ์ มัสยิด และสถานที่ศักดิ์สิทธิ์</p>
                                 </div>
                             </div>
                             <div class="doc-item">

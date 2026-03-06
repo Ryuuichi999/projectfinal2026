@@ -43,6 +43,7 @@ if (isset($_POST['submit'])) {
         $uploaded_files = [
             'file_sign_plan' => 'แบบป้าย/รูปภาพโฆษณา',
             'file_id_card' => 'สำเนาบัตรประชาชน',
+            'file_house_reg' => 'สำเนาทะเบียนบ้าน',
             'file_land_doc' => 'หนังสือยินยอมเจ้าของที่/สัญญาเช่า',
             'file_other' => 'เอกสารอื่นๆ'
         ];
@@ -155,6 +156,10 @@ if (isset($_POST['submit'])) {
                     <div class="col-md-6">
                         <label class="form-label">สำเนาบัตรประชาชน</label>
                         <input type="file" name="file_id_card" class="form-control">
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">สำเนาทะเบียนบ้าน</label>
+                        <input type="file" name="file_house_reg" class="form-control">
                     </div>
                     <div class="col-md-6">
                         <label class="form-label">หนังสือยินยอมเจ้าของที่/สัญญาเช่า</label>
