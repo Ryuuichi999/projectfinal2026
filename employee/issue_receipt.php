@@ -216,7 +216,7 @@ if (isset($_POST['issue_permit_confirm'])) {
                                         <i class="bi bi-hash"></i>
                                     </span>
                                     <input type="text" name="permit_no"
-                                        class="form-control fw-bold fs-5 text-primary border-start-0 ps-0"
+                                        class="form-control fw-bold fs-5 text-black border-start-0 ps-0"
                                         value="<?= htmlspecialchars($next_permit_no) ?>" required>
                                 </div>
                                 <div class="form-text">รูปแบบ: ลำดับที่/ปีพ.ศ. (เช่น 34/2568)</div>
