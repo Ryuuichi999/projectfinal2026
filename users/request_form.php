@@ -34,7 +34,7 @@ if (isset($_POST['submit'])) {
     $email = trim($_POST['email']);
 
     // ตรวจสอบประเภทป้าย
-    $allowed_types = ['ไวนิล', 'สติกเกอร์', 'ผ้าใบ', 'Roll-up', 'ไม้อัด'];
+    $allowed_types = ['ไวนิล', 'ผ้าใบ', 'ไม้อัด'];
     if (!in_array($sign_type, $allowed_types)) {
         $message = "ประเภทป้ายไม่ถูกต้อง";
         $message_type = 'danger';
@@ -56,25 +56,14 @@ if (isset($_POST['submit'])) {
         $message_type = 'danger';
     }
 
-    // ระยะเวลา: คำนวณจากวันเริ่ม-วันสิ้นสุด + ประเภท (ไม่ค้า ≤30 วัน, ค้า ≤60 วัน)
+    // ระยะเวลา: คำนวณจากวันเริ่ม-วันสิ้นสุด (ไม่จำกัดจำนวนวัน เจ้าหน้าที่จะพิจารณาเอง)
     $install_date = $_POST['install_date'];
     $end_date = $_POST['end_date'];
-    $sign_purpose = $_POST['sign_purpose'] ?? '';
-    if (!in_array($sign_purpose, ['non_commercial', 'commercial'])) {
-        $message = "กรุณาเลือกประเภทการใช้งาน";
-        $message_type = 'danger';
-    }
     $d1 = new DateTime($install_date);
     $d2 = new DateTime($end_date);
     $duration_days = (int) $d1->diff($d2)->days;
     if ($duration_days < 1) {
         $message = "วันสิ้นสุดต้องมากกว่าวันเริ่มติดตั้ง";
-        $message_type = 'danger';
-    }
-    $max_days = ($sign_purpose === 'commercial') ? 60 : 30;
-    if ($duration_days > $max_days) {
-        $label = ($sign_purpose === 'commercial') ? 'เป็นการค้า (สูงสุด 60 วัน)' : 'ไม่เป็นการค้า (สูงสุด 30 วัน)';
-        $message = "ระยะเวลาเกินกำหนด: {$duration_days} วัน — {$label}";
         $message_type = 'danger';
     }
 
@@ -90,9 +79,8 @@ if (isset($_POST['submit'])) {
     if (!empty($message)) {
         // หยุดไม่ให้ดำเนินการต่อถ้ามี error
     } else {
-        // 2. คำนวณค่าธรรมเนียมตามประเภทการใช้งาน
-        $fee_per_sign = ($sign_purpose === 'commercial') ? 200 : 100;
-        $fee = $fee_per_sign * $quantity;
+        // 2. คำนวณค่าธรรมเนียม (200 บาท/ป้าย ทุกประเภท)
+        $fee = 200 * $quantity;
 
         // 3. Insert ลง DB
         $conn->begin_transaction();
@@ -100,12 +88,12 @@ if (isset($_POST['submit'])) {
             // ตรวจสอบคอลัมน์ใหม่ว่ามีหรือยัง (เผื่อ script update schema ยังไม่รัน)
             // แต่เราสมมติว่ารันแล้วตาม Plan
             $sql = "INSERT INTO sign_requests 
-            (user_id, applicant_name, applicant_address, email, sign_type, width, height, quantity, road_name, location_lat, location_lng, fee, status, duration_days, install_date, end_date, sign_purpose, description) 
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'pending', ?, ?, ?, ?, ?)";
+            (user_id, applicant_name, applicant_address, email, sign_type, width, height, quantity, road_name, location_lat, location_lng, fee, status, duration_days, install_date, end_date, description) 
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'pending', ?, ?, ?, ?)";
 
             $stmt = $conn->prepare($sql);
             $stmt->bind_param(
-                "issssddisddiissss",
+                "issssddisddiisss",
                 $user_id,
                 $applicant_name,
                 $applicant_address,
@@ -121,7 +109,6 @@ if (isset($_POST['submit'])) {
                 $duration_days,
                 $install_date,
                 $end_date,
-                $sign_purpose,
                 $description
             );
             $stmt->execute();
@@ -438,11 +425,9 @@ if (isset($_POST['submit'])) {
                     <label>ประเภทป้าย/สื่อโฆษณา</label>
                     <select name="sign_type" class="form-input-line w-300px" required style="cursor:pointer;">
                         <option value="">-- เลือกประเภทป้าย --</option>
-                        <option value="ไวนิล">ไวนิล</option>
-                        <option value="สติกเกอร์">สติกเกอร์</option>
-                        <option value="ผ้าใบ">ผ้าใบ</option>
-                        <option value="Roll-up">Roll-up (แขวนชั่วคราว ไม่ยึดถาวร)</option>
-                        <option value="ไม้อัด">ไม้อัด</option>
+                        <option value="ไวนิล">ไวนิล (200 บาท/ป้าย)</option>
+                        <option value="ผ้าใบ">ผ้าใบ (200 บาท/ป้าย)</option>
+                        <option value="ไม้อัด">ไม้อัด (200 บาท/ป้าย)</option>
                     </select>
                 </div>
 
@@ -506,23 +491,13 @@ if (isset($_POST['submit'])) {
                 <!-- ระยะเวลา -->
                 <div class="section-title mt-3">ระยะเวลาที่ขออนุญาต</div>
                 <div class="form-line">
-                    <label class="me-3">ประเภทการใช้งาน:</label>
-                    <div class="form-check form-check-inline">
-                        <input class="form-check-input" type="radio" name="sign_purpose" id="purposeNon" value="non_commercial" required checked>
-                        <label class="form-check-label" for="purposeNon">ไม่เป็นการค้า (100 บาท/ป้าย, สูงสุด 30 วัน)</label>
-                    </div>
-                    <div class="form-check form-check-inline">
-                        <input class="form-check-input" type="radio" name="sign_purpose" id="purposeCom" value="commercial">
-                        <label class="form-check-label" for="purposeCom">เป็นการค้า (200 บาท/ป้าย, สูงสุด 60 วัน)</label>
-                    </div>
-                </div>
-                <div class="form-line">
                     <label>วันที่เริ่มติดตั้ง</label>
                     <input type="date" name="install_date" id="install_date" class="form-input-line" required>
                     <label class="ms-3">ถึงวันที่</label>
                     <input type="date" name="end_date" id="end_date" class="form-input-line" required>
                     <span id="durationInfo" class="ms-2 badge bg-secondary"></span>
                 </div>
+                <div class="text-muted small ms-4 mb-2"><i class="bi bi-info-circle"></i> แนะนำระยะเวลาไม่เกิน 30 วัน | ควรยื่นก่อนวันติดตั้งจริงอย่างน้อย 7 วัน (เจ้าหน้าที่จะพิจารณาตามความเหมาะสม)</div>
 
                 <!-- เอกสารแนบ -->
                 <div class="section-title mt-4">เอกสารหลักฐานแนบ</div>
@@ -604,7 +579,7 @@ if (isset($_POST['submit'])) {
                 "แผนที่หลัก": baseStyle,
                 "แผนที่ Dataviz": datavizStyle
             };
-            L.control.layers(baseLayers, null, { collapsed: true }).addTo(map);
+            L.control.layers(baseLayers, {}, { collapsed: true }).addTo(map);
 
             var marker;
 
@@ -613,7 +588,7 @@ if (isset($_POST['submit'])) {
                 .then(res => res.json())
                 .then(data => {
                     municipalBoundary = data; // Store globally
-                    L.geoJSON(data, {
+                    var boundaryLayer = L.geoJSON(data, {
                         style: { color: 'blue', weight: 2, fillOpacity: 0.05 },
                         onEachFeature: function (feature, layer) {
                             layer.on('click', function (e) {
@@ -696,7 +671,7 @@ if (isset($_POST['submit'])) {
                     // Check Boundary
                     if (!checkBoundary(lat, lng)) {
                         var hint = document.getElementById('roadHint');
-                        if (hint) { hint.textContent = "อยู่นอกเขตเทศบาล"; hint.className = "badge bg-danger w-100"; }
+                        if (hint) { hint.textContent = "อยู่นอกเขตเทศบาล"; hint.className = "badge bg-danger"; }
 
                         Swal.fire({
                             icon: 'warning',
@@ -706,7 +681,7 @@ if (isset($_POST['submit'])) {
                         });
                     } else {
                         var hint = document.getElementById('roadHint');
-                        if (hint) { hint.textContent = "กำหนดพิกัดเอง"; hint.className = "badge bg-info text-dark w-100"; }
+                        if (hint) { hint.textContent = "กำหนดพิกัดเอง"; hint.className = "badge bg-info text-dark"; }
                     }
                 }
             }
@@ -718,7 +693,7 @@ if (isset($_POST['submit'])) {
             fetch('../data/road_sila.geojson')
                 .then(function (res) { return res.json(); })
                 .then(function (data) {
-                    L.geoJSON(data, {
+                    var roadLayer = L.geoJSON(data, {
                         style: { color: '#f59e0b', weight: 3 },
                         onEachFeature: function (feature, layer) {
                             layer.on('click', function (e) {
@@ -765,7 +740,7 @@ if (isset($_POST['submit'])) {
             document.getElementById('width').addEventListener('input', calcArea);
             document.getElementById('height').addEventListener('input', calcArea);
 
-            // === ตรวจสอบระยะเวลาตามประเภทการใช้งาน ===
+            // === ตรวจสอบระยะเวลา (แสดงจำนวนวัน ไม่จำกัด) ===
             function checkDuration() {
                 var installDate = document.getElementById('install_date').value;
                 var endDate = document.getElementById('end_date').value;
@@ -782,29 +757,16 @@ if (isset($_POST['submit'])) {
                     return;
                 }
 
-                var purpose = document.querySelector('input[name="sign_purpose"]:checked');
-                var maxDays = (purpose && purpose.value === 'commercial') ? 60 : 30;
-                var label = (purpose && purpose.value === 'commercial') ? 'เป็นการค้า' : 'ไม่เป็นการค้า';
-
-                badge.textContent = 'ระยะเวลา: ' + diff + ' วัน';
-
-                if (diff > maxDays) {
-                    badge.className = 'ms-2 badge bg-danger';
-                    Swal.fire({
-                        icon: 'warning',
-                        title: 'ระยะเวลาเกินกำหนด',
-                        html: 'ประเภท <b>' + label + '</b> กำหนดสูงสุด <b>' + maxDays + ' วัน</b><br>ท่านเลือก <b>' + diff + ' วัน</b> กรุณาปรับวันสิ้นสุดใหม่',
-                        confirmButtonText: 'ตกลง'
-                    });
+                if (diff > 30) {
+                    badge.textContent = 'ระยะเวลา: ' + diff + ' วัน (เกินระยะเวลาที่แนะนำ อาจไม่ได้รับอนุมัติ)';
+                    badge.className = 'ms-2 badge bg-warning text-dark';
                 } else {
+                    badge.textContent = 'ระยะเวลา: ' + diff + ' วัน';
                     badge.className = 'ms-2 badge bg-success';
                 }
             }
             document.getElementById('install_date').addEventListener('change', checkDuration);
             document.getElementById('end_date').addEventListener('change', checkDuration);
-            document.querySelectorAll('input[name="sign_purpose"]').forEach(function(r) {
-                r.addEventListener('change', checkDuration);
-            });
 
             // === แจ้งเตือนจำนวนเกิน 2 ===
             document.getElementById('quantity').addEventListener('input', function() {

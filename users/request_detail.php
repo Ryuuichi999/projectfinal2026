@@ -458,11 +458,6 @@ $timeline_logs = getRequestLogs($conn, $request_id);
                                         echo ' - ';
                                         echo date('j', $ts2) . ' ' . $thMonths[(int)date('n', $ts2)] . ' ' . (date('Y', $ts2)+543);
                                         ?>
-                                        <?php if (!empty($request['sign_purpose'])): ?>
-                                            <span class="badge <?= $request['sign_purpose'] === 'commercial' ? 'bg-warning text-dark' : 'bg-info' ?>">
-                                                <?= $request['sign_purpose'] === 'commercial' ? 'เป็นการค้า' : 'ไม่เป็นการค้า' ?>
-                                            </span>
-                                        <?php endif; ?>
                                     </div>
                                 </div>
                             </div>

@@ -493,11 +493,6 @@ $result_docs = $stmt_docs->get_result();
                                             echo ' - ';
                                             echo date('j', $ts_e) . ' ' . $thM[(int)date('n', $ts_e)] . ' ' . (date('Y', $ts_e)+543);
                                             ?>
-                                            <?php if (!empty($request['sign_purpose'])): ?>
-                                                <span class="badge <?= $request['sign_purpose'] === 'commercial' ? 'bg-warning text-dark' : 'bg-info' ?>">
-                                                    <?= $request['sign_purpose'] === 'commercial' ? 'เป็นการค้า' : 'ไม่เป็นการค้า' ?>
-                                                </span>
-                                            <?php endif; ?>
                                         </div>
                                     </div>
                                 </div>
