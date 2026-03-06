@@ -579,7 +579,7 @@ if (isset($_POST['submit'])) {
                 "แผนที่หลัก": baseStyle,
                 "แผนที่ Dataviz": datavizStyle
             };
-            L.control.layers(baseLayers, {}, { collapsed: true }).addTo(map);
+            var layerControl = L.control.layers(baseLayers, {}, { collapsed: true }).addTo(map);
 
             var marker;
 
@@ -600,6 +600,7 @@ if (isset($_POST['submit'])) {
                             });
                         }
                     }).addTo(map);
+                    layerControl.addOverlay(boundaryLayer, "ขอบเขตเทศบาล");
                 });
 
             function placeMarker(latlng) {
@@ -704,6 +705,7 @@ if (isset($_POST['submit'])) {
                             });
                         }
                     }).addTo(map);
+                    layerControl.addOverlay(roadLayer, "เส้นถนน");
                 });
 
             // Map Click (Outside Boundary)
