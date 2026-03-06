@@ -40,8 +40,12 @@ if (isset($_POST['submit'])) {
         $message_type = 'danger';
     }
 
-    // ตรวจสอบขนาด: กว้าง ≤1.20 ม., สูง ≤2.40 ม.
-    if ($width > 1.20) {
+    // ตรวจสอบขนาด: ต้อง > 0 และ กว้าง ≤1.20 ม., สูง ≤2.40 ม.
+    if ($width <= 0 || $height <= 0) {
+        $message = "ขนาดป้ายต้องมากกว่า 0";
+        $message_type = 'danger';
+    }
+    if (empty($message) && $width > 1.20) {
         $message = "ความกว้างป้ายต้องไม่เกิน 1.20 เมตร (ท่านระบุ {$width} ม.)";
         $message_type = 'danger';
     }
@@ -61,8 +65,13 @@ if (isset($_POST['submit'])) {
     $end_date = $_POST['end_date'];
     $d1 = new DateTime($install_date);
     $d2 = new DateTime($end_date);
+    $today = new DateTime('today');
     $duration_days = (int) $d1->diff($d2)->days;
-    if ($duration_days < 1) {
+    if ($d1 < $today) {
+        $message = "วันที่เริ่มติดตั้งต้องไม่เป็นวันย้อนหลัง";
+        $message_type = 'danger';
+    }
+    if (empty($message) && $duration_days < 1) {
         $message = "วันสิ้นสุดต้องมากกว่าวันเริ่มติดตั้ง";
         $message_type = 'danger';
     }
@@ -200,6 +209,27 @@ if (isset($_POST['submit'])) {
         }
     }
 }
+
+// ดึงป้ายที่อนุมัติแล้ว (ยังไม่หมดอายุ) สำหรับแสดงบนแผนที่
+$approved_signs = [];
+$result_signs = $conn->query("SELECT id, location_lat, location_lng, sign_type, road_name, width, height, quantity, end_date
+    FROM sign_requests
+    WHERE status = 'approved' AND location_lat IS NOT NULL AND location_lng IS NOT NULL
+      AND (end_date IS NULL OR end_date >= CURDATE())
+    ORDER BY id DESC");
+if ($result_signs && $result_signs->num_rows > 0) {
+    while ($row = $result_signs->fetch_assoc()) {
+        $approved_signs[] = [
+            'lat' => (float)$row['location_lat'],
+            'lng' => (float)$row['location_lng'],
+            'type' => $row['sign_type'],
+            'road' => $row['road_name'] ?? '-',
+            'size' => $row['width'] . 'x' . $row['height'] . ' ม.',
+            'qty' => (int)$row['quantity'],
+            'expire' => $row['end_date'] ? date('d/m/Y', strtotime($row['end_date'])) : '-'
+        ];
+    }
+}
 ?>
 
 <!DOCTYPE html>
@@ -210,6 +240,7 @@ if (isset($_POST['submit'])) {
     <title>ยื่นคำร้องขออนุญาตโฆษณา</title>
     <?php include '../includes/header.php'; ?>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.css" />
     <style>
         body {
             background-color: #f5f5f5;
@@ -354,6 +385,10 @@ if (isset($_POST['submit'])) {
             border-color: #222;
             transform: translateY(-2px);
         }
+
+        .file-preview { max-width: 120px; max-height: 90px; border-radius: 4px; border: 1px solid #ddd; margin-top: 6px; }
+        .fee-summary { background: #e8f5e9; border: 1px solid #a5d6a7; border-radius: 8px; padding: 12px 18px; margin-top: 10px; font-size: 15px; }
+        .fee-summary .fee-total { font-size: 22px; font-weight: 700; color: #2e7d32; }
     </style>
 </head>
 
@@ -425,9 +460,9 @@ if (isset($_POST['submit'])) {
                     <label>ประเภทป้าย/สื่อโฆษณา</label>
                     <select name="sign_type" class="form-input-line w-300px" required style="cursor:pointer;">
                         <option value="">-- เลือกประเภทป้าย --</option>
-                        <option value="ไวนิล">ไวนิล (200 บาท/ป้าย)</option>
-                        <option value="ผ้าใบ">ผ้าใบ (200 บาท/ป้าย)</option>
-                        <option value="ไม้อัด">ไม้อัด (200 บาท/ป้าย)</option>
+                        <option value="ไวนิล">ไวนิล</option>
+                        <option value="ผ้าใบ">ผ้าใบ</option>
+                        <option value="ไม้อัด">ไม้อัด</option>
                     </select>
                 </div>
 
@@ -448,7 +483,11 @@ if (isset($_POST['submit'])) {
                     <label>ผืน/แผ่น (สูงสุด 2ผืน/แผ่น ต่อ 1 คำร้อง)</label>
                 </div>
 
-                <div class="form-line">
+                <div class="fee-summary" id="feeSummary">
+                    <i class="bi bi-cash-stack"></i> ค่าธรรมเนียม: 200 บาท x <span id="feeQty">1</span> ป้าย = <span class="fee-total" id="feeTotal">200</span> บาท
+                </div>
+
+                <div class="form-line mt-3">
                     <label>ข้อความโฆษณา (โดยสังเขป)</label>
                     <input type="text" name="description" class="form-input-line w-full" required
                         placeholder="เช่น โปรโมชั่นยาง 3 แถม 1">
@@ -492,9 +531,9 @@ if (isset($_POST['submit'])) {
                 <div class="section-title mt-3">ระยะเวลาที่ขออนุญาต</div>
                 <div class="form-line">
                     <label>วันที่เริ่มติดตั้ง</label>
-                    <input type="date" name="install_date" id="install_date" class="form-input-line" required>
+                    <input type="date" name="install_date" id="install_date" class="form-input-line" required min="<?= date('Y-m-d') ?>">
                     <label class="ms-3">ถึงวันที่</label>
-                    <input type="date" name="end_date" id="end_date" class="form-input-line" required>
+                    <input type="date" name="end_date" id="end_date" class="form-input-line" required min="<?= date('Y-m-d') ?>">
                     <span id="durationInfo" class="ms-2 badge bg-secondary"></span>
                 </div>
                 <div class="text-muted small ms-4 mb-2"><i class="bi bi-info-circle"></i> แนะนำระยะเวลาไม่เกิน 30 วัน | ควรยื่นก่อนวันติดตั้งจริงอย่างน้อย 7 วัน (เจ้าหน้าที่จะพิจารณาตามความเหมาะสม)</div>
@@ -505,19 +544,23 @@ if (isset($_POST['submit'])) {
                 <div class="row g-3">
                     <div class="col-md-6">
                         <label class="form-label small">1. แบบป้าย/รูปภาพโฆษณา *</label>
-                        <input type="file" name="file_sign_plan" class="form-control form-control-sm" required>
+                        <input type="file" name="file_sign_plan" class="form-control form-control-sm" required accept="image/*,.pdf" onchange="previewFile(this,'preview1')">
+                        <img id="preview1" class="file-preview d-none">
                     </div>
                     <div class="col-md-6">
                         <label class="form-label small">2. สำเนาบัตรประชาชนผู้ขออนุญาต *</label>
-                        <input type="file" name="file_id_card" class="form-control form-control-sm" required>
+                        <input type="file" name="file_id_card" class="form-control form-control-sm" required accept="image/*,.pdf" onchange="previewFile(this,'preview2')">
+                        <img id="preview2" class="file-preview d-none">
                     </div>
                     <div class="col-md-6">
                         <label class="form-label small">3. หนังสือยินยอมเจ้าของที่ (ถ้าตั้งในที่เอกชน)</label>
-                        <input type="file" name="file_land_doc" class="form-control form-control-sm">
+                        <input type="file" name="file_land_doc" class="form-control form-control-sm" accept="image/*,.pdf" onchange="previewFile(this,'preview3')">
+                        <img id="preview3" class="file-preview d-none">
                     </div>
                     <div class="col-md-6">
                         <label class="form-label small">4. เอกสารอื่นๆ (ถ้ามี)</label>
-                        <input type="file" name="file_other" class="form-control form-control-sm">
+                        <input type="file" name="file_other" class="form-control form-control-sm" accept="image/*,.pdf" onchange="previewFile(this,'preview4')">
+                        <img id="preview4" class="file-preview d-none">
                     </div>
                 </div>
 
@@ -558,7 +601,28 @@ if (isset($_POST['submit'])) {
     </div>
 
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.js"></script>
     <script>
+        // === Preview รูปก่อน Upload ===
+        function previewFile(input, previewId) {
+            var preview = document.getElementById(previewId);
+            if (input.files && input.files[0]) {
+                var file = input.files[0];
+                if (file.type.startsWith('image/')) {
+                    var reader = new FileReader();
+                    reader.onload = function (e) {
+                        preview.src = e.target.result;
+                        preview.classList.remove('d-none');
+                    };
+                    reader.readAsDataURL(file);
+                } else {
+                    preview.classList.add('d-none');
+                }
+            } else {
+                preview.classList.add('d-none');
+            }
+        }
+
         // Global variable for boundary data
         var municipalBoundary = null;
 
@@ -580,6 +644,23 @@ if (isset($_POST['submit'])) {
                 "แผนที่ Dataviz": datavizStyle
             };
             var layerControl = L.control.layers(baseLayers, {}, { collapsed: true }).addTo(map);
+
+            // === Map Search (Geocoder) ===
+            L.Control.geocoder({
+                defaultMarkType: 'L.marker',
+                placeholder: 'ค้นหาสถานที่...',
+                errorMessage: 'ไม่พบสถานที่',
+                collapsed: true,
+                geocoder: L.Control.Geocoder.nominatim({ geocodingQueryParams: { countrycodes: 'th', viewbox: '102.7,16.4,102.95,16.55', bounded: 1 } })
+            }).on('markgeocode', function(e) {
+                var latlng = e.geocode.center;
+                map.setView(latlng, 16);
+                placeMarker(latlng);
+                if (checkBoundary(latlng.lat, latlng.lng)) {
+                    var hint = document.getElementById('roadHint');
+                    if (hint) { hint.textContent = "เลือกจากการค้นหา"; hint.className = "badge bg-success"; }
+                }
+            }).addTo(map);
 
             var marker;
 
@@ -603,6 +684,23 @@ if (isset($_POST['submit'])) {
                     layerControl.addOverlay(boundaryLayer, "ขอบเขตเทศบาล");
                 });
 
+            // === Approved Signs Layer ===
+            var approvedData = <?php echo json_encode($approved_signs); ?>;
+            if (approvedData.length > 0) {
+                var approvedGroup = L.layerGroup();
+                var greenIcon = L.icon({
+                    iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-green.png',
+                    shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-shadow.png',
+                    iconSize: [25, 41], iconAnchor: [12, 41], popupAnchor: [1, -34], shadowSize: [41, 41]
+                });
+                approvedData.forEach(function(s) {
+                    L.marker([s.lat, s.lng], { icon: greenIcon })
+                        .bindPopup('<b>' + s.type + '</b><br>ถนน: ' + s.road + '<br>ขนาด: ' + s.size + '<br>จำนวน: ' + s.qty + '<br>หมดอายุ: ' + s.expire)
+                        .addTo(approvedGroup);
+                });
+                layerControl.addOverlay(approvedGroup, "ป้ายที่อนุมัติแล้ว (" + approvedData.length + ")");
+            }
+
             function placeMarker(latlng) {
                 if (marker) {
                     marker.setLatLng(latlng);
@@ -615,21 +713,15 @@ if (isset($_POST['submit'])) {
             function updateInput(latlng) {
                 document.getElementById('lat').value = latlng.lat.toFixed(6);
                 document.getElementById('lng').value = latlng.lng.toFixed(6);
-                // document.getElementById('coordDisplay').textContent = "Lat: " + latlng.lat.toFixed(5) + ", Lng: " + latlng.lng.toFixed(5);
-                // document.getElementById('coordDisplay').className = "badge bg-success";
             }
 
             // Ray-casting algorithm for Point in Polygon
             function isPointInPolygon(point, vs) {
-                // point = [lng, lat], vs = [[lng, lat], ...] (GeoJSON format)
-                // x = lng, y = lat
                 var x = point[0], y = point[1];
-
                 var inside = false;
                 for (var i = 0, j = vs.length - 1; i < vs.length; j = i++) {
                     var xi = vs[i][0], yi = vs[i][1];
                     var xj = vs[j][0], yj = vs[j][1];
-
                     var intersect = ((yi > y) != (yj > y))
                         && (x < (xj - xi) * (y - yi) / (yj - yi) + xi);
                     if (intersect) inside = !inside;
@@ -638,14 +730,10 @@ if (isset($_POST['submit'])) {
             };
 
             function checkBoundary(lat, lng) {
-                if (!municipalBoundary) return true; // Data not loaded yet, skip check
-
+                if (!municipalBoundary) return true;
                 var isInside = false;
-                // GeoJSON can be FeatureCollection -> Feature -> Geometry -> Coordinates
-                // Assuming simple Polygon or MultiPolygon
                 municipalBoundary.features.forEach(function (feature) {
                     if (feature.geometry.type === 'Polygon') {
-                        // Polygon coordinates: [ [ [lng,lat], ... ] ] (Outer ring is index 0)
                         if (isPointInPolygon([lng, lat], feature.geometry.coordinates[0])) {
                             isInside = true;
                         }
@@ -664,22 +752,16 @@ if (isset($_POST['submit'])) {
             function updateMapFromInput() {
                 var lat = parseFloat(document.getElementById('lat').value);
                 var lng = parseFloat(document.getElementById('lng').value);
+
                 if (!isNaN(lat) && !isNaN(lng)) {
                     var latlng = new L.LatLng(lat, lng);
                     placeMarker(latlng);
                     map.panTo(latlng);
 
-                    // Check Boundary
                     if (!checkBoundary(lat, lng)) {
                         var hint = document.getElementById('roadHint');
                         if (hint) { hint.textContent = "อยู่นอกเขตเทศบาล"; hint.className = "badge bg-danger"; }
-
-                        Swal.fire({
-                            icon: 'warning',
-                            title: 'อยู่นอกเขตพื้นที่',
-                            text: 'พิกัดที่ท่านระบุอยู่นอกเขตเทศบาลเมืองศิลา',
-                            confirmButtonText: 'ตกลง'
-                        });
+                        Swal.fire({ icon: 'warning', title: 'อยู่นอกเขตพื้นที่', text: 'พิกัดที่ท่านระบุอยู่นอกเขตเทศบาลเมืองศิลา', confirmButtonText: 'ตกลง' });
                     } else {
                         var hint = document.getElementById('roadHint');
                         if (hint) { hint.textContent = "กำหนดพิกัดเอง"; hint.className = "badge bg-info text-dark"; }
@@ -688,9 +770,10 @@ if (isset($_POST['submit'])) {
             }
 
             document.getElementById('lat').addEventListener('change', updateMapFromInput);
+
             document.getElementById('lng').addEventListener('change', updateMapFromInput);
 
-            // Road Layer (Visual only, or also clickable)
+            // Road Layer
             fetch('../data/road_sila.geojson')
                 .then(function (res) { return res.json(); })
                 .then(function (data) {
@@ -712,13 +795,7 @@ if (isset($_POST['submit'])) {
             map.on('click', function () {
                 var hint = document.getElementById('roadHint');
                 if (hint) { hint.textContent = "อยู่นอกเขตเทศบาล (กรุณาคลิกในขอบเขตสีน้ำเงิน)"; hint.className = "badge bg-danger"; }
-
-                Swal.fire({
-                    icon: 'warning',
-                    title: 'อยู่นอกเขตพื้นที่',
-                    text: 'จุดที่ท่านเลือกอยู่นอกเขตเทศบาลเมืองศิลา กรุณาเลือกจุดติดตั้งใหม่ภายในขอบเขตสีน้ำเงิน',
-                    confirmButtonText: 'ตกลง'
-                });
+                Swal.fire({ icon: 'warning', title: 'อยู่นอกเขตพื้นที่', text: 'จุดที่ท่านเลือกอยู่นอกเขตเทศบาลเมืองศิลา กรุณาเลือกจุดติดตั้งใหม่ภายในขอบเขตสีน้ำเงิน', confirmButtonText: 'ตกลง' });
             });
 
             // === คำนวณพื้นที่ป้าย realtime ===
@@ -731,16 +808,20 @@ if (isset($_POST['submit'])) {
                 var overSize = (w > 1.2 || h > 2.4);
                 badge.className = overSize ? 'ms-2 badge bg-danger' : 'ms-2 badge bg-success';
                 if (overSize && (w > 0 || h > 0)) {
-                    Swal.fire({
-                        icon: 'warning',
-                        title: 'ขนาดเกินกำหนด',
-                        html: 'ขนาดสูงสุด: กว้างไม่เกิน <b>1.20</b> ม. × สูงไม่เกิน <b>2.40</b> ม.',
-                        confirmButtonText: 'ตกลง'
-                    });
+                    Swal.fire({ icon: 'warning', title: 'ขนาดเกินกำหนด', html: 'ขนาดสูงสุด: กว้างไม่เกิน <b>1.20</b> ม. × สูงไม่เกิน <b>2.40</b> ม.', confirmButtonText: 'ตกลง' });
                 }
             }
             document.getElementById('width').addEventListener('input', calcArea);
             document.getElementById('height').addEventListener('input', calcArea);
+
+            // === Auto คำนวณค่าธรรมเนียม ===
+            function calcFee() {
+                var qty = parseInt(document.getElementById('quantity').value) || 1;
+                if (qty < 1) qty = 1;
+                if (qty > 2) qty = 2;
+                document.getElementById('feeQty').textContent = qty;
+                document.getElementById('feeTotal').textContent = (200 * qty).toLocaleString();
+            }
 
             // === ตรวจสอบระยะเวลา (แสดงจำนวนวัน ไม่จำกัด) ===
             function checkDuration() {
@@ -767,21 +848,28 @@ if (isset($_POST['submit'])) {
                     badge.className = 'ms-2 badge bg-success';
                 }
             }
-            document.getElementById('install_date').addEventListener('change', checkDuration);
+
+            // === Date: install_date เปลี่ยน → อัปเดต min ของ end_date ===
+            document.getElementById('install_date').addEventListener('change', function() {
+                var endInput = document.getElementById('end_date');
+                if (this.value) {
+                    endInput.min = this.value;
+                    if (endInput.value && endInput.value < this.value) {
+                        endInput.value = '';
+                    }
+                }
+                checkDuration();
+            });
             document.getElementById('end_date').addEventListener('change', checkDuration);
 
-            // === แจ้งเตือนจำนวนเกิน 2 ===
+            // === แจ้งเตือนจำนวนเกิน 2 + คำนวณค่าธรรมเนียม ===
             document.getElementById('quantity').addEventListener('input', function() {
                 var qty = parseInt(this.value) || 0;
                 if (qty > 2) {
-                    Swal.fire({
-                        icon: 'warning',
-                        title: 'จำนวนเกินกำหนด',
-                        text: 'สูงสุด 2 ผืน/แผ่น ต่อ 1 คำร้อง',
-                        confirmButtonText: 'ตกลง'
-                    });
+                    Swal.fire({ icon: 'warning', title: 'จำนวนเกินกำหนด', text: 'สูงสุด 2 ผืน/แผ่น ต่อ 1 คำร้อง', confirmButtonText: 'ตกลง' });
                     this.value = 2;
                 }
+                calcFee();
             });
         });
     </script>
