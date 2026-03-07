@@ -23,7 +23,8 @@ $stmt->bind_param("ii", $request_id, $user_id);
 $stmt->execute();
 $result = $stmt->get_result();
 if ($result->num_rows === 0) {
-    echo '<!DOCTYPE html><html lang="th"><head><meta charset="UTF-8"><script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script></head><body><script>const Toast=Swal.mixin({toast:true,position:"top-end",showConfirmButton:false,timer:1500,timerProgressBar:true,didOpen:(t)=>{t.onmouseenter=Swal.stopTimer;t.onmouseleave=Swal.resumeTimer}});Toast.fire({icon:"warning",title:"ไม่พบคำขอ"}).then(()=>{window.location.href="my_request.php";});</script></body></html>';
+    $_SESSION['flash_error'] = 'ไม่พบคำขอ';
+    header('Location: my_request.php');
     exit;
 }
 $request = $result->fetch_assoc();
@@ -96,26 +97,8 @@ if (isset($_POST['submit'])) {
         logRequestAction($conn, $request_id, 'reviewing', 'ส่งเอกสารเพิ่มเติม', $user_id, 'ผู้ใช้ส่งเอกสารเพิ่มเติมตามที่ร้องขอ');
         queue_status_notification($request_id, $conn);
 
-        echo '<!DOCTYPE html>
-        <html lang="th">
-        <head>
-            <meta charset="UTF-8">
-            <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-        </head>
-        <body>
-            <script>
-                document.addEventListener("DOMContentLoaded", function() {
-                    const Toast=Swal.mixin({toast:true,position:"top-end",showConfirmButton:false,timer:1500,timerProgressBar:true,didOpen:(t)=>{t.onmouseenter=Swal.stopTimer;t.onmouseleave=Swal.resumeTimer}});
-                    Toast.fire({
-                        icon: "success",
-                        title: "ส่งเอกสารเพิ่มเติมเรียบร้อย"
-                    }).then(() => {
-                        window.location.href = "request_detail.php?id=' . $request_id . '";
-                    });
-                });
-            </script>
-        </body>
-        </html>';
+        $_SESSION['flash_success'] = 'ส่งเอกสารเพิ่มเติมเรียบร้อย';
+        header('Location: request_detail.php?id=' . $request_id);
         exit;
     } catch (Exception $e) {
         $conn->rollback();

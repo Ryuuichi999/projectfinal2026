@@ -167,6 +167,15 @@ if (!isset($_SESSION['user_id'])) {
         </script>
         <?php unset($_SESSION['flash_success']); ?>
     <?php endif; ?>
+    <?php if (!empty($_SESSION['flash_error'])): ?>
+        <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                const Toast = Swal.mixin({toast:true, position:'top-end', showConfirmButton:false, timer:3000, timerProgressBar:true});
+                Toast.fire({ icon: 'error', title: <?= json_encode($_SESSION['flash_error']) ?> });
+            });
+        </script>
+        <?php unset($_SESSION['flash_error']); ?>
+    <?php endif; ?>
     <script src="https://cdn.datatables.net/1.13.7/js/jquery.dataTables.min.js"></script>
     <script src="https://cdn.datatables.net/1.13.7/js/dataTables.bootstrap5.min.js"></script>
     <script>

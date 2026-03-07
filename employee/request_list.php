@@ -163,12 +163,29 @@ data-bs-toggle="tooltip" title="ดูรายละเอียด">
 </div>
 
 <?php include '../includes/scripts.php'; ?>
-
 <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 <script src="https://cdn.datatables.net/1.13.7/js/jquery.dataTables.min.js"></script>
 <script src="https://cdn.datatables.net/1.13.7/js/dataTables.bootstrap5.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+<?php if (!empty($_SESSION['flash_success'])): ?>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const Toast = Swal.mixin({toast:true, position:'top-end', showConfirmButton:false, timer:2000, timerProgressBar:true});
+        Toast.fire({ icon: 'success', title: <?= json_encode($_SESSION['flash_success']) ?> });
+    });
+</script>
+<?php unset($_SESSION['flash_success']); endif; ?>
+
+<?php if (!empty($_SESSION['flash_error'])): ?>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const Toast = Swal.mixin({toast:true, position:'top-end', showConfirmButton:false, timer:3000, timerProgressBar:true});
+        Toast.fire({ icon: 'error', title: <?= json_encode($_SESSION['flash_error']) ?> });
+    });
+</script>
+<?php unset($_SESSION['flash_error']); endif; ?>
 
 <script>
 $(document).ready(function () {

@@ -25,7 +25,8 @@ $stmt->execute();
 $result = $stmt->get_result();
 
 if ($result->num_rows === 0) {
-    echo '<!DOCTYPE html><html lang="th"><head><meta charset="UTF-8"><script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script></head><body><script>const Toast=Swal.mixin({toast:true,position:"top-end",showConfirmButton:false,timer:1500,timerProgressBar:true,didOpen:(t)=>{t.onmouseenter=Swal.stopTimer;t.onmouseleave=Swal.resumeTimer}});Toast.fire({icon:"error",title:"ไม่พบข้อมูลคำขอ"}).then(()=>{window.location.href="request_list.php";});</script></body></html>';
+    $_SESSION['flash_error'] = 'ไม่พบข้อมูลคำขอ';
+    header('Location: request_list.php');
     exit;
 }
 
@@ -44,26 +45,8 @@ if (isset($_POST['approve_confirm'])) {
         require_once '../includes/audit_helper.php';
         logAudit($conn, 'approve', 'sign_requests', $request_id, 'อนุมัติคำร้องให้รอชำระเงิน');
 
-        echo '<!DOCTYPE html>
-<html lang="th">
-<head>
-    <meta charset="UTF-8">
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-</head>
-<body>
-    <script>
-        document.addEventListener("DOMContentLoaded", function() {
-            const Toast=Swal.mixin({toast:true,position:"top-end",showConfirmButton:false,timer:1500,timerProgressBar:true,didOpen:(t)=>{t.onmouseenter=Swal.stopTimer;t.onmouseleave=Swal.resumeTimer}});
-            Toast.fire({
-                icon: "success",
-                title: "อนุมัติเรียบร้อย"
-            }).then(() => {
-                window.location.href = "request_list.php";
-            });
-        });
-    </script>
-</body>
-</html>';
+        $_SESSION['flash_success'] = 'อนุมัติเรียบร้อย';
+        header('Location: request_list.php');
         exit;
     } else {
         $error = "เกิดข้อผิดพลาด กรุณาลองใหม่อีกครั้ง";

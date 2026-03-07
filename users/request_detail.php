@@ -40,7 +40,8 @@ $stmt->execute();
 $result = $stmt->get_result();
 
 if ($result->num_rows === 0) {
-    echo '<!DOCTYPE html><html lang="th"><head><meta charset="UTF-8"><script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script></head><body><script>const Toast=Swal.mixin({toast:true,position:"top-end",showConfirmButton:false,timer:1500,timerProgressBar:true,didOpen:(t)=>{t.onmouseenter=Swal.stopTimer;t.onmouseleave=Swal.resumeTimer}});Toast.fire({icon:"warning",title:"ไม่พบข้อมูลคำขอ"}).then(()=>{window.location.href="my_request.php";});</script></body></html>';
+    $_SESSION['flash_error'] = 'ไม่พบข้อมูลคำขอ';
+    header('Location: my_request.php');
     exit;
 }
 
@@ -727,6 +728,24 @@ $timeline_logs = getRequestLogs($conn, $request_id);
     </script>
 
     <?php include '../includes/scripts.php'; ?>
+
+    <?php if (!empty($_SESSION['flash_success'])): ?>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const Toast = Swal.mixin({toast:true, position:'top-end', showConfirmButton:false, timer:2000, timerProgressBar:true});
+            Toast.fire({ icon: 'success', title: <?= json_encode($_SESSION['flash_success']) ?> });
+        });
+    </script>
+    <?php unset($_SESSION['flash_success']); endif; ?>
+
+    <?php if (!empty($_SESSION['flash_error'])): ?>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const Toast = Swal.mixin({toast:true, position:'top-end', showConfirmButton:false, timer:3000, timerProgressBar:true});
+            Toast.fire({ icon: 'error', title: <?= json_encode($_SESSION['flash_error']) ?> });
+        });
+    </script>
+    <?php unset($_SESSION['flash_error']); endif; ?>
 
 </body>
 

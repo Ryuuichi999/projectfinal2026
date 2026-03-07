@@ -18,7 +18,8 @@ $stmt->execute();
 $user = $stmt->get_result()->fetch_assoc();
 
 if (!$user) {
-    echo '<!DOCTYPE html><html lang="th"><head><meta charset="UTF-8"><script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script></head><body><script>const Toast=Swal.mixin({toast:true,position:"top-end",showConfirmButton:false,timer:1500,timerProgressBar:true,didOpen:(t)=>{t.onmouseenter=Swal.stopTimer;t.onmouseleave=Swal.resumeTimer}});Toast.fire({icon:"error",title:"ไม่พบข้อมูลผู้ใช้"}).then(()=>{window.location.href="../login.php";});</script></body></html>';
+    $_SESSION['flash_error'] = 'ไม่พบข้อมูลผู้ใช้';
+    header('Location: ../login.php');
     exit;
 }
 

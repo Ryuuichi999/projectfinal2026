@@ -143,29 +143,8 @@ if (isset($_POST['upload_slip'])) {
                                 logRequestAction($conn, $request_id, 'waiting_permit', 'รอออกใบอนุญาต', null, 'ชำระเงินแล้ว รอเจ้าหน้าที่ออกใบอนุญาต');
                                 queue_status_notification($request_id, $conn);
                                 csrf_regenerate();
-                                ?>
-                                <!DOCTYPE html>
-                                <html lang="th">
-                                <head>
-                                    <meta charset="UTF-8">
-                                    <title>ชำระเงินสำเร็จ</title>
-                                    <?php include './includes/header.php'; ?>
-                                </head>
-                                <body>
-                                    <script>
-                                        document.addEventListener('DOMContentLoaded', function () {
-                                            Toast.fire({
-                                                icon: 'success',
-                                                title: 'ชำระเงินสำเร็จ!'
-                                            }).then(() => {
-                                                window.location.href = 'users/my_request.php';
-                                            });
-                                        });
-                                    </script>
-                                    <?php include './includes/scripts.php'; ?>
-                                </body>
-                                </html>
-                                <?php
+                                $_SESSION['flash_success'] = 'ชำระเงินสำเร็จ!';
+                                header('Location: users/my_request.php');
                                 exit;
                             } else {
                                 $error = "เกิดข้อผิดพลาดในการอัปเดตสถานะ กรุณาลองใหม่";
@@ -244,286 +223,180 @@ $qr_url = "https://promptpay.io/{$promptpay_id}/{$amount}.png";
     <title>ชำระค่าธรรมเนียม — เทศบาลเมืองศิลา</title>
     <?php include './includes/header.php'; ?>
 
-    <!-- Sarabun: official Thai government font -->
-    <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-
     <style>
         :root {
-            --gov-navy:    #1a2e5a;
-            --gov-gold:    #b8960c;
-            --gov-gold-lt: #d4af37;
-            --gov-red:     #8b1a1a;
-            --gov-bg:      #f5f3ee;
-            --gov-white:   #ffffff;
-            --gov-border:  #c9c3b4;
-            --gov-text:    #1e1e1e;
-            --gov-muted:   #5a5a5a;
-            --gov-line:    #d4c98a;
+            --pay-primary: #1a56db;
+            --pay-primary-dark: #1e40af;
+            --pay-primary-light: #dbeafe;
+            --pay-bg: #f1f5f9;
+            --pay-white: #ffffff;
+            --pay-border: #e2e8f0;
+            --pay-text: #1e293b;
+            --pay-muted: #64748b;
+            --pay-danger: #dc2626;
+            --pay-success: #16a34a;
         }
 
         * { box-sizing: border-box; }
 
         body {
-            font-family: 'Sarabun', sans-serif;
-            background-color: var(--gov-bg);
-            color: var(--gov-text);
-            font-size: 15px;
-            line-height: 1.7;
+            background-color: var(--pay-bg);
+            color: var(--pay-text);
         }
 
-        /* ===== LETTERHEAD BANNER ===== */
-        .gov-letterhead {
-            background: var(--gov-navy);
-            border-bottom: 4px solid var(--gov-gold);
-            padding: 0;
-        }
-        .gov-letterhead-inner {
+        .pay-page {
             max-width: 960px;
-            margin: 0 auto;
-            padding: 14px 24px;
-            display: flex;
-            align-items: center;
-            gap: 18px;
-        }
-        .gov-letterhead-logo {
-            width: 56px;
-            height: 56px;
-            background: var(--gov-gold-lt);
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 26px;
-            flex-shrink: 0;
-        }
-        .gov-letterhead-title {
-            color: #fff;
-        }
-        .gov-letterhead-title .org-name {
-            font-size: 17px;
-            font-weight: 700;
-            letter-spacing: 0.03em;
-        }
-        .gov-letterhead-title .org-sub {
-            font-size: 12px;
-            color: var(--gov-line);
-            letter-spacing: 0.05em;
-        }
-
-        /* ===== PAGE WRAPPER ===== */
-        .gov-page {
-            max-width: 960px;
-            margin: 28px auto 48px;
+            margin: 24px auto 48px;
             padding: 0 16px;
         }
 
-        /* ===== DOC TITLE STRIP ===== */
-        .doc-title-strip {
-            background: var(--gov-white);
-            border: 1px solid var(--gov-border);
-            border-left: 5px solid var(--gov-navy);
-            border-radius: 2px;
-            padding: 14px 20px;
+        .pay-breadcrumb {
+            font-size: 13px;
+            color: var(--pay-muted);
             margin-bottom: 20px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        .doc-title-strip h1 {
-            font-size: 18px;
-            font-weight: 700;
-            color: var(--gov-navy);
-            margin: 0;
-            letter-spacing: 0.02em;
-        }
-        .doc-ref-badge {
-            background: var(--gov-navy);
-            color: #fff;
-            font-size: 12px;
-            padding: 4px 12px;
-            border-radius: 2px;
-            letter-spacing: 0.05em;
-            white-space: nowrap;
-        }
-
-        /* ===== BREADCRUMB ===== */
-        .gov-breadcrumb {
-            font-size: 12.5px;
-            color: var(--gov-muted);
-            margin-bottom: 18px;
             display: flex;
             align-items: center;
             gap: 6px;
         }
-        .gov-breadcrumb a {
-            color: var(--gov-navy);
-            text-decoration: none;
-        }
-        .gov-breadcrumb a:hover { text-decoration: underline; }
-        .gov-breadcrumb .sep { color: var(--gov-border); }
+        .pay-breadcrumb a { color: var(--pay-primary); text-decoration: none; }
+        .pay-breadcrumb a:hover { text-decoration: underline; }
+        .pay-breadcrumb .sep { color: #cbd5e1; }
 
-        /* ===== ERROR NOTICE ===== */
-        .gov-alert-error {
-            background: #fff5f5;
-            border: 1px solid #d9534f;
-            border-left: 5px solid var(--gov-red);
-            border-radius: 2px;
-            padding: 12px 16px;
+        .pay-title-strip {
+            background: var(--pay-white);
+            border: 1px solid var(--pay-border);
+            border-left: 5px solid var(--pay-primary);
+            border-radius: 12px;
+            padding: 18px 24px;
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+        }
+        .pay-title-strip h1 {
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--pay-primary-dark);
+            margin: 0;
+        }
+        .pay-ref-badge {
+            background: var(--pay-primary);
+            color: #fff;
+            font-size: 12px;
+            padding: 5px 14px;
+            border-radius: 20px;
+            font-weight: 600;
+            white-space: nowrap;
+        }
+
+        .pay-alert-error {
+            background: #fef2f2;
+            border: 1px solid #fecaca;
+            border-left: 5px solid var(--pay-danger);
+            border-radius: 10px;
+            padding: 14px 18px;
             margin-bottom: 18px;
-            color: var(--gov-red);
+            color: var(--pay-danger);
             font-size: 14px;
             display: flex;
             gap: 10px;
             align-items: flex-start;
         }
 
-        /* ===== CARDS ===== */
-        .gov-card {
-            background: var(--gov-white);
-            border: 1px solid var(--gov-border);
-            border-radius: 2px;
+        .pay-card {
+            background: var(--pay-white);
+            border: 1px solid var(--pay-border);
+            border-radius: 14px;
             margin-bottom: 18px;
             overflow: hidden;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.04);
         }
-        .gov-card-header {
-            background: var(--gov-navy);
+        .pay-card-header {
+            background: linear-gradient(135deg, var(--pay-primary), var(--pay-primary-dark));
             color: #fff;
-            padding: 9px 18px;
-            font-size: 13.5px;
+            padding: 12px 20px;
+            font-size: 14px;
             font-weight: 600;
-            letter-spacing: 0.04em;
             display: flex;
             align-items: center;
             gap: 8px;
         }
-        .gov-card-header.gold {
-            background: var(--gov-gold);
-            color: #fff;
+        .pay-card-header.qr-header {
+            background: linear-gradient(135deg, #2563eb, #1d4ed8);
         }
-        .gov-card-header.section {
-            background: #eae6da;
-            color: var(--gov-navy);
-            border-bottom: 1px solid var(--gov-border);
-        }
-        .gov-card-body { padding: 18px; }
+        .pay-card-body { padding: 20px; }
 
-        /* ===== DATA TABLE ===== */
-        .gov-data-table {
+        .pay-data-table {
             width: 100%;
             border-collapse: collapse;
-            font-size: 14.5px;
+            font-size: 14px;
         }
-        .gov-data-table tr {
-            border-bottom: 1px solid #ede9de;
-        }
-        .gov-data-table tr:last-child { border-bottom: none; }
-        .gov-data-table td {
-            padding: 8px 6px;
-            vertical-align: top;
-        }
-        .gov-data-table td.label {
-            color: var(--gov-muted);
-            width: 42%;
-            padding-left: 0;
-        }
-        .gov-data-table td.value {
-            font-weight: 600;
-            color: var(--gov-text);
-        }
+        .pay-data-table tr { border-bottom: 1px solid #f1f5f9; }
+        .pay-data-table tr:last-child { border-bottom: none; }
+        .pay-data-table td { padding: 10px 8px; vertical-align: top; }
+        .pay-data-table td.label { color: var(--pay-muted); width: 42%; }
+        .pay-data-table td.value { font-weight: 600; color: var(--pay-text); }
 
-        /* Amount row */
         .amount-row {
-            margin-top: 12px;
-            padding-top: 12px;
-            border-top: 2px solid var(--gov-navy);
+            margin-top: 14px;
+            padding-top: 14px;
+            border-top: 2px solid var(--pay-primary);
             display: flex;
             justify-content: space-between;
             align-items: baseline;
         }
-        .amount-row .amount-label {
-            font-size: 14px;
-            font-weight: 600;
-            color: var(--gov-navy);
-        }
-        .amount-row .amount-value {
-            font-size: 26px;
-            font-weight: 700;
-            color: var(--gov-red);
-            letter-spacing: -0.02em;
-        }
-        .amount-row .amount-unit {
-            font-size: 14px;
-            font-weight: 400;
-            color: var(--gov-muted);
-            margin-left: 4px;
-        }
+        .amount-row .amount-label { font-size: 14px; font-weight: 600; color: var(--pay-primary-dark); }
+        .amount-row .amount-value { font-size: 28px; font-weight: 700; color: var(--pay-primary); }
+        .amount-row .amount-unit { font-size: 14px; color: var(--pay-muted); margin-left: 4px; }
 
-        /* ===== QR SECTION ===== */
-        .qr-wrap {
-            text-align: center;
-            padding: 14px;
-        }
+        .qr-wrap { text-align: center; padding: 20px; }
         .qr-wrap img {
             max-width: 200px;
-            border: 1px solid var(--gov-border);
-            padding: 8px;
+            border: 2px solid var(--pay-border);
+            padding: 10px;
             background: #fff;
+            border-radius: 12px;
         }
         .qr-amount-badge {
             display: inline-block;
-            margin-top: 10px;
-            background: var(--gov-navy);
+            margin-top: 12px;
+            background: var(--pay-primary);
             color: #fff;
-            font-size: 15px;
+            font-size: 16px;
             font-weight: 700;
-            padding: 5px 18px;
-            border-radius: 2px;
-            letter-spacing: 0.04em;
+            padding: 6px 22px;
+            border-radius: 20px;
         }
-        .qr-sub {
-            font-size: 12px;
-            color: var(--gov-muted);
-            margin-top: 6px;
-        }
+        .qr-sub { font-size: 12px; color: var(--pay-muted); margin-top: 6px; }
 
-        /* ===== NOTICE BOX ===== */
-        .gov-notice {
-            background: #fdfbf3;
-            border: 1px solid var(--gov-line);
-            border-left: 4px solid var(--gov-gold);
-            border-radius: 2px;
-            padding: 12px 16px;
+        .pay-notice {
+            background: #eff6ff;
+            border: 1px solid #bfdbfe;
+            border-left: 4px solid var(--pay-primary);
+            border-radius: 10px;
+            padding: 14px 18px;
             margin-bottom: 18px;
             font-size: 13.5px;
         }
-        .gov-notice .notice-title {
-            font-weight: 700;
-            color: var(--gov-navy);
-            margin-bottom: 6px;
-            font-size: 13.5px;
-        }
-        .gov-notice ol {
-            margin: 0;
-            padding-left: 18px;
-            color: var(--gov-text);
-        }
-        .gov-notice ol li { margin-bottom: 3px; }
-        .gov-notice strong { color: var(--gov-red); }
+        .pay-notice .notice-title { font-weight: 700; color: var(--pay-primary-dark); margin-bottom: 6px; }
+        .pay-notice ol { margin: 0; padding-left: 18px; color: var(--pay-text); }
+        .pay-notice ol li { margin-bottom: 4px; }
+        .pay-notice strong { color: var(--pay-danger); }
 
-        /* ===== UPLOAD ZONE ===== */
         .upload-zone {
-            border: 2px dashed var(--gov-border);
-            border-radius: 2px;
-            padding: 28px 20px;
+            border: 2px dashed #93c5fd;
+            border-radius: 12px;
+            padding: 30px 20px;
             text-align: center;
-            background: #fafaf7;
+            background: #f8fafc;
             cursor: pointer;
             transition: border-color 0.2s, background 0.2s;
             position: relative;
         }
         .upload-zone:hover, .upload-zone.drag-over {
-            border-color: var(--gov-navy);
-            background: #f0eee8;
+            border-color: var(--pay-primary);
+            background: #eff6ff;
         }
         .upload-zone input[type="file"] {
             position: absolute;
@@ -533,100 +406,80 @@ $qr_url = "https://promptpay.io/{$promptpay_id}/{$amount}.png";
             width: 100%;
             height: 100%;
         }
-        .upload-zone-icon { font-size: 32px; color: var(--gov-muted); margin-bottom: 8px; }
-        .upload-zone-text { font-size: 14px; color: var(--gov-muted); }
-        .upload-zone-hint { font-size: 12px; color: #999; margin-top: 4px; }
+        .upload-zone-icon { font-size: 36px; color: #93c5fd; margin-bottom: 8px; }
+        .upload-zone-text { font-size: 14px; color: var(--pay-muted); }
+        .upload-zone-hint { font-size: 12px; color: #94a3b8; margin-top: 4px; }
 
-        /* Preview */
-        #slip_preview_wrap {
-            margin-top: 14px;
-            text-align: center;
-        }
+        #slip_preview_wrap { margin-top: 16px; text-align: center; }
         #slip_preview_wrap img {
-            max-height: 180px;
-            border: 1px solid var(--gov-border);
+            max-height: 200px;
+            border: 2px solid var(--pay-border);
             padding: 4px;
             background: #fff;
+            border-radius: 10px;
         }
-        .preview-label {
-            font-size: 12px;
-            color: var(--gov-muted);
-            margin-bottom: 6px;
-        }
+        .preview-label { font-size: 12px; color: var(--pay-muted); margin-bottom: 6px; }
 
-        /* ===== SUBMIT BUTTON ===== */
-        .gov-submit-btn {
+        .pay-submit-btn {
             display: block;
             width: 100%;
-            background: var(--gov-navy);
+            background: linear-gradient(135deg, var(--pay-primary), var(--pay-primary-dark));
             color: #fff;
             border: none;
-            padding: 13px 24px;
-            font-family: 'Sarabun', sans-serif;
+            padding: 14px 24px;
             font-size: 15px;
             font-weight: 700;
-            letter-spacing: 0.06em;
-            border-radius: 2px;
+            border-radius: 10px;
             cursor: pointer;
             margin-top: 18px;
-            transition: background 0.18s;
-            text-transform: uppercase;
+            transition: all 0.2s;
+            box-shadow: 0 2px 8px rgba(26,86,219,0.3);
         }
-        .gov-submit-btn:hover { background: #253f7a; }
-        .gov-submit-btn:active { background: #12224a; }
+        .pay-submit-btn:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(26,86,219,0.4); }
+        .pay-submit-btn:active { transform: translateY(0); }
 
-        /* ===== FOOTER STAMP ===== */
-        .gov-footer-note {
+        .pay-footer-note {
             text-align: center;
             font-size: 12px;
-            color: var(--gov-muted);
+            color: var(--pay-muted);
             margin-top: 28px;
             padding-top: 14px;
-            border-top: 1px solid var(--gov-border);
-            letter-spacing: 0.03em;
+            border-top: 1px solid var(--pay-border);
         }
 
-        /* ===== DIVIDER LINE (gold) ===== */
-        .gov-divider {
-            border: none;
-            border-top: 1px solid var(--gov-line);
-            margin: 14px 0;
-        }
+        .pay-divider { border: none; border-top: 1px solid var(--pay-border); margin: 16px 0; }
 
-        /* responsive */
         @media (max-width: 768px) {
-            .doc-title-strip { flex-direction: column; align-items: flex-start; gap: 8px; }
+            .pay-title-strip { flex-direction: column; align-items: flex-start; gap: 8px; }
         }
     </style>
 </head>
 
 <body>
 
-    <!-- Government Letterhead -->
-
     <?php include './includes/user_navbar.php'; ?>
 
-    <div class="gov-page">
+    <div class="pay-page">
 
         <!-- Breadcrumb -->
-        <div class="gov-breadcrumb">
-            <a href="users/my_request.php">คำร้องของฉัน</a>
+        <div class="pay-breadcrumb">
+            <a href="users/my_request.php"><i class="bi bi-house-door"></i> คำร้องของฉัน</a>
             <span class="sep">›</span>
-            <a href="#">คำร้องเลขที่ #<?= $request_id ?></a>
+            <a href="users/request_detail.php?id=<?= $request_id ?>"><?= htmlspecialchars($request['request_no'] ?? '#'.$request_id) ?></a>
             <span class="sep">›</span>
             <span>ชำระค่าธรรมเนียม</span>
         </div>
 
-        <!-- Document Title Strip -->
-        <div class="doc-title-strip">
-            <h1>ใบแจ้งการชำระค่าธรรมเนียมป้าย</h1>
-            <div class="doc-ref-badge">เลขที่คำร้อง: #<?= $request_id ?></div>
+        <!-- Title Strip -->
+        <div class="pay-title-strip">
+            <h1><i class="bi bi-credit-card me-2"></i>ชำระค่าธรรมเนียมป้ายโฆษณา</h1>
+            <div class="pay-ref-badge"><?= htmlspecialchars($request['request_no'] ?? '#'.$request_id) ?></div>
         </div>
 
         <!-- Error Alert -->
         <?php if (isset($error)): ?>
-        <div class="gov-alert-error">
-            <span>⚠</span>
+        <div class="pay-alert-error">
+            <i class="bi bi-exclamation-triangle-fill"></i>
             <div><?= htmlspecialchars($error) ?></div>
         </div>
         <?php endif; ?>
@@ -637,12 +490,12 @@ $qr_url = "https://promptpay.io/{$promptpay_id}/{$amount}.png";
             <div class="col-md-5">
 
                 <!-- Request Details -->
-                <div class="gov-card">
-                    <div class="gov-card-header">
-                        <span>📋</span> รายละเอียดคำร้อง
+                <div class="pay-card">
+                    <div class="pay-card-header">
+                        <i class="bi bi-receipt"></i> รายละเอียดคำร้อง
                     </div>
-                    <div class="gov-card-body">
-                        <table class="gov-data-table">
+                    <div class="pay-card-body">
+                        <table class="pay-data-table">
                             <tr>
                                 <td class="label">ประเภทป้าย</td>
                                 <td class="value"><?= htmlspecialchars($request['sign_type']) ?></td>
@@ -661,7 +514,7 @@ $qr_url = "https://promptpay.io/{$promptpay_id}/{$amount}.png";
                             </tr>
                         </table>
                         <div class="amount-row">
-                            <span class="amount-label">ยอดค่าธรรมเนียมที่ต้องชำระ</span>
+                            <span class="amount-label">ยอดที่ต้องชำระ</span>
                             <span>
                                 <span class="amount-value"><?= number_format($amount, 2) ?></span>
                                 <span class="amount-unit">บาท</span>
@@ -671,16 +524,16 @@ $qr_url = "https://promptpay.io/{$promptpay_id}/{$amount}.png";
                 </div>
 
                 <!-- QR Code -->
-                <div class="gov-card">
-                    <div class="gov-card-header gold">
-                        <span>📱</span> ชำระผ่านระบบ PromptPay
+                <div class="pay-card">
+                    <div class="pay-card-header qr-header">
+                        <i class="bi bi-qr-code"></i> ชำระผ่าน PromptPay
                     </div>
-                    <div class="gov-card-body qr-wrap">
+                    <div class="pay-card-body qr-wrap">
                         <img src="<?= $qr_url ?>" alt="PromptPay QR Code">
                         <br>
                         <div class="qr-amount-badge"><?= number_format($amount, 2) ?> บาท</div>
-                        <div class="qr-sub">หมายเลข PromptPay: <?= $promptpay_id ?></div>
-                        <div class="qr-sub">เทศบาลเมืองศิลา</div>
+                        <div class="qr-sub">PromptPay: <?= $promptpay_id ?></div>
+                        <div class="qr-sub">นาย รัชชานนท์ อินกันหา</div>
                     </div>
                 </div>
 
@@ -688,15 +541,15 @@ $qr_url = "https://promptpay.io/{$promptpay_id}/{$amount}.png";
 
             <!-- RIGHT COLUMN -->
             <div class="col-md-7">
-                <div class="gov-card">
-                    <div class="gov-card-header">
-                        <span>📎</span> แนบหลักฐานการชำระเงิน
+                <div class="pay-card">
+                    <div class="pay-card-header">
+                        <i class="bi bi-cloud-arrow-up"></i> แนบหลักฐานการชำระเงิน
                     </div>
-                    <div class="gov-card-body">
+                    <div class="pay-card-body">
 
                         <!-- Instruction Notice -->
-                        <div class="gov-notice">
-                            <div class="notice-title">ข้อกำหนดในการแนบหลักฐาน</div>
+                        <div class="pay-notice">
+                            <div class="notice-title"><i class="bi bi-info-circle me-1"></i> ข้อกำหนดในการแนบหลักฐาน</div>
                             <ol>
                                 <li>ระบบจะตรวจสอบความถูกต้องของสลิปโอนเงินโดยอัตโนมัติ</li>
                                 <li>ยอดเงินในสลิปต้องตรงกับ <strong><?= number_format($amount, 2) ?> บาท</strong> เท่านั้น</li>
@@ -712,7 +565,7 @@ $qr_url = "https://promptpay.io/{$promptpay_id}/{$amount}.png";
                             <!-- Upload Zone -->
                             <div class="upload-zone" id="uploadZone">
                                 <input type="file" name="slip_file" id="slip_file" required accept=".jpg,.jpeg,.png">
-                                <div class="upload-zone-icon">⬆</div>
+                                <div class="upload-zone-icon"><i class="bi bi-cloud-arrow-up"></i></div>
                                 <div class="upload-zone-text">คลิกเพื่อเลือกไฟล์ หรือลากและวางไฟล์ที่นี่</div>
                                 <div class="upload-zone-hint">JPG / PNG · ขนาดสูงสุด 5 MB</div>
                             </div>
@@ -723,13 +576,13 @@ $qr_url = "https://promptpay.io/{$promptpay_id}/{$amount}.png";
                                 <img id="slip_preview" src="#" alt="preview">
                             </div>
 
-                            <hr class="gov-divider">
+                            <hr class="pay-divider">
 
-                            <button type="submit" name="upload_slip" class="gov-submit-btn">
-                                ยืนยันการชำระเงิน
+                            <button type="submit" name="upload_slip" class="pay-submit-btn">
+                                <i class="bi bi-check-circle me-2"></i>ยืนยันการชำระเงิน
                             </button>
 
-                            <p style="font-size:12px; color:var(--gov-muted); text-align:center; margin-top:10px; margin-bottom:0;">
+                            <p style="font-size:12px; color:var(--pay-muted); text-align:center; margin-top:10px; margin-bottom:0;">
                                 การกดปุ่มยืนยัน ถือว่าท่านรับทราบและยอมรับเงื่อนไขการชำระเงินข้างต้น
                             </p>
                         </form>
@@ -741,11 +594,11 @@ $qr_url = "https://promptpay.io/{$promptpay_id}/{$amount}.png";
         </div>
 
         <!-- Footer Note -->
-        <div class="gov-footer-note">
+        <div class="pay-footer-note">
             เทศบาลเมืองศิลา · ระบบยื่นคำขออนุญาตติดตั้งป้าย
         </div>
 
-    </div><!-- /gov-page -->
+    </div>
 
     <?php include './includes/scripts.php'; ?>
 

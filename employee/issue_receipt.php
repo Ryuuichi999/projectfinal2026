@@ -26,13 +26,15 @@ $stmt->execute();
 $request = $stmt->get_result()->fetch_assoc();
 
 if (!$request) {
-    echo '<!DOCTYPE html><html lang="th"><head><meta charset="UTF-8"><script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script></head><body><script>const Toast=Swal.mixin({toast:true,position:"top-end",showConfirmButton:false,timer:1500,timerProgressBar:true,didOpen:(t)=>{t.onmouseenter=Swal.stopTimer;t.onmouseleave=Swal.resumeTimer}});Toast.fire({icon:"error",title:"ไม่พบข้อมูลคำขอ"}).then(()=>{window.location.href="request_list.php";});</script></body></html>';
+    $_SESSION['flash_error'] = 'ไม่พบข้อมูลคำขอ';
+    header('Location: request_list.php');
     exit;
 }
 
 // Check Status
 if ($request['status'] !== 'waiting_permit' && $request['status'] !== 'waiting_receipt') {
-    echo '<!DOCTYPE html><html lang="th"><head><meta charset="UTF-8"><script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script></head><body><script>const Toast=Swal.mixin({toast:true,position:"top-end",showConfirmButton:false,timer:1500,timerProgressBar:true,didOpen:(t)=>{t.onmouseenter=Swal.stopTimer;t.onmouseleave=Swal.resumeTimer}});Toast.fire({icon:"error",title:"คำขอนี้ไม่ได้อยู่ในสถานะรอออกใบอนุญาต"}).then(()=>{window.location.href="request_list.php";});</script></body></html>';
+    $_SESSION['flash_error'] = 'คำขอนี้ไม่ได้อยู่ในสถานะรอออกใบอนุญาต';
+    header('Location: request_list.php');
     exit;
 }
 
@@ -125,17 +127,8 @@ if (isset($_POST['issue_permit_confirm'])) {
         // Send Email
         queue_status_notification($request_id, $conn);
 
-        // ดึง request_no สำหรับแสดงใน SweetAlert
-        $display_no = !empty($request['request_no']) ? $request['request_no'] : "#{$request_id}";
-
-        // Redirect with SweetAlert
-        echo '<!DOCTYPE html><html lang="th"><head><meta charset="UTF-8"><script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script></head><body><script>
-        const Toast=Swal.mixin({toast:true,position:"top-end",showConfirmButton:false,timer:1500,timerProgressBar:true,didOpen:(t)=>{t.onmouseenter=Swal.stopTimer;t.onmouseleave=Swal.resumeTimer}});
-        Toast.fire({
-            icon: "success",
-            title: "ออกใบอนุญาตสำเร็จ"
-        }).then(() => { window.location.href = "request_list.php"; });
-        </script></body></html>';
+        $_SESSION['flash_success'] = 'ออกใบอนุญาตสำเร็จ';
+        header('Location: request_list.php');
         exit;
     } else {
         $error = "เกิดข้อผิดพลาดในการบันทึก กรุณาลองใหม่อีกครั้ง";
@@ -361,7 +354,7 @@ if (isset($_POST['issue_permit_confirm'])) {
                             <div class="col-12 text-end">
                                 <a href="request_list.php" class="btn btn-secondary me-2">ยกเลิก</a>
                                 <button type="button" class="btn btn-success px-4" onclick="confirmIssue()">
-                                    <i class="bi bi-check-circle-fill"></i> ยืนยันและออกใบอนุญาต
+                                    <i class="bi bi-check-circle-fill"></i> ยืนยันออกใบอนุญาต
                                 </button>
                             </div>
                         </div>
