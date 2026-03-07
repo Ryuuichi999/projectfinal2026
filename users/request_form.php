@@ -178,27 +178,9 @@ if (isset($_POST['submit'])) {
             // บันทึก Log
             logRequestAction($conn, $request_id, 'created', 'ยื่นคำร้องใหม่', $user_id, 'ประเภท: ' . $sign_type);
 
-            // แสดง SweetAlert และ Redirect
-            echo '<!DOCTYPE html>
-            <html lang="th">
-            <head>
-                <meta charset="UTF-8">
-                <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-            </head>
-            <body>
-                <script>
-                    document.addEventListener("DOMContentLoaded", function() {
-                        const Toast=Swal.mixin({toast:true,position:"top-end",showConfirmButton:false,timer:1500,timerProgressBar:true,didOpen:(t)=>{t.onmouseenter=Swal.stopTimer;t.onmouseleave=Swal.resumeTimer}});
-                        Toast.fire({
-                            icon: "success",
-                            title: "ยื่นคำร้องสำเร็จ"
-                        }).then(() => {
-                            window.location.href = "my_request.php";
-                        });
-                    });
-                </script>
-            </body>
-            </html>';
+            // ใช้ session flash message แล้ว redirect
+            $_SESSION['flash_success'] = 'ยื่นคำร้องสำเร็จ';
+            header('Location: my_request.php');
             exit;
 
         } catch (Exception $e) {
