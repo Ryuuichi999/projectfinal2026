@@ -410,7 +410,7 @@ if ($result_signs && $result_signs->num_rows > 0) {
                 <div class="form-line mt-4">
                     <label>1. ผู้ขออนุญาตชื่อ (บุคคล/นิติบุคคล)</label>
                     <input type="text" name="applicant_name" class="form-input-line w-full"
-                        value="<?= $me['title_name'] . $me['first_name'] . ' ' . $me['last_name'] ?>" required
+                        value="<?= $me['title_name'] . ' ' . $me['first_name'] . ' ' . $me['last_name'] ?>" required
                         placeholder="ระบุชื่อบริษัท ห้างหุ้นส่วน หรือบุคคลธรรมดา">
                 </div>
                 <div class="form-line">

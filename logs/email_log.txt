@@ -139,3 +139,15 @@
 [2026-03-07 19:49:38] ID: REQ-6903-00012, Status: waiting_payment, Email: krisana.s@kkumail.com, Sent: Yes (Background Worker)
 [2026-03-09 09:50:44] Queue: ID=7, PHP=C:\xampp\php\php.exe, CMD=start /B "" "C:\xampp\php\php.exe" "C:\xampp\htdocs\Project2026\includes/send_email_worker.php" 7
 [2026-03-09 09:50:48] ID: REQ-6903-00007, Status: reviewing, Email: ryuuichii09@gmail.com, Sent: Yes (Background Worker)
+[2026-03-09 16:39:04] Queue: ID=11, PHP=C:\xampp\php\php.exe, CMD=start /B "" "C:\xampp\php\php.exe" "C:\xampp\htdocs\Project2026\includes/send_email_worker.php" 11
+[2026-03-09 16:39:09] ID: REQ-6903-00011, Status: reviewing, Email: ryuuichii09@gmail.com, Sent: Yes (Background Worker)
+[2026-03-09 16:39:10] Queue: ID=11, PHP=C:\xampp\php\php.exe, CMD=start /B "" "C:\xampp\php\php.exe" "C:\xampp\htdocs\Project2026\includes/send_email_worker.php" 11
+[2026-03-09 16:39:13] ID: REQ-6903-00011, Status: waiting_payment, Email: ryuuichii09@gmail.com, Sent: Yes (Background Worker)
+[2026-03-09 16:41:03] Queue: ID=2, PHP=C:\xampp\php\php.exe, CMD=start /B "" "C:\xampp\php\php.exe" "C:\xampp\htdocs\Project2026\includes/send_email_worker.php" 2
+[2026-03-09 16:41:07] ID: REQ-6903-00002, Status: waiting_payment, Email: ryuuichii09@gmail.com, Sent: Yes (Background Worker)
+[2026-03-09 16:41:14] Queue: ID=4, PHP=C:\xampp\php\php.exe, CMD=start /B "" "C:\xampp\php\php.exe" "C:\xampp\htdocs\Project2026\includes/send_email_worker.php" 4
+[2026-03-09 16:41:17] ID: REQ-6903-00004, Status: waiting_payment, Email: ryuuichii09@gmail.com, Sent: Yes (Background Worker)
+[2026-03-09 16:43:34] Queue: ID=7, PHP=C:\xampp\php\php.exe, CMD=start /B "" "C:\xampp\php\php.exe" "C:\xampp\htdocs\Project2026\includes/send_email_worker.php" 7
+[2026-03-09 16:43:37] ID: REQ-6903-00007, Status: waiting_payment, Email: ryuuichii09@gmail.com, Sent: Yes (Background Worker)
+[2026-03-09 16:50:20] Queue: ID=13, PHP=C:\xampp\php\php.exe, CMD=start /B "" "C:\xampp\php\php.exe" "C:\xampp\htdocs\Project2026\includes/send_email_worker.php" 13
+[2026-03-09 16:50:24] ID: REQ-6903-00013, Status: reviewing, Email: ryuuichii09@gmail.com, Sent: Yes (Background Worker)

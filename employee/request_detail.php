@@ -87,7 +87,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
                 queue_status_notification($request_id, $conn);
                 logRequestAction($conn, $request_id, 'waiting_payment', 'อนุมัติคำร้อง — รอชำระค่าธรรมเนียม', $approver_id, 'ตรวจสอบเอกสารเบื้องต้นผ่านแล้ว');
                 logAudit($conn, 'approve', 'sign_requests', $request_id, 'อนุมัติคำร้องให้รอชำระเงิน');
-                $success = "อนุมัติคำขอเรียบร้อย สถานะเปลี่ยนเป็นรอชำระเงิน";
+                $success = "อนุมัติคำขอเรียบร้อย";
                 $request['status'] = 'waiting_payment';
             } else {
                 $error = "ไม่สามารถอนุมัติคำขอได้ กรุณาลองใหม่";
