@@ -18,16 +18,27 @@ if (isset($_POST['login'])) {
             $_SESSION[$rate_key] = ['count' => 0, 'first_attempt' => time()];
         }
 
-        $attempts = &$_SESSION[$rate_key];
-        // รีเซ็ตถ้าเกินเวลา lockout
-        if (time() - $attempts['first_attempt'] > $lockout_minutes * 60) {
-            $attempts = ['count' => 0, 'first_attempt' => time()];
+        // Debug: แสดงค่าปัจจุบัน
+        error_log("Login attempt - Count: " . $_SESSION[$rate_key]['count'] . ", Max: " . $max_attempts);
+
+        // ตรวจสอบว่าถูก lockout หรือไม่ก่อน
+        if ($_SESSION[$rate_key]['count'] >= $max_attempts) {
+            $remaining = ceil(($lockout_minutes * 60 - (time() - $_SESSION[$rate_key]['first_attempt'])) / 60);
+            error_log("Lockout check - Remaining: " . $remaining . " minutes");
+
+            if ($remaining > 0) {
+                $error = "คุณลองเข้าสู่ระบบผิดเกินกำหนด กรุณารอ {$remaining} นาที";
+                error_log("Set lockout error: " . $error);
+            } else {
+                // รีเซ็ตถ้าหมดเวลา lockout
+                $_SESSION[$rate_key] = ['count' => 0, 'first_attempt' => time()];
+                error_log("Reset lockout - time expired");
+            }
         }
 
-        if ($attempts['count'] >= $max_attempts) {
-            $remaining = ceil(($lockout_minutes * 60 - (time() - $attempts['first_attempt'])) / 60);
-            $error = "คุณลองเข้าสู่ระบบผิดเกินกำหนด กรุณารอ {$remaining} นาที";
-        } else {
+        // ถ้าไม่ได้ถูก lockout ให้ทำการตรวจสอบ login
+        if (!isset($error)) {
+            error_log("Proceeding to login check - not locked out");
             $stmt = $conn->prepare("SELECT * FROM users WHERE citizen_id=?");
             $stmt->bind_param("s", $citizen_id);
             $stmt->execute();
@@ -57,10 +68,10 @@ if (isset($_POST['login'])) {
                 csrf_regenerate();
                 $success = true;
             } else {
-                $attempts['count']++;
-                $remaining_attempts = $max_attempts - $attempts['count'];
+                $_SESSION[$rate_key]['count']++;
+                $remaining_attempts = $max_attempts - $_SESSION[$rate_key]['count'];
                 if ($remaining_attempts > 0) {
-                    $error = "ข้อมูลไม่ถูกต้อง (เหลือโอกาสอีก {$remaining_attempts} ครั้ง)";
+                    $error = "(เหลือโอกาสอีก {$remaining_attempts} ครั้ง)";
                 } else {
                     $error = "คุณลองเข้าสู่ระบบผิดเกินกำหนด กรุณารอ {$lockout_minutes} นาที";
                 }
@@ -278,6 +289,84 @@ if (isset($_POST['login'])) {
             border-radius: 10px;
         }
 
+        /* Custom Alert Styles */
+        .custom-alert {
+            background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%);
+            border: 1px solid #fca5a5;
+            border-radius: 12px;
+            padding: 16px;
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            position: relative;
+            animation: slideInRight 0.3s ease-out;
+            box-shadow: 0 4px 12px rgba(239, 68, 68, 0.15);
+        }
+
+        @keyframes slideInRight {
+            from {
+                opacity: 0;
+                transform: translateX(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        .alert-icon {
+            background: #dc2626;
+            color: white;
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            font-size: 1.2rem;
+            box-shadow: 0 2px 8px rgba(220, 38, 38, 0.3);
+        }
+
+        .alert-content {
+            flex: 1;
+        }
+
+        .alert-title {
+            font-weight: 600;
+            color: #991b1b;
+            font-size: 0.95rem;
+            margin-bottom: 4px;
+        }
+
+        .alert-message {
+            color: #7f1d1d;
+            font-size: 0.9rem;
+            line-height: 1.4;
+        }
+
+        .alert-close {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            background: rgba(220, 38, 38, 0.1);
+            border: none;
+            width: 24px;
+            height: 24px;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            color: #dc2626;
+            transition: all 0.2s ease;
+        }
+
+        .alert-close:hover {
+            background: rgba(220, 38, 38, 0.2);
+            transform: scale(1.1);
+        }
+
         @media (max-width: 768px) {
             .login-card {
                 flex-direction: column;
@@ -288,6 +377,25 @@ if (isset($_POST['login'])) {
             .login-info-side {
                 display: none;
                 /* Hide info on small screens or stack it */
+            }
+
+            .custom-alert {
+                padding: 12px;
+                gap: 10px;
+            }
+
+            .alert-icon {
+                width: 36px;
+                height: 36px;
+                font-size: 1.1rem;
+            }
+
+            .alert-title {
+                font-size: 0.9rem;
+            }
+
+            .alert-message {
+                font-size: 0.85rem;
             }
         }
     </style>
@@ -321,9 +429,23 @@ if (isset($_POST['login'])) {
                 <?php endif; ?>
 
                 <?php if (!empty($error)): ?>
-                    <div class="alert alert-danger d-flex align-items-center mb-4" role="alert">
-                        <i class="bi bi-exclamation-triangle-fill me-2"></i>
-                        <div><?= $error ?></div>
+                    <div class="custom-alert mb-4">
+                        <div class="alert-icon">
+                            <i class="bi bi-shield-exclamation"></i>
+                        </div>
+                        <div class="alert-content">
+                            <?php if (strpos($error, 'เกินกำหนด') !== false): ?>
+                                <div class="alert-title">ระบบล็อกชั่วคราว</div>
+                            <?php elseif (strpos($error, 'เซสชัน') !== false): ?>
+                                <div class="alert-title">เซสชันหมดอายุ</div>
+                            <?php else: ?>
+                                <div class="alert-title">เลขประจำตัวประชาชนหรือรหัสผ่านไม่ถูกต้อง</div>
+                            <?php endif; ?>
+                            <div class="alert-message"><?= $error ?></div>
+                        </div>
+                        <div class="alert-close" onclick="this.parentElement.style.display='none'">
+                            <i class="bi bi-x"></i>
+                        </div>
                     </div>
                 <?php endif; ?>
 
@@ -400,7 +522,7 @@ if (isset($_POST['login'])) {
 
             <div class="info-footer">
                 <div class="d-flex gap-3 align-items-center">
-                    <div class="fs-1 opacity-50"><i class="bi bi-building"></i></div>
+                    <div class="fs-1 opacity-20"><i class="bi bi-building"></i></div>
                     <div>
                         <strong class="d-block">เทศบาลเมืองศิลา</strong>
                         <small class="opacity-75">ตำบลศิลา จังหวัดขอนแก่น</small>
