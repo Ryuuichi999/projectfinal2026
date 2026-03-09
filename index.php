@@ -2,6 +2,7 @@
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
+$showLoggedOutAlert = isset($_GET['logged_out']) && $_GET['logged_out'] === '1';
 ?>
 <!DOCTYPE html>
 <html lang="th">
@@ -609,7 +610,7 @@ if (session_status() === PHP_SESSION_NONE) {
                                 </div>
                                 <div class="doc-content">
                                     <h6>ยื่นล่วงหน้าก่อนติดตั้ง</h6>
-                                    <p>ต้องยื่นคำขออนุญาต<b>ก่อนวันติดตั้งไม่น้อยกว่า 7 วัน</b> และเมื่อครบกำหนดต้องรื้อถอนภายใน 7 วัน</p>
+                                    <p>ต้องยื่นคำขออนุญาต<b>ก่อนวันติดตั้งไม่น้อยกว่า 7 วัน</b> ตามข้อ 8.1 ของระเบียบ และเมื่อครบกำหนดต้องรื้อถอนภายใน 7 วัน</p>
                                 </div>
                             </div>
                             <div class="doc-item">
@@ -687,6 +688,7 @@ if (session_status() === PHP_SESSION_NONE) {
     <?php include 'includes/footer.php'; ?>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <!-- AOS JS -->
     <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
     <script>
@@ -695,6 +697,31 @@ if (session_status() === PHP_SESSION_NONE) {
             once: true,
             offset: 100
         });
+
+        <?php if ($showLoggedOutAlert): ?>
+        document.addEventListener('DOMContentLoaded', function () {
+            const Toast = Swal.mixin({
+                toast: true,
+                position: 'top-end',
+                showConfirmButton: false,
+                timer: 1500,
+                timerProgressBar: true,
+                didOpen: (t) => {
+                    t.onmouseenter = Swal.stopTimer;
+                    t.onmouseleave = Swal.resumeTimer;
+                }
+            });
+
+            Toast.fire({
+                icon: 'success',
+                title: 'ออกจากระบบสำเร็จ'
+            });
+
+            if (window.history.replaceState) {
+                window.history.replaceState({}, document.title, window.location.pathname + window.location.hash);
+            }
+        });
+        <?php endif; ?>
     </script>
 </body>
 
