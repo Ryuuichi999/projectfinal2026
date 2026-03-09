@@ -36,7 +36,7 @@ if (isset($_POST['submit_feedback'])) {
 }
 
 // ดึงคำร้องที่ approved (ถ้ามี) สำหรับ dropdown
-$stmt_req = $conn->prepare("SELECT id, sign_type, created_at FROM sign_requests WHERE user_id = ? AND status = 'approved' ORDER BY id DESC");
+$stmt_req = $conn->prepare("SELECT id, request_no, sign_type, created_at FROM sign_requests WHERE user_id = ? AND status = 'approved' ORDER BY id DESC");
 $stmt_req->bind_param("i", $user_id);
 $stmt_req->execute();
 $requests_result = $stmt_req->get_result();
@@ -357,11 +357,9 @@ $avg_stats = $avg_result->fetch_assoc();
                             <option value="">ประเมินภาพรวม</option>
                             <?php while ($req = $requests_result->fetch_assoc()): ?>
                                 <option value="<?= $req['id'] ?>">
-                                    #
-                                    <?= $req['id'] ?> -
+                                    <?= !empty($req['request_no']) ? htmlspecialchars($req['request_no']) : '#' . $req['id'] ?> -
                                     <?= htmlspecialchars($req['sign_type']) ?>
-                                    (
-                                    <?= date('d/m/Y', strtotime($req['created_at'])) ?>)
+                                    (<?= date('d/m/Y', strtotime($req['created_at'])) ?>)
                                 </option>
                             <?php endwhile; ?>
                         </select>
