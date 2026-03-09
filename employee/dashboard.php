@@ -166,6 +166,17 @@ $urgent_count = count($urgent_requests);
             font-size: .82rem;
             color: #6c757d;
         }
+
+        .stat-col {
+            width: 50%;
+        }
+
+        @media (min-width: 768px) {
+            .stat-col {
+                flex: 0 0 20%;
+                max-width: 20%;
+            }
+        }
     </style>
 </head>
 
@@ -184,44 +195,47 @@ $urgent_count = count($urgent_requests);
 
         <!-- ─── สถิติสรุป ─── -->
         <div class="row g-3 mb-4">
-            <div class="col-md-2 col-6">
+            <div class="col-6 stat-col">
                 <div class="stat-card" style="border-top:3px solid #2848a7ff;">
                     <div class="stat-number text-primary"><?= number_format($total_requests) ?></div>
                     <div class="stat-label">คำร้องทั้งหมด</div>
                 </div>
             </div>
-            <div class="col-md-2 col-6">
+            <div class="col-6 stat-col">
                 <div class="stat-card" style="border-top:3px solid #ffb805ff;">
                     <div class="stat-number text-warning"><?= number_format($pending_requests + $reviewing_requests) ?>
                     </div>
                     <div class="stat-label">รอดำเนินการ</div>
                 </div>
             </div>
-            <div class="col-md-2 col-6">
+            <div class="col-6 stat-col">
                 <div class="stat-card" style="border-top:3px solid #17c7f3ff;">
                     <div class="stat-number text-info"><?= number_format($waiting_payment) ?></div>
                     <div class="stat-label">รอชำระเงิน</div>
                 </div>
             </div>
-            <div class="col-md-2 col-6">
+            <div class="col-6 stat-col">
                 <div class="stat-card" style="border-top:3px solid #29853fff;">
                     <div class="stat-number text-success"><?= number_format($approved_requests) ?></div>
                     <div class="stat-label">อนุมัติแล้ว</div>
                 </div>
             </div>
-            <div class="col-md-2 col-6">
+            <div class="col-6 stat-col">
                 <div class="stat-card" style="border-top:3px solid #ff0303ff;">
                     <div class="stat-number text-danger"><?= number_format($rejected_requests) ?></div>
                     <div class="stat-label">ปฏิเสธ</div>
                 </div>
             </div>
-            <div class="col-md-2 col-6">
+        </div>
+
+        <div class="row g-3 mb-4">
+            <div class="col-6 stat-col">
                 <div class="stat-card" style="border-top:3px solid #28a745;">
                     <div class="stat-number text-success"><?= number_format($receipts_issued) ?></div>
                     <div class="stat-label">ใบเสร็จที่ออก</div>
                 </div>
             </div>
-            <div class="col-md-2 col-6">
+            <div class="col-6 stat-col">
                 <div class="stat-card" style="border-top:3px solid #17a2b8;">
                     <div class="stat-number text-info"><?= number_format($permits_issued) ?></div>
                     <div class="stat-label">ใบอนุญาตที่ออก</div>
