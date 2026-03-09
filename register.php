@@ -177,6 +177,34 @@ if (isset($_POST['submit'])) {
             color: #1e293b;
             border-color: #cbd5e1;
         }
+
+        /* Password strength bar */
+        .strength-bar {
+            height: 4px;
+            border-radius: 4px;
+            background: #e5e2db;
+            margin-top: .5rem;
+            overflow: hidden;
+        }
+
+        .strength-bar-fill {
+            height: 100%;
+            width: 0%;
+            border-radius: 4px;
+            transition: width .35s ease, background .35s ease;
+        }
+
+        .strength-label {
+            font-size: .73rem;
+            color: #6c757d;
+            margin-top: .25rem;
+        }
+
+        .hint-text {
+            font-size: .74rem;
+            color: #6c757d;
+            margin-top: .35rem;
+        }
     </style>
 </head>
 
@@ -265,16 +293,16 @@ if (isset($_POST['submit'])) {
                 <div class="col-md-6">
                     <label class="form-label">รหัสผ่าน</label>
                     <div class="input-group">
-                        <input class="form-control border-end-0" type="password" name="password" id="password" required>
+                        <input class="form-control border-end-0" type="password" name="password" id="password" required
+                            oninput="evalStrength(this.value)">
                         <button class="btn border border-start-0 bg-white" type="button"
                             onclick="togglePass('password', this)">
                             <i class="bi bi-eye text-muted"></i>
                         </button>
                     </div>
-                    <div class="form-text small text-muted">
-                        • อย่างน้อย 8 ตัวอักษร<br>
-                        • ต้องมีทั้งตัวอักษรและตัวเลข
-                    </div>
+                    <div class="strength-bar"><div class="strength-bar-fill" id="strengthFill"></div></div>
+                    <div class="strength-label" id="strengthLabel"></div>
+                    <p class="hint-text">อย่างน้อย 8 ตัวอักษร · ต้องมีทั้งตัวอักษรและตัวเลข</p>
                 </div>
                 <div class="col-md-6">
                     <label class="form-label">ยืนยันรหัสผ่าน</label>
@@ -373,6 +401,30 @@ if (isset($_POST['submit'])) {
             }
 
             return isValid;
+        }
+
+        // Password strength evaluation
+        function evalStrength(val) {
+            const fill = document.getElementById('strengthFill');
+            const label = document.getElementById('strengthLabel');
+            let score = 0;
+            if (val.length >= 8) score++;
+            if (/[A-Z]/.test(val)) score++;
+            if (/[0-9]/.test(val)) score++;
+            if (/[^A-Za-z0-9]/.test(val)) score++;
+
+            const levels = [
+                { pct: '0%',   color: '#e5e2db', text: '' },
+                { pct: '30%',  color: '#c0392b', text: 'อ่อนมาก' },
+                { pct: '55%',  color: '#e67e22', text: 'พอใช้' },
+                { pct: '80%',  color: '#27ae60', text: 'ดี' },
+                { pct: '100%', color: '#1a6b3c', text: 'แข็งแกร่ง' },
+            ];
+            const lv = val.length === 0 ? levels[0] : levels[score] || levels[1];
+            fill.style.width = lv.pct;
+            fill.style.background = lv.color;
+            label.textContent = lv.text;
+            label.style.color = lv.color;
         }
     </script>
     <?php include 'includes/scripts.php'; ?>
