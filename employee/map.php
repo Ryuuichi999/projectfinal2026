@@ -15,7 +15,7 @@ $userId = isset($_SESSION['user_id']) ? (int) $_SESSION['user_id'] : 0;
 // ดึงข้อมูลคำร้องที่มีพิกัดและสถานะ เพื่อแสดงบนแผนที่
 // แสดงเฉพาะคำร้องที่อนุมัติแล้วและยังไม่หมดอายุ
 $approved_signs = [];
-$result_signs = $conn->query("SELECT id, location_lat, location_lng, sign_type, road_name, status, end_date 
+$result_signs = $conn->query("SELECT id, request_no, location_lat, location_lng, sign_type, road_name, status, end_date 
     FROM sign_requests 
     WHERE status = 'approved' 
     AND location_lat IS NOT NULL AND location_lng IS NOT NULL");
@@ -26,6 +26,7 @@ if ($result_signs && $result_signs->num_rows > 0) {
             continue;
         $approved_signs[] = [
             'id' => (int) $row['id'],
+            'request_no' => htmlspecialchars($row['request_no'] ?: ('req' . $row['id'])),
             'lat' => (float) $row['location_lat'],
             'lng' => (float) $row['location_lng'],
             'type' => htmlspecialchars($row['sign_type']),
@@ -36,7 +37,7 @@ if ($result_signs && $result_signs->num_rows > 0) {
 }
 
 $approved_rows = [];
-$res_rows = $conn->query("SELECT r.id, r.sign_type, r.road_name, r.description, r.duration_days, r.end_date, r.permit_no, u.title_name, u.first_name, u.last_name 
+$res_rows = $conn->query("SELECT r.id, r.request_no, r.sign_type, r.road_name, r.description, r.duration_days, r.end_date, r.permit_no, u.title_name, u.first_name, u.last_name 
                           FROM sign_requests r 
                           JOIN users u ON r.user_id = u.id 
                           WHERE r.status = 'approved' 
@@ -50,6 +51,7 @@ if ($res_rows && $res_rows->num_rows > 0) {
         $expire_str = !empty($row['end_date']) ? date('d/m/Y', strtotime($row['end_date'])) : '';
         $approved_rows[] = [
             'id' => (int) $row['id'],
+            'request_no' => htmlspecialchars($row['request_no'] ?: ('req' . $row['id'])),
             'type' => htmlspecialchars($row['sign_type']),
             'desc' => htmlspecialchars($row['description'] ?? ''),
             'duration' => (int) ($row['duration_days'] ?? 0),
@@ -192,7 +194,7 @@ if ($res_rows && $res_rows->num_rows > 0) {
                             <table class="table table-hover mb-0">
                                 <thead>
                                     <tr>
-                                        <th>เลขคำขอ</th>
+                                        <th>เลขคำร้อง</th>
                                         <th>ประเภทป้าย</th>
                                         <th>ถนน</th>
                                         <th>ชื่อผู้ขอ</th>
@@ -290,7 +292,7 @@ if ($res_rows && $res_rows->num_rows > 0) {
                     });
 
                     var m = L.marker([sign.lat, sign.lng], { icon: customIcon })
-                        .bindPopup("<b>เลขคำขอ #" + sign.id + "</b><br><b>ประเภท:</b> " + sign.type + "<br><b>ถนน:</b> " + (sign.road || '-') + "<br><b>สถานะ:</b> ✅ อนุมัติแล้ว");
+                        .bindPopup("<b>เลขคำร้อง " + sign.request_no + "</b><br><b>ประเภท:</b> " + sign.type + "<br><b>ถนน:</b> " + (sign.road || '-') + "<br><b>สถานะ:</b> ✅ อนุมัติแล้ว");
 
                     markers.addLayer(m);
                     markerDict[sign.id] = m;
@@ -347,7 +349,8 @@ if ($res_rows && $res_rows->num_rows > 0) {
                 var q = (searchEl.value || '').toLowerCase();
                 if (!q) return approvedList;
                 return approvedList.filter(function (r) {
-                    return (r.type || '').toLowerCase().includes(q)
+                    return (r.request_no || '').toLowerCase().includes(q)
+                        || (r.type || '').toLowerCase().includes(q)
                         || (r.name || '').toLowerCase().includes(q)
                         || (r.road || '').toLowerCase().includes(q)
                         || (r.desc || '').toLowerCase().includes(q)
@@ -366,7 +369,7 @@ if ($res_rows && $res_rows->num_rows > 0) {
 
                 tbody.innerHTML = slice.map(function (r) {
                     return "<tr onclick='zoomToSign(" + r.id + ")'>"
-                        + "<td class='fw-bold text-primary'>#" + r.id + "</td>"
+                        + "<td class='fw-bold text-primary'>" + (r.request_no || ('req' + r.id)) + "</td>"
                         + "<td>" + r.type + "</td>"
                         + "<td>" + (r.road || '-') + "</td>"
                         + "<td>" + (r.name || '-') + "</td>"
