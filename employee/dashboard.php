@@ -2,6 +2,21 @@
 require '../includes/db.php';
 require_once '../includes/status_helper.php';
 
+// ฟังก์ชันแสดงจำนวนวันที่รอดำเนินการในสไตล์มินิมอล
+if (!function_exists('get_waiting_days_badge')) {
+    function get_waiting_days_badge($days) {
+        $days = (int)$days;
+        if ($days >= 7) {
+            $bg = '#fef2f2'; $color = '#dc2626'; $icon = 'bi-exclamation-triangle-fill';
+        } elseif ($days >= 5) {
+            $bg = '#fffbeb'; $color = '#b45309'; $icon = 'bi-exclamation-circle-fill';
+        } else {
+            $bg = '#f0f9ff'; $color = '#0369a1'; $icon = 'bi-clock-fill';
+        }
+        return "<span style='display:inline-flex;align-items:center;gap:4px;background:$bg;color:$color;font-size:.78rem;font-weight:600;padding:3px 10px;border-radius:6px;white-space:nowrap;'><i class='bi $icon' style='font-size:.72rem;'></i>$days วัน</span>";
+    }
+}
+
 // ตรวจสอบสิทธิ์ Employee (หรือ Admin เผื่อไว้)
 if (!isset($_SESSION['user_id']) || ($_SESSION['role'] !== 'employee' && $_SESSION['role'] !== 'admin')) {
     header("Location: ../login.php");
@@ -254,29 +269,18 @@ $urgent_count = count($urgent_requests);
                                 </tr>
                             </thead>
                             <tbody>
-                                <?php foreach ($urgent_requests as $urg):
-                                    $wd = (int) $urg['waiting_days'];
-                                    if ($wd >= 7) {
-                                        $wait_badge = 'bg-danger';
-                                    } elseif ($wd >= 5) {
-                                        $wait_badge = 'bg-warning text-dark';
-                                    } else {
-                                        $wait_badge = 'bg-secondary';
-                                    }
-                                    ?>
+                                <?php foreach ($urgent_requests as $urg): ?>
                                     <tr>
-                                        <td><strong><?= htmlspecialchars($urg['request_no'] ?? '#' . $urg['id']) ?></strong>
-                                        </td>
+                                        <td><strong><?= htmlspecialchars($urg['request_no'] ?? '#' . $urg['id']) ?></strong></td>
                                         <td><?= htmlspecialchars($urg['first_name'] . ' ' . $urg['last_name']) ?></td>
                                         <td><?= htmlspecialchars($urg['sign_type']) ?></td>
                                         <td><?= get_status_badge($urg['status']) ?></td>
                                         <td><?= date('d/m/Y', strtotime($urg['created_at'])) ?></td>
-                                        <td><span class="badge <?= $wait_badge ?>" style="font-size:0.75rem;"><?= $wd ?>
-                                                วัน</span></td>
+                                        <td><?= get_waiting_days_badge($urg['waiting_days']) ?></td>
                                         <td>
                                             <a href="request_detail.php?id=<?= $urg['id'] ?>"
                                                 class="btn btn-sm btn-outline-danger">
-                                                <i class="bi bi-eye"></i> ตรวจสอบ
+                                                <i class="bi bi-eye"></i>
                                             </a>
                                         </td>
                                     </tr>
