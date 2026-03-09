@@ -73,7 +73,7 @@
         </a>
         <?php endif; ?>
         <a href="#" title="ออกจากระบบ"
-            onclick="confirmAction('ยืนยันออกจากระบบ', 'คุณต้องการออกจากระบบใช่หรือไม่?', 'ใช่, ออกจากระบบ', 'ยกเลิก', () => window.location.href='/Project2026/logout.php')">
+            onclick="confirmAction('ยืนยันออกจากระบบ', 'คุณต้องการออกจากระบบใช่หรือไม่?', 'ออกจากระบบ', 'ยกเลิก', () => window.location.href='/Project2026/logout.php')">
             <span class="menu-icon"><i class="bi bi-box-arrow-right"></i></span><span class="menu-text">ออกจากระบบ</span>
         </a>
     </div>
