@@ -314,6 +314,27 @@ if (isset($_GET['export'])) {
         <?php $type_result->data_seek(0); ?>
         <div class="row g-4 mt-2">
             <?php if ($month == 0): ?>
+                 <div class="col-md-12">
+                <div class="card p-4">
+                    <h5 class="mb-3">📋 สรุปตามประเภทป้าย</h5>
+                    <div class="table-responsive">
+                        <table class="table table-sm table-bordered table-hover align-middle mb-0 pg-table">
+                            <thead class="table-light">
+                                <tr><th>ประเภทป้าย</th><th class="text-center">จำนวน (รายการ)</th><th class="text-end">ค่าธรรมเนียมรวม (บาท)</th></tr>
+                            </thead>
+                            <tbody>
+                                <?php while ($tp = $type_result->fetch_assoc()): ?>
+                                <tr>
+                                    <td><?= htmlspecialchars($tp['sign_type']) ?></td>
+                                    <td class="text-center"><?= number_format($tp['cnt']) ?></td>
+                                    <td class="text-end"><?= number_format($tp['fee_total'], 2) ?></td>
+                                </tr>
+                                <?php endwhile; ?>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
             <div class="col-md-12">
                 <div class="card p-4">
                     <h5 class="mb-3">📅 คำร้องรายเดือน ปี <?= $year + 543 ?></h5>
@@ -349,27 +370,7 @@ if (isset($_GET['export'])) {
                 </div>
             </div>
             <?php endif; ?>
-            <div class="col-md-12">
-                <div class="card p-4">
-                    <h5 class="mb-3">📋 สรุปตามประเภทป้าย</h5>
-                    <div class="table-responsive">
-                        <table class="table table-sm table-bordered table-hover align-middle mb-0 pg-table">
-                            <thead class="table-light">
-                                <tr><th>ประเภทป้าย</th><th class="text-center">จำนวน (รายการ)</th><th class="text-end">ค่าธรรมเนียมรวม (บาท)</th></tr>
-                            </thead>
-                            <tbody>
-                                <?php while ($tp = $type_result->fetch_assoc()): ?>
-                                <tr>
-                                    <td><?= htmlspecialchars($tp['sign_type']) ?></td>
-                                    <td class="text-center"><?= number_format($tp['cnt']) ?></td>
-                                    <td class="text-end"><?= number_format($tp['fee_total'], 2) ?></td>
-                                </tr>
-                                <?php endwhile; ?>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
+           
         </div>
 
         <!-- ═══════ TAB: รายได้ ═══════ -->
