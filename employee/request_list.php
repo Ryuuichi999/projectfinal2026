@@ -31,7 +31,14 @@ if (isset($_POST['action']) && isset($_POST['request_id'])) {
     if (!$current || !in_array($current['status'], $allowed_statuses)) {
         $error = "ไม่สามารถดำเนินการได้ สถานะปัจจุบันไม่อนุญาต";
     } else {
-        if ($action === 'approve') {
+        if ($action === 'start_review') {
+            if ($current['status'] === 'pending') {
+                $status = 'reviewing';
+                $msg = 'เริ่มตรวจสอบคำขอแล้ว';
+            } else {
+                $error = 'คำขอนี้ไม่อยู่ในสถานะรอพิจารณา';
+            }
+        } elseif ($action === 'approve') {
             $status = 'waiting_payment';
             $approved_by = $_SESSION['user_id'];
             $msg = 'อนุมัติคำขอเรียบร้อยแล้ว สถานะเปลี่ยนเป็นรอชำระเงิน';
@@ -40,7 +47,7 @@ if (isset($_POST['action']) && isset($_POST['request_id'])) {
             $msg = 'ปฏิเสธคำขอเรียบร้อยแล้ว';
         }
 
-        if ($status) {
+        if (!empty($status)) {
             if ($action === 'approve') {
                 $stmt = $conn->prepare("UPDATE sign_requests SET status=?, approved_by=? WHERE id=?");
                 $stmt->bind_param("sii", $status, $approved_by, $request_id);
@@ -126,11 +133,23 @@ data-bs-toggle="tooltip" title="ดูรายละเอียด">
 </a>
 
 <?php if ($row['status'] == 'pending'): ?>
-<button class="btn btn-sm btn-success" onclick="confirmApprove(<?= $row['id'] ?>)">
+<button class="btn btn-sm btn-info text-white" onclick="confirmStartReview(<?= $row['id'] ?>)" data-bs-toggle="tooltip" title="เริ่มตรวจสอบ">
+<i class="bi bi-search"></i>
+</button>
+
+<form id="startReviewForm<?= $row['id'] ?>" method="post" class="d-none">
+<?= csrf_field() ?>
+<input type="hidden" name="request_id" value="<?= $row['id'] ?>">
+<input type="hidden" name="action" value="start_review">
+</form>
+<?php endif; ?>
+
+<?php if (in_array($row['status'], ['reviewing', 'need_documents'])): ?>
+<button class="btn btn-sm btn-success" onclick="confirmApprove(<?= $row['id'] ?>)" data-bs-toggle="tooltip" title="อนุมัติ">
 <i class="bi bi-check-circle-fill"></i>
 </button>
 
-<button class="btn btn-sm btn-danger" onclick="confirmReject(<?= $row['id'] ?>)">
+<button class="btn btn-sm btn-danger" onclick="confirmReject(<?= $row['id'] ?>)" data-bs-toggle="tooltip" title="ปฏิเสธ">
 <i class="bi bi-x-circle-fill"></i>
 </button>
 
@@ -255,6 +274,23 @@ table.draw();
 </script>
 
 <script>
+function confirmStartReview(id){
+Swal.fire({
+title: 'เริ่มตรวจสอบคำขอ?',
+text: 'สถานะจะเปลี่ยนเป็น กำลังพิจารณา',
+icon: 'info',
+showCancelButton: true,
+confirmButtonColor: '#0dcaf0',
+cancelButtonColor: '#6b7280',
+confirmButtonText: 'เริ่มตรวจสอบ',
+cancelButtonText: 'ยกเลิก'
+}).then((result) => {
+if (result.isConfirmed) {
+document.getElementById('startReviewForm'+id).submit();
+}
+});
+}
+
 function confirmApprove(id){
 Swal.fire({
 title: 'ยืนยันการอนุมัติ?',
@@ -292,18 +328,18 @@ document.getElementById('rejectForm'+id).submit();
 
 <?php if (isset($success)): ?>
 <script>
-Toast.fire({
-icon: 'success',
-title: '<?= $success ?>'
+document.addEventListener('DOMContentLoaded', function() {
+    const T = Swal.mixin({toast:true, position:'top-end', showConfirmButton:false, timer:2000, timerProgressBar:true});
+    T.fire({ icon: 'success', title: <?= json_encode($success) ?> });
 });
 </script>
 <?php endif; ?>
 
 <?php if (isset($error)): ?>
 <script>
-Toast.fire({
-icon: 'error',
-title: '<?= $error ?>'
+document.addEventListener('DOMContentLoaded', function() {
+    const T = Swal.mixin({toast:true, position:'top-end', showConfirmButton:false, timer:3000, timerProgressBar:true});
+    T.fire({ icon: 'error', title: <?= json_encode($error) ?> });
 });
 </script>
 <?php endif; ?>

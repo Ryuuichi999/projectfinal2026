@@ -133,3 +133,9 @@
 [2026-03-07 18:58:46] ID: REQ-6903-00010, Status: approved, Email: ryuuichii09@gmail.com, Sent: Yes (Background Worker)
 [2026-03-07 19:01:43] Queue: ID=1, PHP=C:\xampp\php\php.exe, CMD=start /B "" "C:\xampp\php\php.exe" "C:\xampp\htdocs\Project2026\includes/send_email_worker.php" 1
 [2026-03-07 19:01:48] ID: REQ-6903-00001, Status: approved, Email: ryuuichii09@gmail.com, Sent: Yes (Background Worker)
+[2026-03-07 19:49:25] Queue: ID=12, PHP=C:\xampp\php\php.exe, CMD=start /B "" "C:\xampp\php\php.exe" "C:\xampp\htdocs\Project2026\includes/send_email_worker.php" 12
+[2026-03-07 19:49:29] ID: REQ-6903-00012, Status: reviewing, Email: krisana.s@kkumail.com, Sent: Yes (Background Worker)
+[2026-03-07 19:49:34] Queue: ID=12, PHP=C:\xampp\php\php.exe, CMD=start /B "" "C:\xampp\php\php.exe" "C:\xampp\htdocs\Project2026\includes/send_email_worker.php" 12
+[2026-03-07 19:49:38] ID: REQ-6903-00012, Status: waiting_payment, Email: krisana.s@kkumail.com, Sent: Yes (Background Worker)
+[2026-03-09 09:50:44] Queue: ID=7, PHP=C:\xampp\php\php.exe, CMD=start /B "" "C:\xampp\php\php.exe" "C:\xampp\htdocs\Project2026\includes/send_email_worker.php" 7
+[2026-03-09 09:50:48] ID: REQ-6903-00007, Status: reviewing, Email: ryuuichii09@gmail.com, Sent: Yes (Background Worker)
