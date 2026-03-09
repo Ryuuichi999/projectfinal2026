@@ -57,8 +57,10 @@ if (isset($_POST['login'])) {
                 } else {
                     $redirect_to = "users/index.php";
                 }
+                $_SESSION['flash_success'] = 'เข้าสู่ระบบสำเร็จ';
                 csrf_regenerate();
-                $success = true;
+                header("Location: $redirect_to");
+                exit;
             } else {
                 $_SESSION[$rate_key]['count']++;
                 $remaining_attempts = $max_attempts - $_SESSION[$rate_key]['count'];
@@ -406,19 +408,6 @@ if (isset($_POST['login'])) {
             <div>
                 <h2 class="login-title">เข้าสู่ระบบ</h2>
                 <p class="login-subtitle">ยินดีต้อนรับกลับมา กรุณาเข้าสู่ระบบเพื่อดำเนินการต่อ</p>
-
-                <?php if (isset($success) && $success): ?>
-                    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-                    <script>
-                        const Toast=Swal.mixin({toast:true,position:"top-end",showConfirmButton:false,timer:1500,timerProgressBar:true,didOpen:(t)=>{t.onmouseenter=Swal.stopTimer;t.onmouseleave=Swal.resumeTimer}});
-                        Toast.fire({
-                            icon: 'success',
-                            title: 'เข้าสู่ระบบสำเร็จ'
-                        }).then(() => {
-                            window.location.href = '<?= $redirect_to ?>';
-                        });
-                    </script>
-                <?php endif; ?>
 
                 <?php if (!empty($error)): ?>
                     <div class="custom-alert mb-4">

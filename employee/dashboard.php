@@ -530,6 +530,14 @@ $urgent_count = count($urgent_requests);
     </div>
 
     <?php include '../includes/scripts.php'; ?>
+    <?php if (!empty($_SESSION['flash_success'])): ?>
+        <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                Toast.fire({ icon: 'success', title: <?= json_encode($_SESSION['flash_success']) ?> });
+            });
+        </script>
+        <?php unset($_SESSION['flash_success']); ?>
+    <?php endif; ?>
 
     <script>
         // Bar Chart — คำร้องรายเดือน

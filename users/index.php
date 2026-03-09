@@ -607,11 +607,20 @@ function thaiDateShort($dateStr, $months) {
     </div>
 
     <?php include '../includes/scripts.php'; ?>
+    <?php if (!empty($_SESSION['flash_success'])): ?>
+        <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                Toast.fire({ icon: 'success', title: <?= json_encode($_SESSION['flash_success']) ?> });
+            });
+        </script>
+        <?php unset($_SESSION['flash_success']); ?>
+    <?php endif; ?>
     <script>
         function toggleExpiredItems() {
             var items = document.querySelectorAll('.expired-item');
             var btn = document.getElementById('showMoreExpired');
             var expanded = btn.getAttribute('data-expanded') === 'true';
+
             items.forEach(function(item, idx) {
                 if (idx >= 5) {
                     item.style.display = expanded ? 'none' : 'flex';
