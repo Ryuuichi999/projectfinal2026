@@ -117,6 +117,18 @@ input, select, textarea, button, .btn, .badge,
     flex-direction: column;
 }
 
+.sidebar-section-title {
+    margin: 18px 14px 10px;
+    font-size: 0.78rem;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    color: #9ca3af;
+}
+
+.sidebar-menu .sidebar-section-title:first-child {
+    margin-top: 6px;
+}
+
 .sidebar-toggle-rail {
     display: none;
     width: 42px;
@@ -138,10 +150,16 @@ input, select, textarea, button, .btn, .badge,
     justify-content: center;
     text-align: center;
     line-height: 1;
+    color: #6b7280;
+}
+
+.sidebar .menu-icon i {
+    color: currentColor;
 }
 .sidebar .menu-text {
     white-space: nowrap;
     overflow: hidden;
+    color: #4b5563;
 }
 
 .sidebar .logo {
@@ -163,31 +181,39 @@ input, select, textarea, button, .btn, .badge,
     display: flex;
     align-items: center;
     gap: 12px;
-    padding: 10px 14px;
+    padding: 12px 14px;
     margin-bottom: 6px;
     text-decoration: none;
-    color: var(--text-main);
-    border-radius: 10px;
+    color: #4b5563;
+    border-radius: 14px;
     font-size: 15px;
     transition: background-color 0.2s, color 0.2s; /* เพิ่ม transition */
 }
 
 /* สี Active/Hover ให้เหมือนในรูป (สีน้ำเงินอ่อน) */
 .sidebar a.active {
-    background: #eef2ff; /* สีพื้นหลังอ่อนกว่าเดิมเล็กน้อย */
-    color: var(--primary);
+    background: #f3f4f6;
+    color: #111827;
     font-weight: 600; /* เน้นตัวหนาสำหรับ Active */
 }
+.sidebar a.active .menu-icon,
+.sidebar a.active .menu-text {
+    color: #111827;
+}
 .sidebar a:hover {
-    background: #f3f4f6; /* สี Hover ที่แตกต่างจาก Active */
-    color: var(--primary);
+    background: #f9fafb;
+    color: #111827;
+}
+.sidebar a:hover .menu-icon,
+.sidebar a:hover .menu-text {
+    color: #111827;
 }
 
 
 /* bottom menu */
 .sidebar-bottom {
     margin-top: auto;
-    padding-top: 10px;
+    padding-top: 14px;
     border-top: 1px solid var(--sidebar-border); /* เพิ่มเส้นแบ่งด้านบน */
 }
 
@@ -375,6 +401,10 @@ html.sidebar-collapsed .sidebar .menu-text,
 .sidebar-collapsed .sidebar .menu-text {
     display: none;
 }
+html.sidebar-collapsed .sidebar .sidebar-section-title,
+.sidebar-collapsed .sidebar .sidebar-section-title {
+    display: none;
+}
 html.sidebar-collapsed .sidebar .sidebar-main,
 .sidebar-collapsed .sidebar .sidebar-main {
     align-items: stretch;
@@ -394,6 +424,7 @@ html.sidebar-collapsed .sidebar .menu-icon,
 .sidebar-collapsed .sidebar .menu-icon {
     font-size: 1.35rem;
     width: 100%;
+    color: #374151;
 }
 html.sidebar-collapsed .sidebar .sidebar-toggle-rail,
 .sidebar-collapsed .sidebar .sidebar-toggle-rail {
