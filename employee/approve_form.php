@@ -192,9 +192,13 @@ if (isset($_POST['approve_confirm'])) {
         <!-- Using container-fluid to match request_detail.php margins -->
         <div class="container-fluid py-4">
             
-            <a href="request_list.php" class="btn-back d-inline-flex align-items-center mb-3">
-                <i class="bi bi-arrow-left me-2"></i> ย้อนกลับ
-            </a>
+            <nav class="breadcrumb-nav mb-3">
+                <a href="dashboard.php"><i class="bi bi-house-door me-1"></i>หน้าหลัก</a>
+                <span class="breadcrumb-sep"><i class="bi bi-chevron-right"></i></span>
+                <a href="request_list.php">รายการคำร้อง</a>
+                <span class="breadcrumb-sep"><i class="bi bi-chevron-right"></i></span>
+                <span class="breadcrumb-current">พิจารณาคำร้อง</span>
+            </nav>
 
             <?php if (isset($error)): ?>
                 <div class="alert alert-danger shadow-sm mb-4 border-0">

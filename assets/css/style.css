@@ -344,6 +344,34 @@ input, select, textarea, button, .btn, .badge,
     color: #334155;
 }
 
+/* ===== BREADCRUMB NAVIGATION ===== */
+.breadcrumb-nav {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.9rem;
+    margin-bottom: 0.75rem;
+    flex-wrap: wrap;
+}
+.breadcrumb-nav a {
+    color: #3b82f6;
+    text-decoration: none;
+    font-weight: 500;
+    transition: color 0.2s;
+}
+.breadcrumb-nav a:hover {
+    color: #1d4ed8;
+    text-decoration: underline;
+}
+.breadcrumb-nav .breadcrumb-sep {
+    color: #94a3b8;
+    font-size: 0.75rem;
+}
+.breadcrumb-nav .breadcrumb-current {
+    color: #64748b;
+    font-weight: 500;
+}
+
 /* Cancel / Secondary Action — matches register.php .btn-cancel */
 .btn-action-cancel {
     background-color: #f8fafc !important;

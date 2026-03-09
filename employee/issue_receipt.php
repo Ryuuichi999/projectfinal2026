@@ -170,9 +170,13 @@ if (isset($_POST['issue_permit_confirm'])) {
 
     <div class="content fade-in-up">
         <div class="container-fluid px-4 mt-3">
-            <a href="request_detail.php?id=<?= $request_id ?>" class="btn-back mb-2 d-inline-flex align-items-center">
-                <i class="bi bi-chevron-left me-1"></i> ย้อนกลับ
-            </a>
+            <nav class="breadcrumb-nav mb-2">
+                <a href="dashboard.php"><i class="bi bi-house-door me-1"></i>หน้าหลัก</a>
+                <span class="breadcrumb-sep"><i class="bi bi-chevron-right"></i></span>
+                <a href="request_detail.php?id=<?= $request_id ?>">รายละเอียดคำร้อง</a>
+                <span class="breadcrumb-sep"><i class="bi bi-chevron-right"></i></span>
+                <span class="breadcrumb-current">ออกใบอนุญาต</span>
+            </nav>
             <div class="card shadow-sm border-0">
                 <div class="card-header bg-success text-white">
                     <h5 class="mb-0"><i class="bi bi-file-earmark-medical me-2"></i>ออกใบอนุญาต (Issue Permit)</h5>

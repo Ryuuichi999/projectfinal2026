@@ -482,10 +482,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <?php include '../includes/user_navbar.php'; ?>
 
     <div class="profile-wrapper">
-        <!-- Back Button -->
-        <a href="index.php" class="btn-back">
-            <i class="bi bi-chevron-left me-1"></i> ย้อนกลับ
-        </a>
+        <!-- Breadcrumb -->
+        <nav class="breadcrumb-nav">
+            <a href="index.php"><i class="bi bi-house-door me-1"></i>หน้าหลัก</a>
+            <span class="breadcrumb-sep"><i class="bi bi-chevron-right"></i></span>
+            <span class="breadcrumb-current">โปรไฟล์</span>
+        </nav>
 
         <!-- ── Banner ── -->
         <div class="profile-banner">

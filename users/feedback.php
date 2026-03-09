@@ -333,9 +333,11 @@ $avg_stats = $avg_result->fetch_assoc();
 <body>
     <?php include '../includes/user_navbar.php'; ?>
     <div class="container feedback-wrapper">
-        <a href="index.php" class="btn-back">
-            <i class="bi bi-chevron-left me-1"></i> ย้อนกลับ
-        </a>
+        <nav class="breadcrumb-nav">
+            <a href="index.php"><i class="bi bi-house-door me-1"></i>หน้าหลัก</a>
+            <span class="breadcrumb-sep"><i class="bi bi-chevron-right"></i></span>
+            <span class="breadcrumb-current">ประเมินความพึงพอใจ</span>
+        </nav>
         <div class="feedback-header">
             <i class="bi bi-star feedback-header-icon"></i>
             <h4 class="feedback-title">ประเมินความพึงพอใจ</h4>

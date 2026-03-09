@@ -105,9 +105,11 @@ if (session_status() === PHP_SESSION_NONE) {
     <?php include './includes/navbar.php'; ?>
 
     <div class="container px-md-4 px-lg-5 fade-in-up mt-4 mb-5">
-        <a href="javascript:history.back()" class="btn btn-outline-secondary btn-sm rounded-pill mb-3">
-            <i class="bi bi-arrow-left me-1"></i> ย้อนกลับ
-        </a>
+        <nav class="breadcrumb-nav mb-3">
+            <a href="index.php"><i class="bi bi-house-door me-1"></i>หน้าหลัก</a>
+            <span class="breadcrumb-sep"><i class="bi bi-chevron-right"></i></span>
+            <span class="breadcrumb-current">นโยบายความเป็นส่วนตัว</span>
+        </nav>
         <div class="policy-header">
             <h1><i class="bi bi-shield-check me-2"></i>นโยบายความเป็นส่วนตัว</h1>
             <p>พระราชบัญญัติคุ้มครองข้อมูลส่วนบุคคล พ.ศ. 2562 (PDPA)</p>

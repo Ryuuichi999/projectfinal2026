@@ -18,27 +18,19 @@ if (isset($_POST['login'])) {
             $_SESSION[$rate_key] = ['count' => 0, 'first_attempt' => time()];
         }
 
-        // Debug: แสดงค่าปัจจุบัน
-        error_log("Login attempt - Count: " . $_SESSION[$rate_key]['count'] . ", Max: " . $max_attempts);
-
         // ตรวจสอบว่าถูก lockout หรือไม่ก่อน
         if ($_SESSION[$rate_key]['count'] >= $max_attempts) {
             $remaining = ceil(($lockout_minutes * 60 - (time() - $_SESSION[$rate_key]['first_attempt'])) / 60);
-            error_log("Lockout check - Remaining: " . $remaining . " minutes");
-
             if ($remaining > 0) {
                 $error = "คุณลองเข้าสู่ระบบผิดเกินกำหนด กรุณารอ {$remaining} นาที";
-                error_log("Set lockout error: " . $error);
             } else {
                 // รีเซ็ตถ้าหมดเวลา lockout
                 $_SESSION[$rate_key] = ['count' => 0, 'first_attempt' => time()];
-                error_log("Reset lockout - time expired");
             }
         }
 
         // ถ้าไม่ได้ถูก lockout ให้ทำการตรวจสอบ login
         if (!isset($error)) {
-            error_log("Proceeding to login check - not locked out");
             $stmt = $conn->prepare("SELECT * FROM users WHERE citizen_id=?");
             $stmt->bind_param("s", $citizen_id);
             $stmt->execute();

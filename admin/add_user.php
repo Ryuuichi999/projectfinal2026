@@ -79,12 +79,14 @@ if (isset($_POST['submit'])) {
     <div class="content fade-in-up">
         <div class="container-fluid" style="max-width: 800px;">
             <div class="card p-4">
-                <div class="d-flex justify-content-between align-items-center mb-4">
-                    <h2 class="mb-0">➕ เพิ่มผู้ใช้งานใหม่</h2>
-                    <a href="users_list.php" class="btn btn-secondary">
-                        <i class="bi bi-arrow-left"></i> กลับหน้ารายการ
-                    </a>
-                </div>
+                <nav class="breadcrumb-nav mb-3">
+                    <a href="dashboard.php"><i class="bi bi-house-door me-1"></i>หน้าหลัก</a>
+                    <span class="breadcrumb-sep"><i class="bi bi-chevron-right"></i></span>
+                    <a href="users_list.php">รายการผู้ใช้</a>
+                    <span class="breadcrumb-sep"><i class="bi bi-chevron-right"></i></span>
+                    <span class="breadcrumb-current">เพิ่มผู้ใช้งานใหม่</span>
+                </nav>
+                <h2 class="mb-4">➕ เพิ่มผู้ใช้งานใหม่</h2>
 
                 <?php if ($message): ?>
                     <div class="alert alert-<?= $message_type ?>">

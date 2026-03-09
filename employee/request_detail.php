@@ -373,9 +373,13 @@ $result_docs = $stmt_docs->get_result();
             <!-- Header -->
             <div class="d-flex justify-content-between align-items-start mb-4">
                 <div>
-                    <a href="request_list.php" class="btn-back mb-2 d-inline-flex align-items-center">
-                        <i class="bi bi-chevron-left me-1"></i> ย้อนกลับ
-                    </a>
+                    <nav class="breadcrumb-nav mb-2">
+                        <a href="dashboard.php"><i class="bi bi-house-door me-1"></i>หน้าหลัก</a>
+                        <span class="breadcrumb-sep"><i class="bi bi-chevron-right"></i></span>
+                        <a href="request_list.php">รายการคำร้อง</a>
+                        <span class="breadcrumb-sep"><i class="bi bi-chevron-right"></i></span>
+                        <span class="breadcrumb-current">รายละเอียดคำร้อง</span>
+                    </nav>
                     <h1 class="page-title mb-1">รายละเอียดคำร้อง</h1>
                     <div class="page-subtitle">เลขที่คำร้อง
                         <?= !empty($request['request_no']) ? htmlspecialchars($request['request_no']) : '#' . $request['id'] . '/' . date('y', strtotime($request['created_at'])) + 43 ?></div>

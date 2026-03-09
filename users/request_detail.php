@@ -354,10 +354,15 @@ $timeline_logs = getRequestLogs($conn, $request_id);
         <!-- Header -->
         <div class="d-flex justify-content-between align-items-start mb-4">
             <div>
-                <a href="<?= (isset($_SESSION['role']) && in_array($_SESSION['role'], ['admin', 'employee'])) ? '../employee/request_list.php' : 'my_request.php' ?>"
-                    class="btn-back mb-2 d-inline-flex align-items-center">
-                    <i class="bi bi-chevron-left me-1"></i> ย้อนกลับ
-                </a>
+                <nav class="breadcrumb-nav mb-2">
+                    <a href="<?= (isset($_SESSION['role']) && in_array($_SESSION['role'], ['admin', 'employee'])) ? '../employee/dashboard.php' : 'index.php' ?>"><i class="bi bi-house-door me-1"></i>หน้าหลัก</a>
+                    <span class="breadcrumb-sep"><i class="bi bi-chevron-right"></i></span>
+                    <a href="<?= (isset($_SESSION['role']) && in_array($_SESSION['role'], ['admin', 'employee'])) ? '../employee/request_list.php' : 'my_request.php' ?>">
+                        <?= (isset($_SESSION['role']) && in_array($_SESSION['role'], ['admin', 'employee'])) ? 'รายการคำร้อง' : 'คำร้องของฉัน' ?>
+                    </a>
+                    <span class="breadcrumb-sep"><i class="bi bi-chevron-right"></i></span>
+                    <span class="breadcrumb-current">รายละเอียดคำร้อง</span>
+                </nav>
                 <h1 class="page-title mb-1">รายละเอียดคำร้อง</h1>
                 <div class="page-subtitle">เลขที่คำร้อง
                     <?= !empty($request['request_no']) ? htmlspecialchars($request['request_no']) : '#' . $request['id'] . '/' . date('y', strtotime($request['created_at'])) + 43 ?></div>
