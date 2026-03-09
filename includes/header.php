@@ -14,9 +14,16 @@
 })();
 </script>
 <style>
-/* When sidebar-collapsed is on <html>, also apply to body immediately */
+/* When sidebar-collapsed is on <html>, shrink sidebar to icon-only */
 .sidebar-collapsed body .sidebar,
-html.sidebar-collapsed .sidebar { transform: translateX(-260px) !important; }
-html.sidebar-collapsed .topbar { left: 0 !important; }
-html.sidebar-collapsed .content { margin-left: 0 !important; }
+html.sidebar-collapsed .sidebar {
+    width: 68px !important;
+    padding: 24px 8px !important;
+    transform: none !important;
+    overflow: hidden !important;
+}
+html.sidebar-collapsed .topbar,
+.sidebar-collapsed body .topbar { left: 68px !important; }
+html.sidebar-collapsed .content,
+.sidebar-collapsed body .content { margin-left: 68px !important; }
 </style>

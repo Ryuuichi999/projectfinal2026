@@ -170,7 +170,7 @@ if ($role === 'user' && $userId) {
 </style>
 <div class="topbar">
     <div class="topbar-left">
-        <button class="btn btn-outline-secondary btn-sm rounded-3" type="button" id="sidebarToggle"><i
+        <button class="btn btn-outline-secondary btn-sm rounded-3" type="button" id="sidebarToggle" data-sidebar-toggle><i
                 class="bi bi-list"></i></button>
     </div>
     <div class="topbar-right">

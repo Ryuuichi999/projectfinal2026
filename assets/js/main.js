@@ -39,8 +39,8 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 
     // Sidebar Toggle (persist state via localStorage)
-    const sidebarToggle = document.getElementById('sidebarToggle');
-    if (sidebarToggle) {
+    const sidebarToggles = document.querySelectorAll('[data-sidebar-toggle]');
+    if (sidebarToggles.length) {
         // Restore sidebar state from localStorage (sync both html & body)
         if (localStorage.getItem('sidebarCollapsed') === 'true') {
             document.documentElement.classList.add('sidebar-collapsed');
@@ -55,12 +55,14 @@ document.addEventListener('DOMContentLoaded', function() {
             document.documentElement.classList.toggle('sidebar-collapsed', collapsed);
             localStorage.setItem('sidebarCollapsed', collapsed);
         };
-        sidebarToggle.addEventListener('click', toggleSidebar);
-        sidebarToggle.addEventListener('keydown', (e) => {
-            if (e.key === 'Enter' || e.key === ' ') {
-                e.preventDefault();
-                toggleSidebar();
-            }
+        sidebarToggles.forEach((sidebarToggle) => {
+            sidebarToggle.addEventListener('click', toggleSidebar);
+            sidebarToggle.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    toggleSidebar();
+                }
+            });
         });
     }
 

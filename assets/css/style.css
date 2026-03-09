@@ -98,7 +98,50 @@ input, select, textarea, button, .btn, .badge,
     flex-direction: column;
     /* เพิ่มเงาเล็กน้อยเพื่อให้ดูมีมิติเหมือนในรูป */
     box-shadow: 1px 0 5px rgba(0,0,0,0.05); 
-    transition: transform 0.2s ease;
+    transition: width 0.25s ease, padding 0.25s ease;
+    overflow: hidden;
+}
+
+/* Logo: แสดงเฉพาะตอนขยาย */
+.sidebar .logo-full { display: block; }
+
+.sidebar-main {
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+    position: relative;
+}
+
+.sidebar-menu {
+    display: flex;
+    flex-direction: column;
+}
+
+.sidebar-toggle-rail {
+    display: none;
+    width: 42px;
+    height: 42px;
+    align-items: center;
+    justify-content: center;
+    margin: 0 0 14px 0;
+    padding: 0;
+    flex-shrink: 0;
+}
+
+/* Menu icon & text */
+.sidebar .menu-icon {
+    font-size: 1.25rem;
+    flex-shrink: 0;
+    width: 28px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    line-height: 1;
+}
+.sidebar .menu-text {
+    white-space: nowrap;
+    overflow: hidden;
 }
 
 .sidebar .logo {
@@ -153,7 +196,7 @@ input, select, textarea, button, .btn, .badge,
     margin-left: 260px;
     padding: 24px 40px;
     margin-top: 68px;
-    transition: margin-left 0.2s ease;
+    transition: margin-left 0.25s ease;
 }
 
 /* ===== DASHBOARD CARD (ปรับให้ตรงกับรูปภาพ) ===== */
@@ -224,13 +267,17 @@ input, select, textarea, button, .btn, .badge,
     padding: 0 16px;
     box-shadow: 0 2px 8px rgba(0,0,0,0.04);
     z-index: 1000;
-    transition: left 0.2s ease;
+    transition: left 0.25s ease;
 }
 .topbar-left,
 .topbar-right {
     display: flex;
     align-items: center;
     gap: 12px;
+}
+
+.topbar-right {
+    margin-left: auto;
 }
 
 /* ===== UNIFIED NOTIFICATION BUTTON (same as user_navbar) ===== */
@@ -315,14 +362,90 @@ input, select, textarea, button, .btn, .badge,
 }
 
 /* ===== Collapsed Sidebar States ===== */
+html.sidebar-collapsed .sidebar,
 .sidebar-collapsed .sidebar {
-    transform: translateX(-260px);
+    width: 68px;
+    padding: 16px 8px;
 }
+html.sidebar-collapsed .sidebar .logo-full,
+.sidebar-collapsed .sidebar .logo-full {
+    display: none !important;
+}
+html.sidebar-collapsed .sidebar .menu-text,
+.sidebar-collapsed .sidebar .menu-text {
+    display: none;
+}
+html.sidebar-collapsed .sidebar .sidebar-main,
+.sidebar-collapsed .sidebar .sidebar-main {
+    align-items: stretch;
+}
+html.sidebar-collapsed .sidebar .sidebar-menu,
+.sidebar-collapsed .sidebar .sidebar-menu {
+    margin-top: 118px;
+}
+html.sidebar-collapsed .sidebar a,
+.sidebar-collapsed .sidebar a {
+    justify-content: center;
+    padding: 10px 0;
+    position: relative;
+    width: 100%;
+}
+html.sidebar-collapsed .sidebar .menu-icon,
+.sidebar-collapsed .sidebar .menu-icon {
+    font-size: 1.35rem;
+    width: 100%;
+}
+html.sidebar-collapsed .sidebar .sidebar-toggle-rail,
+.sidebar-collapsed .sidebar .sidebar-toggle-rail {
+    display: inline-flex;
+    align-self: center;
+    position: absolute;
+    top: 0;
+    left: 50%;
+    transform: translateX(-50%);
+}
+html.sidebar-collapsed .topbar .topbar-left,
+.sidebar-collapsed .topbar .topbar-left {
+    display: none;
+}
+/* Tooltip เมื่อ hover บนไอคอน sidebar ย่อ */
+html.sidebar-collapsed .sidebar a[title]:hover::after,
+.sidebar-collapsed .sidebar a[title]:hover::after {
+    content: attr(title);
+    position: absolute;
+    left: calc(100% + 10px);
+    top: 50%;
+    transform: translateY(-50%);
+    background: #1e293b;
+    color: #fff;
+    padding: 5px 12px;
+    border-radius: 6px;
+    font-size: 13px;
+    white-space: nowrap;
+    z-index: 9999;
+    pointer-events: none;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+}
+html.sidebar-collapsed .sidebar a[title]:hover::before,
+.sidebar-collapsed .sidebar a[title]:hover::before {
+    content: '';
+    position: absolute;
+    left: calc(100% + 4px);
+    top: 50%;
+    transform: translateY(-50%);
+    border: 5px solid transparent;
+    border-right-color: #1e293b;
+    z-index: 9999;
+    pointer-events: none;
+}
+
+html.sidebar-collapsed .topbar,
 .sidebar-collapsed .topbar {
-    left: 0;
+    left: 68px;
 }
+html.sidebar-collapsed .content,
 .sidebar-collapsed .content {
-    margin-left: 0;
+    margin-left: 68px;
 }
 
 /* ===== GLOBAL BUTTON STANDARDS ===== */
