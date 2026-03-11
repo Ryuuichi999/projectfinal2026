@@ -289,10 +289,6 @@ function getThaiDate($date)
             style="padding: 10px 20px; font-size: 14px; cursor: pointer; background: #28a745; color: white; border: none; border-radius: 5px;">
             ⬇ ดาวน์โหลด PDF
         </button>
-        <button onclick="handlePrint()"
-            style="padding: 10px 20px; font-size: 14px; cursor: pointer; background: #007bff; color: white; border: none; border-radius: 5px;">
-            🖨 พิมพ์ใบเสร็จ
-        </button>
     </div>
 
     <div class="page">
@@ -341,8 +337,8 @@ function getThaiDate($date)
                 <tr>
                     <td style="text-align: center;">1</td>
                     <td>
-                        ค่าธรรมเนียมปิด โปรย ติดตั้งแผ่นประกาศหรือแผ่นปลิว เพื่อการโฆษณา
-                        (<?= htmlspecialchars($request['sign_type']) ?> ขนาด <?= $request['width'] ?> x <?= $request['height'] ?> ม. จำนวน <?= $request['quantity'] ?> ป้าย)
+                        <div style="padding-bottom:4px;">ค่าธรรมเนียมปิด โปรย ติดตั้งแผ่นประกาศหรือแผ่นปลิว เพื่อการโฆษณา</div>
+                        <div>(<?= htmlspecialchars($request['sign_type']) ?> ขนาด <?= $request['width'] ?> x <?= $request['height'] ?> ม. จำนวน <?= $request['quantity'] ?> ป้าย)</div>
                     </td>
                     <td style="text-align: right;">
                         <?= number_format($request['fee'], 2) ?>
@@ -447,29 +443,6 @@ function getThaiDate($date)
                     });
                 }
             });
-        }
-
-        function handlePrint() {
-            window.print();
-            if (!isOriginal) return;
-            // ถามยืนยันหลังพิมพ์ — ไม่ mark ทันที
-            setTimeout(function() {
-                Swal.fire({
-                    icon: 'question',
-                    title: 'พิมพ์สำเร็จหรือไม่?',
-                    text: 'หากท่านพิมพ์ฉบับจริงสำเร็จแล้ว กรุณากดยืนยัน ครั้งถัดไปจะเป็นสำเนา',
-                    showCancelButton: true,
-                    confirmButtonText: 'พิมพ์สำเร็จแล้ว',
-                    cancelButtonText: 'ยังไม่ได้พิมพ์',
-                    confirmButtonColor: '#1a3c5e'
-                }).then(function(result) {
-                    if (result.isConfirmed) {
-                        markAsDownloaded().then(function() {
-                            location.reload();
-                        });
-                    }
-                });
-            }, 500);
         }
     </script>
 </body>

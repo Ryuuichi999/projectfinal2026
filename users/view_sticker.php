@@ -206,10 +206,6 @@ function getThaiDateShort($date)
             style="padding: 10px 20px; font-size: 16px; cursor: pointer; background: #28a745; color: white; border: none; border-radius: 5px; display: flex; align-items: center; gap: 5px;">
             <i class="bi bi-download"></i> ดาวน์โหลดสติ๊กเกอร์ (รูปภาพ)
         </button>
-        <button onclick="window.print()"
-            style="padding: 10px 20px; font-size: 16px; cursor: pointer; background: #007bff; color: white; border: none; border-radius: 5px; display: flex; align-items: center; gap: 5px;">
-            <i class="bi bi-printer"></i> พิมพ์
-        </button>
     </div>
 
     <div class="sticker" id="sticker-content">

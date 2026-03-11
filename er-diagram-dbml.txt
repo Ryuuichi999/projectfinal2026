@@ -1,0 +1,126 @@
+Table users {
+  id int [primary key, increment]
+  citizen_id varchar(13) [unique, not null]
+  title_name varchar(20)
+  first_name varchar(100) [not null]
+  last_name varchar(100) [not null]
+  email varchar(255)
+  phone varchar(20)
+  address text
+  password varchar(255) [not null]
+  role varchar(10) [not null, note: 'user, employee, admin']
+  line_user_id varchar(100)
+  profile_image varchar(255)
+  created_at timestamp [default: `CURRENT_TIMESTAMP`]
+}
+
+Table sign_requests {
+  id int [primary key, increment]
+  request_no varchar(30) [note: 'REQ-YYMM-XXXXX']
+  user_id int [not null]
+  applicant_name varchar(255)
+  applicant_address text
+  email varchar(255)
+  sign_type varchar(50) [note: 'ไวนิล, ผ้าใบ, ไม้อัด']
+  width decimal(5,2)
+  height decimal(5,2)
+  quantity int
+  road_name varchar(255)
+  location_lat double
+  location_lng double
+  fee decimal(10,2)
+  status varchar(30) [not null, note: 'pending, reviewing, need_documents, waiting_payment, waiting_receipt, waiting_permit, approved, rejected, expired, cancelled']
+  duration_days int
+  install_date date
+  end_date date
+  description text
+  sign_image varchar(255)
+  receipt_no varchar(50) [note: 'RCPT-XXXXX/YY']
+  receipt_date date
+  permit_no varchar(50) [note: 'XX/YYYY']
+  permit_date date
+  permit_signer_name varchar(255)
+  permit_signer_position varchar(255)
+  created_at timestamp [default: `CURRENT_TIMESTAMP`]
+}
+
+Table sign_documents {
+  id int [primary key, increment]
+  request_id int [not null]
+  doc_type varchar(100) [not null, note: 'รูปป้าย, สำเนาบัตร, Payment Slip']
+  file_path varchar(255) [not null]
+  trans_ref varchar(100) [unique, note: 'รหัสอ้างอิงการชำระเงิน']
+  created_at timestamp [default: `CURRENT_TIMESTAMP`]
+}
+
+Table request_logs {
+  id int [primary key, increment]
+  request_id int [not null]
+  action varchar(50) [not null]
+  action_label varchar(255)
+  actor_id int
+  note text
+  created_at timestamp [default: `CURRENT_TIMESTAMP`]
+}
+
+Table audit_logs {
+  id int [primary key, increment]
+  user_id int
+  action varchar(100) [not null, note: 'login, approve, reject, delete_user']
+  target_table varchar(50)
+  target_id int
+  details text
+  ip_address varchar(45)
+  created_at timestamp [default: `CURRENT_TIMESTAMP`]
+}
+
+Table feedback {
+  id int [primary key, increment]
+  user_id int [not null]
+  request_id int
+  rating int [not null, note: '1-5 ดาว']
+  comment text
+  created_at timestamp [default: `CURRENT_TIMESTAMP`]
+}
+
+Table password_resets {
+  id int [primary key, increment]
+  citizen_id varchar(13) [not null]
+  otp varchar(6) [not null]
+  expires_at datetime [not null]
+  used tinyint [default: 0]
+  created_at timestamp [default: `CURRENT_TIMESTAMP`]
+}
+
+Table system_settings {
+  id int [primary key, increment]
+  setting_key varchar(100) [unique, not null]
+  setting_value text
+  updated_at timestamp [default: `CURRENT_TIMESTAMP`]
+}
+
+// === Relationships ===
+
+// users → sign_requests (1:N)
+Ref: sign_requests.user_id > users.id
+
+// sign_requests → sign_documents (1:N)
+Ref: sign_documents.request_id > sign_requests.id
+
+// sign_requests → request_logs (1:N)
+Ref: request_logs.request_id > sign_requests.id
+
+// users → request_logs (1:N) ผู้ดำเนินการ
+Ref: request_logs.actor_id > users.id
+
+// users → audit_logs (1:N)
+Ref: audit_logs.user_id > users.id
+
+// users → feedback (1:N)
+Ref: feedback.user_id > users.id
+
+// sign_requests → feedback (1:N)
+Ref: feedback.request_id > sign_requests.id
+
+// users → password_resets (1:N) ผ่าน citizen_id
+Ref: password_resets.citizen_id > users.citizen_id

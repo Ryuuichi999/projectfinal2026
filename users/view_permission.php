@@ -180,10 +180,6 @@ if ($p_sig_path && file_exists("../" . $p_sig_path)) {
         style="padding:10px 22px; font-size:14px; cursor:pointer; background:#28a745; color:white; border:none; border-radius:5px;">
         ⬇ ดาวน์โหลด PDF
     </button>
-    <button onclick="window.print()"
-        style="padding:10px 22px; font-size:14px; cursor:pointer; background:#007bff; color:white; border:none; border-radius:5px;">
-        🖨 พิมพ์เอกสาร
-    </button>
 </div>
 
 <div class="page" id="doc-page">
