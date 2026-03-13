@@ -201,12 +201,15 @@ function getThaiDateShort($date)
 
 <body>
 
-    <div class="no-print" style="position: fixed; top: 20px; right: 20px; display: flex; gap: 10px;">
-        <button onclick="downloadSticker()"
-            style="padding: 10px 20px; font-size: 16px; cursor: pointer; background: #28a745; color: white; border: none; border-radius: 5px; display: flex; align-items: center; gap: 5px;">
-            <i class="bi bi-download"></i> ดาวน์โหลดสติ๊กเกอร์ (รูปภาพ)
-        </button>
-    </div>
+    <div class="no-print" 
+     style="position: fixed; top: 20px; left: 50%; transform: translateX(-50%); display: flex; gap: 10px;">
+    
+    <button onclick="downloadSticker()"
+        style="padding: 10px 20px; font-size: 16px; cursor: pointer; background: #28a745; color: white; border: none; border-radius: 5px; display: flex; align-items: center; gap: 5px;">
+        <i class="bi bi-download"></i> ดาวน์โหลดสติ๊กเกอร์ (รูปภาพ)
+    </button>
+
+</div>
 
     <div class="sticker" id="sticker-content">
         <div class="header">
