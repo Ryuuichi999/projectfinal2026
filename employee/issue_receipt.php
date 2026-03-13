@@ -179,7 +179,7 @@ if (isset($_POST['issue_permit_confirm'])) {
             </nav>
             <div class="card shadow-sm border-0">
                 <div class="card-header bg-success text-white">
-                    <h5 class="mb-0"><i class="bi bi-file-earmark-medical me-2"></i>ออกใบอนุญาต (Issue Permit)</h5>
+                    <h5 class="mb-0"><i class="bi bi-file-earmark-medical me-2"></i>ออกใบอนุญาต</h5>
                 </div>
 
                 <div class="card-body">
