@@ -82,13 +82,13 @@ $payment_notice = '';
 if ($request['status'] === 'waiting_payment') {
     $deadline_dt = date('d/m/Y H:i น.', strtotime('+24 hours'));
     $payment_notice = "
-        <div style='background:#fff3cd;border:1px solid #ffc107;border-radius:8px;padding:15px;margin:15px 0;'>
-            <p style='margin:0 0 8px;font-weight:bold;color:#856404;'>
-                <span style='font-size:18px;'>⏰</span> กรุณาชำระค่าธรรมเนียมภายใน 24 ชั่วโมง
+        <div style='background:#fff8e1;border-left:4px solid #ffc107;border-radius:4px;padding:16px;margin:16px 0;'>
+            <p style='margin:0 0 8px;color:#856404;font-weight:600;font-size:15px;'>
+                ⏰ กรุณาชำระค่าธรรมเนียมภายใน 24 ชั่วโมง
             </p>
-            <p style='margin:0;color:#856404;'>
-                ต้องชำระก่อน <strong style='color:#dc3545;font-size:16px;'>{$deadline_dt}</strong><br>
-                หากไม่ชำระภายในกำหนด คำร้องจะถูก<strong>ยกเลิกโดยอัตโนมัติ</strong>
+            <p style='margin:0;color:#856404;font-size:14px;line-height:1.4;'>
+                ต้องชำระก่อน <strong style='color:#dc3545;'>{$deadline_dt}</strong><br>
+                <small style='color:#856404;'>หากไม่ชำระภายในกำหนด คำร้องจะถูกยกเลิกโดยอัตโนมัติ</small>
             </p>
         </div>";
 }
@@ -129,8 +129,6 @@ $message = "
                 <span class='status-badge'>{$status_text}</span>
             </div>
 
-            {$payment_notice}
-
             <table class='details-table'>
                 <tr>
                     <th width='40%'>เลขที่คำร้อง:</th>
@@ -149,6 +147,8 @@ $message = "
                     <td>" . date('d/m/Y H:i') . "</td>
                 </tr>
             </table>
+
+            {$payment_notice}
 
             <p style='text-align:center; margin-top: 25px;'>
                 <a href='http://localhost{$base_url}/users/my_request.php' class='btn'>ตรวจสอบรายละเอียด</a>
