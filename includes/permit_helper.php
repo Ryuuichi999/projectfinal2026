@@ -43,15 +43,15 @@ function generateNextPermitNumber($conn)
     // Ensure columns exist first
     ensurePermitColumnsExist($conn);
 
-    // Current Thai Year (4 digits)
+    // Current Thai Year (4 digits) e.g. 2569
     $year = date('Y') + 543;
 
-    // Pattern to search: %/$year
-    // Example: 1/2569, 34/2569
-
+    // นับจำนวนใบอนุญาตที่ออกแล้วในปีนี้ (เฉพาะที่มี permit_no ลงท้ายด้วย /2569)
     $sql = "SELECT permit_no FROM sign_requests 
-            WHERE permit_no LIKE ? 
-            ORDER BY id DESC LIMIT 1";
+            WHERE permit_no LIKE ?
+            AND permit_no IS NOT NULL AND permit_no != ''
+            ORDER BY CAST(SUBSTRING_INDEX(permit_no, '/', 1) AS UNSIGNED) DESC 
+            LIMIT 1";
 
     $stmt = $conn->prepare($sql);
     $likeParam = "%/{$year}";
@@ -62,8 +62,6 @@ function generateNextPermitNumber($conn)
     $lastNo = 0;
 
     if ($row = $result->fetch_assoc()) {
-        // Extract number before slash
-        // Assuming format "X/2569"
         $parts = explode('/', $row['permit_no']);
         if (count($parts) === 2) {
             $intVal = (int) $parts[0];
@@ -74,9 +72,6 @@ function generateNextPermitNumber($conn)
     }
 
     $nextNo = $lastNo + 1;
-    // No padding as per user request (Reference image: 34/2568)
-    // If they want padding, they can ask or I can add it easily. 
-    // Image showed "๓๔" (34), not "๐๓๔". So no padding.
 
     return "{$nextNo}/{$year}";
 }

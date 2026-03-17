@@ -43,10 +43,8 @@ ensurePermitColumnsExist($conn);
 ensureSettingsTable($conn);
 
 // 2. Prepare Defaults
-// Use Request ID as Permit No (per user request)
-$thYear = date('Y') + 543;
-$next_permit_no = $request['id'] . '/' . $thYear;
-// $next_permit_no = generateNextPermitNumber($conn); // Disabled: User prefers Request ID match
+// นับลำดับเฉพาะใบอนุญาตที่ออกแล้วในปีนี้ + ใช้ปี พ.ศ. 2 หลัก
+$next_permit_no = generateNextPermitNumber($conn);
 $permit_date_default = date('Y-m-d');
 
 // Load Signer from Settings
@@ -216,7 +214,7 @@ if (isset($_POST['issue_permit_confirm'])) {
                                         class="form-control fw-bold fs-5 text-black border-start-0 ps-0"
                                         value="<?= htmlspecialchars($next_permit_no) ?>" required>
                                 </div>
-                                <div class="form-text">รูปแบบ: ลำดับที่/ปีพ.ศ. (เช่น 34/2568)</div>
+                                <div class="form-text">รูปแบบ: ลำดับที่/ปีพ.ศ. (เช่น 2/2569)</div>
                             </div>
 
                             <div class="col-md-6">
