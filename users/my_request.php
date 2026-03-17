@@ -114,6 +114,23 @@ if (!isset($_SESSION['user_id'])) {
                                                     $expiry_html = "<div class='mt-1'><span class='badge badge-sm-expiry bg-dark px-2'><i class='bi bi-exclamation-triangle-fill me-1'></i>เกินกำหนดเก็บป้าย</span></div>";
                                                 }
                                             }
+                                            if ($row['status'] == 'waiting_payment') {
+                                                $wp_stmt = $conn->prepare("SELECT created_at FROM request_logs WHERE request_id = ? AND action = 'waiting_payment' ORDER BY created_at DESC LIMIT 1");
+                                                $wp_stmt->bind_param("i", $row['id']);
+                                                $wp_stmt->execute();
+                                                $wp_row = $wp_stmt->get_result()->fetch_assoc();
+                                                if ($wp_row) {
+                                                    $deadline_ts = strtotime($wp_row['created_at'] . ' +24 hours');
+                                                    $hours_left = max(0, round(($deadline_ts - time()) / 3600));
+                                                    $deadline_str = date('H:i น.', $deadline_ts);
+                                                    if ($hours_left > 0) {
+                                                        $expiry_html = "<div class='mt-1'><span class='badge badge-sm-expiry bg-warning text-dark px-2'><i class='bi bi-clock-fill me-1'></i>เหลือ {$hours_left} ชม.</span></div>";
+                                                    } else {
+                                                        $expiry_html = "<div class='mt-1'><span class='badge badge-sm-expiry bg-danger px-2'><i class='bi bi-exclamation-triangle-fill me-1'></i>เกินกำหนดชำระ</span></div>";
+                                                    }
+                                                }
+                                                $wp_stmt->close();
+                                            }
 
                                             echo "<tr>";
                                             echo "<td class='req-no-cell'><div class='req-no-main'>" . htmlspecialchars($req_no) . "</div><div class='req-no-sub'>#{$row['id']}</div></td>";

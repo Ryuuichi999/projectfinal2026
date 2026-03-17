@@ -27,10 +27,12 @@ if (!file_exists($log_dir)) {
     mkdir($log_dir, 0755, true);
 }
 
-function cronLog($msg, $log_file) {
-    $line = "[" . date('Y-m-d H:i:s') . "] " . $msg . "\n";
-    file_put_contents($log_file, $line, FILE_APPEND);
-    echo $line;
+if (!function_exists('cronLog')) {
+    function cronLog($msg, $log_file) {
+        $line = "[" . date('Y-m-d H:i:s') . "] " . $msg . "\n";
+        file_put_contents($log_file, $line, FILE_APPEND);
+        echo $line;
+    }
 }
 
 cronLog("=== เริ่มตรวจสอบใบอนุญาตหมดอายุ ===", $log_file);

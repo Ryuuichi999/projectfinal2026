@@ -77,6 +77,22 @@ $status_color = worker_status_color($request['status']);
 
 $base_url = defined('BASE_URL') ? BASE_URL : '/Project2026';
 
+// ข้อความเพิ่มเติมสำหรับสถานะรอชำระเงิน — แจ้ง deadline 24 ชม.
+$payment_notice = '';
+if ($request['status'] === 'waiting_payment') {
+    $deadline_dt = date('d/m/Y H:i น.', strtotime('+24 hours'));
+    $payment_notice = "
+        <div style='background:#fff3cd;border:1px solid #ffc107;border-radius:8px;padding:15px;margin:15px 0;'>
+            <p style='margin:0 0 8px;font-weight:bold;color:#856404;'>
+                <span style='font-size:18px;'>⏰</span> กรุณาชำระค่าธรรมเนียมภายใน 24 ชั่วโมง
+            </p>
+            <p style='margin:0;color:#856404;'>
+                ต้องชำระก่อน <strong style='color:#dc3545;font-size:16px;'>{$deadline_dt}</strong><br>
+                หากไม่ชำระภายในกำหนด คำร้องจะถูก<strong>ยกเลิกโดยอัตโนมัติ</strong>
+            </p>
+        </div>";
+}
+
 $message = "
 <html>
 <head>
@@ -112,6 +128,8 @@ $message = "
             <div style='text-align:center;'>
                 <span class='status-badge'>{$status_text}</span>
             </div>
+
+            {$payment_notice}
 
             <table class='details-table'>
                 <tr>
