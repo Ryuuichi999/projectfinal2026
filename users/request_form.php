@@ -40,18 +40,27 @@ if (isset($_POST['submit'])) {
         $message_type = 'danger';
     }
 
-    // ตรวจสอบขนาด: ต้อง > 0 และ กว้าง ≤1.20 ม., สูง ≤2.40 ม.
+    // ตรวจสอบขนาด: ต้อง > 0 และจำกัดตามประเภทป้าย
+    // ไวนิล/ผ้าใบ (ผ้า/ธง): กว้าง ≤0.60 ม., สูง ≤1.20 ม.
+    // ไม้อัด (โครงไม้/พลาสติกแข็ง): กว้าง ≤2.40 ม., สูง ≤1.20 ม.
     if ($width <= 0 || $height <= 0) {
         $message = "ขนาดป้ายต้องมากกว่า 0";
         $message_type = 'danger';
     }
-    if (empty($message) && $width > 1.20) {
-        $message = "ความกว้างป้ายต้องไม่เกิน 1.20 เมตร (ท่านระบุ {$width} ม.)";
-        $message_type = 'danger';
-    }
-    if (empty($message) && $height > 2.40) {
-        $message = "ความสูงป้ายต้องไม่เกิน 2.40 เมตร (ท่านระบุ {$height} ม.)";
-        $message_type = 'danger';
+    if (empty($message)) {
+        if (in_array($sign_type, ['ไวนิล', 'ผ้าใบ'])) {
+            $maxW = 0.60; $maxH = 1.20;
+        } else {
+            $maxW = 2.40; $maxH = 1.20;
+        }
+        if ($width > $maxW) {
+            $message = "ป้าย{$sign_type}: ความกว้างต้องไม่เกิน {$maxW} เมตร (ท่านระบุ {$width} ม.)";
+            $message_type = 'danger';
+        }
+        if (empty($message) && $height > $maxH) {
+            $message = "ป้าย{$sign_type}: ความสูงต้องไม่เกิน {$maxH} เมตร (ท่านระบุ {$height} ม.)";
+            $message_type = 'danger';
+        }
     }
 
     // ตรวจสอบจำนวน ≤2
@@ -449,13 +458,13 @@ if ($result_signs && $result_signs->num_rows > 0) {
 
                 <div class="form-line">
                     <label>ขนาดป้าย กว้าง</label>
-                    <input type="number" step="0.01" name="width" id="width" class="form-input-line w-100px" required max="1.2" min="0.01">
+                    <input type="number" step="0.01" name="width" id="width" class="form-input-line w-100px" required min="0.01">
                     <label>เมตร x ยาว/สูง</label>
-                    <input type="number" step="0.01" name="height" id="height" class="form-input-line w-100px" required max="2.4" min="0.01">
+                    <input type="number" step="0.01" name="height" id="height" class="form-input-line w-100px" required min="0.01">
                     <label>เมตร</label>
                     <span id="areaInfo" class="ms-2 badge bg-secondary">พื้นที่: 0 ตร.ม.</span>
                 </div>
-                <div class="text-muted small ms-4 mb-2"><i class="bi bi-info-circle"></i> ขนาดสูงสุด: กว้างไม่เกิน 1.20 ม. × สูงไม่เกิน 2.40 ม. ทุกประเภท</div>
+                <div id="dimHint" class="text-muted small ms-4 mb-2"><i class="bi bi-info-circle"></i> กรุณาเลือกประเภทป้ายก่อน เพื่อแสดงขนาดสูงสุดที่อนุญาต</div>
 
                 <div class="form-line">
                     <label>จำนวน</label>
@@ -759,29 +768,34 @@ if ($result_signs && $result_signs->num_rows > 0) {
 
             document.getElementById('lng').addEventListener('change', updateMapFromInput);
 
-            // Road Layer
-            fetch('../data/road_sila.geojson')
-                .then(function (res) { return res.json(); })
-                .then(function (data) {
-                    var roadLayer = L.geoJSON(data, {
-                        style: { color: '#f59e0b', weight: 3 },
-                        onEachFeature: function (feature, layer) {
-                            layer.on('click', function (e) {
-                                placeMarker(e.latlng);
-                                L.DomEvent.stopPropagation(e);
-                                var hint = document.getElementById('roadHint');
-                                if (hint) { hint.textContent = "เลือกพิกัดบนเส้นถนนแล้ว"; hint.className = "badge bg-success"; }
-                            });
-                        }
-                    }).addTo(map);
-                    layerControl.addOverlay(roadLayer, "เส้นถนน");
-                });
+            // === ขนาดสูงสุดตามประเภทป้าย ===
+            var dimLimits = {
+                'ไวนิล':  { maxW: 0.60, maxH: 1.20, label: 'กว้างไม่เกิน 0.60 ม. × สูงไม่เกิน 1.20 ม.' },
+                'ผ้าใบ':  { maxW: 0.60, maxH: 1.20, label: 'กว้างไม่เกิน 0.60 ม. × สูงไม่เกิน 1.20 ม.' },
+                'ไม้อัด':  { maxW: 2.40, maxH: 1.20, label: 'กว้างไม่เกิน 2.40 ม. × สูงไม่เกิน 1.20 ม.' }
+            };
 
-            // Map Click (Outside Boundary)
-            map.on('click', function () {
-                var hint = document.getElementById('roadHint');
-                if (hint) { hint.textContent = "อยู่นอกเขตเทศบาล (กรุณาคลิกในขอบเขตสีน้ำเงิน)"; hint.className = "badge bg-danger"; }
-                Toast.fire({ icon: 'warning', title: 'จุดที่เลือกอยู่นอกเขตเทศบาล' });
+            function getSelectedLimit() {
+                var type = document.querySelector('[name=sign_type]').value;
+                return dimLimits[type] || null;
+            }
+
+            // อัปเดต hint + max เมื่อเปลี่ยนประเภทป้าย
+            document.querySelector('[name=sign_type]').addEventListener('change', function() {
+                var limit = getSelectedLimit();
+                var hint = document.getElementById('dimHint');
+                var wInput = document.getElementById('width');
+                var hInput = document.getElementById('height');
+                if (limit) {
+                    hint.innerHTML = '<i class="bi bi-info-circle"></i> ขนาดสูงสุด: ' + limit.label;
+                    wInput.max = limit.maxW;
+                    hInput.max = limit.maxH;
+                } else {
+                    hint.innerHTML = '<i class="bi bi-info-circle"></i> กรุณาเลือกประเภทป้ายก่อน';
+                    wInput.removeAttribute('max');
+                    hInput.removeAttribute('max');
+                }
+                calcArea();
             });
 
             // === คำนวณพื้นที่ป้าย realtime ===
@@ -791,10 +805,11 @@ if ($result_signs && $result_signs->num_rows > 0) {
                 var area = w * h;
                 var badge = document.getElementById('areaInfo');
                 badge.textContent = 'พื้นที่: ' + area.toFixed(2) + ' ตร.ม.';
-                var overSize = (w > 1.2 || h > 2.4);
+                var limit = getSelectedLimit();
+                var overSize = limit ? (w > limit.maxW || h > limit.maxH) : false;
                 badge.className = overSize ? 'ms-2 badge bg-danger' : 'ms-2 badge bg-success';
                 if (overSize && (w > 0 || h > 0)) {
-                    Toast.fire({ icon: 'warning', title: 'ขนาดเกินกำหนด (ไม่เกิน 1.20×2.40 ม.)' });
+                    Toast.fire({ icon: 'warning', title: 'ขนาดเกินกำหนด (' + limit.label + ')' });
                 }
             }
             document.getElementById('width').addEventListener('input', calcArea);
