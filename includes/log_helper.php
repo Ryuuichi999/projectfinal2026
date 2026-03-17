@@ -69,6 +69,8 @@ if (!function_exists('getTimelineIcon')) {
             'expired' => ['icon' => '⏰', 'color' => '#6c757d'],
             'expiry_warning' => ['icon' => '⚠️', 'color' => '#f59e0b'],
             'followup_expired' => ['icon' => '🚨', 'color' => '#dc3545'],
+            'cancelled_payment' => ['icon' => '🚫', 'color' => '#6b7280'],
+            'payment_warning' => ['icon' => '⚠️', 'color' => '#f59e0b'],
         ];
         return $icons[$action] ?? ['icon' => '📌', 'color' => '#6c757d'];
     }

@@ -523,8 +523,30 @@ $timeline_logs = getRequestLogs($conn, $request_id);
                     <div class="fee-amount">฿<?= number_format($request['fee']) ?></div>
                     <div class="text-muted small">ค่าธรรมเนียมป้ายโฆษณา (<?= $request['quantity'] ?> ป้าย)</div>
 
-                    <!-- Action Button (Payment) -->
+                    <!-- Action Button (Payment) + Deadline -->
                     <?php if ($request['status'] === 'waiting_payment'): ?>
+                        <?php
+                        $wp_dl_stmt = $conn->prepare("SELECT created_at FROM request_logs WHERE request_id = ? AND action = 'waiting_payment' ORDER BY created_at DESC LIMIT 1");
+                        $wp_dl_stmt->bind_param("i", $request['id']);
+                        $wp_dl_stmt->execute();
+                        $wp_dl_row = $wp_dl_stmt->get_result()->fetch_assoc();
+                        $wp_dl_stmt->close();
+                        if ($wp_dl_row) {
+                            $dl_ts = strtotime($wp_dl_row['created_at'] . ' +24 hours');
+                            $dl_hours = max(0, round(($dl_ts - time()) / 3600, 1));
+                            $dl_str = date('d/m/Y H:i น.', $dl_ts);
+                        ?>
+                        <div style="background:#fff8e1;border-left:4px solid #ffc107;border-radius:6px;padding:12px 14px;margin-top:12px;">
+                            <div style="font-weight:600;color:#856404;font-size:13px;margin-bottom:4px;">กรุณาชำระภายใน 24 ชั่วโมง</div>
+                            <div style="color:#856404;font-size:12px;">ก่อน <strong style="color:#dc3545;"><?= $dl_str ?></strong>
+                            <?php if ($dl_hours > 0): ?>
+                                <span style="background:#ffc107;color:#856404;font-size:11px;padding:1px 7px;border-radius:8px;font-weight:600;margin-left:4px;">เหลือ <?= $dl_hours ?> ชม.</span>
+                            <?php else: ?>
+                                <span style="background:#dc3545;color:#fff;font-size:11px;padding:1px 7px;border-radius:8px;font-weight:600;margin-left:4px;">เกินกำหนด</span>
+                            <?php endif; ?>
+                            </div>
+                        </div>
+                        <?php } ?>
                         <a href="../payment.php?id=<?= $request['id'] ?>"
                             class="btn btn-primary w-100 mt-3 py-2 fw-bold shadow-sm">
                             <i class="bi bi-qr-code me-2"></i> ชำระเงิน

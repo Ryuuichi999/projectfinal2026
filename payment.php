@@ -476,6 +476,32 @@ $qr_url = "https://promptpay.io/{$promptpay_id}/{$amount}.png";
             <div class="pay-ref-badge"><?= htmlspecialchars($request['request_no'] ?? '#'.$request_id) ?></div>
         </div>
 
+        <!-- Deadline 24 ชม. -->
+        <?php
+        $wp_stmt = $conn->prepare("SELECT created_at FROM request_logs WHERE request_id = ? AND action = 'waiting_payment' ORDER BY created_at DESC LIMIT 1");
+        $wp_stmt->bind_param("i", $request_id);
+        $wp_stmt->execute();
+        $wp_row = $wp_stmt->get_result()->fetch_assoc();
+        $wp_stmt->close();
+        if ($wp_row) {
+            $deadline_ts = strtotime($wp_row['created_at'] . ' +24 hours');
+            $hours_left = max(0, round(($deadline_ts - time()) / 3600, 1));
+            $deadline_str = date('d/m/Y H:i น.', $deadline_ts);
+        ?>
+        <div style="background:#fff8e1;border-left:4px solid #ffc107;border-radius:8px;padding:14px 18px;margin-bottom:18px;display:flex;align-items:center;gap:12px;">
+            <div style="flex:1;">
+                <div style="font-weight:600;color:#856404;font-size:14px;margin-bottom:4px;">กรุณาชำระภายใน 24 ชั่วโมง</div>
+                <div style="color:#856404;font-size:13px;">ต้องชำระก่อน <strong style="color:#dc3545;"><?= $deadline_str ?></strong>
+                <?php if ($hours_left > 0): ?>
+                    <span style="background:#ffc107;color:#856404;font-size:12px;padding:2px 8px;border-radius:10px;font-weight:600;margin-left:6px;">เหลือ <?= $hours_left ?> ชม.</span>
+                <?php else: ?>
+                    <span style="background:#dc3545;color:#fff;font-size:12px;padding:2px 8px;border-radius:10px;font-weight:600;margin-left:6px;">เกินกำหนดแล้ว</span>
+                <?php endif; ?>
+                </div>
+            </div>
+        </div>
+        <?php } ?>
+
         <!-- Error Alert -->
         <?php if (isset($error)): ?>
         <div class="pay-alert-error">
