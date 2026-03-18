@@ -474,7 +474,7 @@ $showLoggedOutAlert = isset($_GET['logged_out']) && $_GET['logged_out'] === '1';
                             <i class="bi bi-cash-coin"></i>
                         </div>
                         <h4 class="step-title">ชำระค่าธรรมเนียม</h4>
-                        <p class="step-desc">ชำระค่าธรรมเนียม 100-200 บาท/ป้าย (ตามประเภทการใช้งาน) ผ่าน QR PromptPay</p>
+                        <p class="step-desc">ชำระค่าธรรมเนียม 200 บาท/ป้าย ผ่าน QR PromptPay</p>
                     </div>
                 </div>
                 <div class="col-xl-3 col-lg-3 col-md-6" data-aos="fade-up" data-aos-delay="400">
@@ -484,7 +484,7 @@ $showLoggedOutAlert = isset($_GET['logged_out']) && $_GET['logged_out'] === '1';
                             <i class="bi bi-file-earmark-check-fill"></i>
                         </div>
                         <h4 class="step-title">รับใบอนุญาต</h4>
-                        <p class="step-desc">รับใบเสร็จและรับหนังสืออนุญาต (แบบ ร.ส. ๒) ทางระบบออนไลน์ </p>
+                        <p class="step-desc">ดาวน์โหลดใบเสร็จ, ดาวน์โหลดใบอนุญาตและสติกเกอร์ป้ายโฆษณา ทางระบบออนไลน์</p>
                     </div>
                 </div>
             </div>
@@ -601,7 +601,7 @@ $showLoggedOutAlert = isset($_GET['logged_out']) && $_GET['logged_out'] === '1';
                                 </div>
                                 <div class="doc-content">
                                     <h6>ขนาดป้ายที่อนุญาต</h6>
-                                    <p>ป้ายชั่วคราว (ผ้าใบ/ไวนิล/ไม้อัด) ขนาดไม่เกิน <b>1.20 × 2.40 </b></p>
+                                    <p>ป้ายไวนิล/ผ้าใบ: ไม่เกิน <b>0.60 × 1.20 เมตร</b><br>ป้ายไม้อัด: ไม่เกิน <b>2.40 × 1.20 เมตร</b></p>
                                 </div>
                             </div>
                             <div class="doc-item">
@@ -610,7 +610,7 @@ $showLoggedOutAlert = isset($_GET['logged_out']) && $_GET['logged_out'] === '1';
                                 </div>
                                 <div class="doc-content">
                                     <h6>ยื่นล่วงหน้าก่อนติดตั้ง</h6>
-                                    <p>ต้องยื่นคำขออนุญาต<b>ก่อนวันติดตั้งไม่น้อยกว่า 7 วัน</b> ตามข้อ 8.1 ของระเบียบ และเมื่อครบกำหนดต้องรื้อถอนภายใน 7 วัน</p>
+                                    <p><b>กรุณายื่นคำร้องขออนุญาตก่อน 7 วัน</b> และเมื่อครบกำหนดต้องรื้อถอนภายใน 7 วัน</p>
                                 </div>
                             </div>
                             <div class="doc-item">
@@ -619,7 +619,7 @@ $showLoggedOutAlert = isset($_GET['logged_out']) && $_GET['logged_out'] === '1';
                                 </div>
                                 <div class="doc-content">
                                     <h6>สถานที่ที่ห้ามติดตั้ง</h6>
-                                    <p>ห้ามติดตั้งบน เกาะกลางถนน ต้นไม้ รั้วริมถนน ป้ายจราจร สัญญาณไฟ ป้ายราชการ ศาลาผู้โดยสาร อาคารราชการ สถานศึกษา วัด โบสถ์ มัสยิด และสถานที่ศักดิ์สิทธิ์</p>
+                                    <p>ห้ามติดตั้งบน เกาะกลางถนน ต้นไม้ รั้วริมทาง ป้ายจราจร สัญญาณไฟ ป้ายราชการ ศาลารอรถ อาคารราชการ สถานศึกษา วัด และสถานที่ศักดิ์สิทธิ์</p>
                                 </div>
                             </div>
                             <div class="doc-item">
