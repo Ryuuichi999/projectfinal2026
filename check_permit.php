@@ -61,7 +61,7 @@ $status_labels = [
     'approved'           => 'อนุมัติแล้ว',
     'rejected'           => 'ไม่อนุมัติ',
     'expired'            => 'หมดอายุ',
-    'cancelled_payment'  => 'ยกเลิก (ไม่ชำระเงิน)',
+    'cancelled_payment'  => 'ยกเลิก',
 ];
 
 if ($request['status'] == 'approved') {

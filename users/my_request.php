@@ -231,7 +231,7 @@ if (!isset($_SESSION['user_id'])) {
                                 <option value="อนุมัติแล้ว">อนุมัติแล้ว</option>
                                 <option value="ไม่อนุมัติ">ไม่อนุมัติ</option>
                                 <option value="หมดอายุ">หมดอายุ</option>
-                                <option value="ยกเลิก">ยกเลิก (ไม่ชำระเงิน)</option>
+                                <option value="ยกเลิก">ยกเลิก</option>
                             </select>
                         </div>`;
                     

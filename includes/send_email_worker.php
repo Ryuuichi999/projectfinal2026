@@ -51,7 +51,7 @@ function worker_status_label($s) {
         'approved' => 'อนุมัติเรียบร้อย',
         'rejected' => 'ไม่ผ่านการพิจารณา',
         'expired' => 'ใบอนุญาตหมดอายุ',
-        'cancelled_payment' => 'ยกเลิก (ไม่ชำระเงิน)',
+        'cancelled_payment' => 'ยกเลิก',
     ];
     return $map[$s] ?? $s;
 }

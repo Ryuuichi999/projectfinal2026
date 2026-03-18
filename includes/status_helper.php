@@ -46,7 +46,7 @@ if (!function_exists('get_status_badge')) {
                 break;
             case 'cancelled_payment':
                 $bg = '#f9fafb'; $color = '#6b7280'; $icon = 'bi-x-circle';
-                $text = 'ยกเลิก (ไม่ชำระเงิน)';
+                $text = 'ยกเลิก';
                 break;
             case '':
             case null:

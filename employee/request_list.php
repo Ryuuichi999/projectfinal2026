@@ -251,7 +251,7 @@ $("div.statusFilter").html(`
 <option value="approved">อนุมัติแล้ว</option>
 <option value="rejected">ไม่อนุมัติ</option>
 <option value="expired">หมดอายุ</option>
-<option value="cancelled_payment">ยกเลิก (ไม่ชำระเงิน)</option>
+<option value="cancelled_payment">ยกเลิก</option>
 </select>
 </div>
 `);

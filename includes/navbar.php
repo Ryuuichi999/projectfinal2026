@@ -54,7 +54,7 @@ if ($userId && $role === 'user') {
         elseif ($status === 'expired')
             $label = 'หมดอายุ';
         elseif ($status === 'cancelled_payment')
-            $label = 'ยกเลิก (ไม่ชำระเงิน)';
+            $label = 'ยกเลิก';
         $notifItems[] = ['id' => (int) $row['id'], 'label' => $label, 'date' => $row['created_at']];
     }
     $currentCount = count($notifItems);

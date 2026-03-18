@@ -54,7 +54,7 @@ if ($userId && $role === 'user') {
         elseif ($status === 'expired')
             $label = 'หมดอายุ';
         elseif ($status === 'cancelled_payment')
-            $label = 'ยกเลิก (ไม่ชำระเงิน)';
+            $label = 'ยกเลิก';
 
         $requestNo = $row['request_no'] ? $row['request_no'] : '#' . $row['id'];
         $notifItems[] = ['id' => (int) $row['id'], 'request_no' => $requestNo, 'label' => $label, 'date' => $row['created_at']];

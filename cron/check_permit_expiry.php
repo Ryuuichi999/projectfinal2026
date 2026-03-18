@@ -95,8 +95,10 @@ $sql_warning = "SELECT sr.id, sr.email, sr.applicant_name, sr.sign_type, sr.fee,
                        sr.duration_days, sr.permit_date, sr.created_at, sr.road_name, sr.end_date,
                        sr.request_no
                 FROM sign_requests sr
+                LEFT JOIN request_logs rl ON rl.request_id = sr.id AND rl.action = 'expiry_warning'
                 WHERE sr.status = 'approved'
-                AND sr.end_date = ?";
+                AND sr.end_date = ?
+                AND rl.id IS NULL";
 
 $stmt_warn = $conn->prepare($sql_warning);
 $stmt_warn->bind_param("s", $warn_date);
@@ -135,8 +137,10 @@ $sql_followup = "SELECT sr.id, sr.email, sr.applicant_name, sr.sign_type, sr.fee
                        sr.duration_days, sr.permit_date, sr.created_at, sr.road_name, sr.end_date,
                        sr.request_no
                 FROM sign_requests sr
+                LEFT JOIN request_logs rl ON rl.request_id = sr.id AND rl.action = 'followup_expired'
                 WHERE sr.status = 'expired'
-                AND sr.end_date = ?";
+                AND sr.end_date = ?
+                AND rl.id IS NULL";
 
 $stmt_followup = $conn->prepare($sql_followup);
 $stmt_followup->bind_param("s", $followup_date);
