@@ -422,7 +422,7 @@ $unique_roads = count(array_filter(array_unique(array_column($approved_signs, 'r
                 });
 
                 var popupHtml = '<div style="min-width:180px;font-family:Sarabun,sans-serif;">'
-                    + '<div style="font-weight:700;font-size:0.95rem;color:#1a202c;margin-bottom:6px;">คำขอ #' + sign.id + '</div>'
+                    + '<div style="font-weight:700;font-size:0.95rem;color:#1a202c;margin-bottom:6px;">' + sign.type + ' — ' + sign.road + '</div>'
                     + '<div style="display:flex;flex-direction:column;gap:3px;font-size:0.85rem;">'
                     + '<div><span style="color:#64748b;">ประเภท:</span> <b>' + sign.type + '</b></div>'
                     + '<div><span style="color:#64748b;">ขนาด:</span> ' + sign.size + '</div>'

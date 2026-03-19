@@ -496,6 +496,11 @@ if ($result_signs && $result_signs->num_rows > 0) {
                     <label class="form-label small text-muted">ปักหมุดตำแหน่งหลัก (เพื่อการอ้างอิงพิกัด GPS)</label>
                     <div id="selectMap"></div>
                     <div class="d-flex gap-2 mt-2 align-items-center flex-wrap">
+                        <div class="flex-shrink-0">
+                            <button type="button" id="btnGPS" class="btn btn-outline-primary btn-sm" onclick="getMyLocation()">
+                                <i class="bi bi-crosshair me-1"></i>ตำแหน่งปัจจุบัน
+                            </button>
+                        </div>
                         <div class="col-md-5">
                             <div class="input-group input-group-sm">
                                 <span class="input-group-text">Lat</span>
@@ -640,6 +645,15 @@ if ($result_signs && $result_signs->num_rows > 0) {
             };
             var layerControl = L.control.layers(baseLayers, {}, { collapsed: true }).addTo(map);
 
+            // === Road Layer ===
+            fetch('../data/road_sila.geojson')
+                .then(function(r) { return r.json(); })
+                .then(function(data) {
+                    var roadLayer = L.geoJSON(data, { style: { color: '#f59e0b', weight: 3 } }).addTo(map);
+                    layerControl.addOverlay(roadLayer, "เส้นทางถนน");
+                })
+                .catch(function(e) { console.error('Road error:', e); });
+
             // === Map Search (Geocoder) ===
             L.Control.geocoder({
                 defaultMarkType: 'L.marker',
@@ -767,6 +781,40 @@ if ($result_signs && $result_signs->num_rows > 0) {
             document.getElementById('lat').addEventListener('change', updateMapFromInput);
 
             document.getElementById('lng').addEventListener('change', updateMapFromInput);
+
+            // === GPS: ดึงตำแหน่งปัจจุบันของผู้ใช้ ===
+            window.getMyLocation = function() {
+                var btn = document.getElementById('btnGPS');
+                if (!navigator.geolocation) {
+                    Toast.fire({ icon: 'error', title: 'เบราว์เซอร์ไม่รองรับ GPS' });
+                    return;
+                }
+                btn.disabled = true;
+                btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span>กำลังหาตำแหน่ง...';
+                navigator.geolocation.getCurrentPosition(
+                    function(pos) {
+                        var latlng = L.latLng(pos.coords.latitude, pos.coords.longitude);
+                        map.setView(latlng, 16);
+                        placeMarker(latlng);
+                        btn.disabled = false;
+                        btn.innerHTML = '<i class="bi bi-crosshair me-1"></i>ตำแหน่งปัจจุบัน';
+                        if (!checkBoundary(latlng.lat, latlng.lng)) {
+                            var hint = document.getElementById('roadHint');
+                            if (hint) { hint.textContent = "อยู่นอกเขตเทศบาล"; hint.className = "badge bg-danger"; }
+                            Toast.fire({ icon: 'warning', title: 'พิกัดอยู่นอกเขตเทศบาล' });
+                        } else {
+                            var hint = document.getElementById('roadHint');
+                            if (hint) { hint.textContent = "GPS ตำแหน่งปัจจุบัน"; hint.className = "badge bg-success"; }
+                        }
+                    },
+                    function(err) {
+                        btn.disabled = false;
+                        btn.innerHTML = '<i class="bi bi-crosshair me-1"></i>ตำแหน่งปัจจุบัน';
+                        Toast.fire({ icon: 'error', title: 'ไม่สามารถเข้าถึง GPS ได้ กรุณาอนุญาตสิทธิ์ตำแหน่ง' });
+                    },
+                    { enableHighAccuracy: true, timeout: 10000 }
+                );
+            };
 
             // === ขนาดสูงสุดตามประเภทป้าย ===
             var dimLimits = {
