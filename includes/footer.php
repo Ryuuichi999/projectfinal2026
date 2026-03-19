@@ -47,15 +47,18 @@
 </footer>
 
 <!-- Cookie Consent Banner -->
-<div id="cookieConsent" style="display:none; position:fixed; bottom:0; left:0; right:0; z-index:9999; background:rgba(15,23,42,0.95); backdrop-filter:blur(10px); padding:16px 24px; box-shadow:0 -4px 20px rgba(0,0,0,0.15);">
+<div id="cookieConsent" style="display:none; position:fixed; bottom:0; left:0; right:0; z-index:9999; background:rgba(15,23,42,0.95); backdrop-filter:blur(10px); padding:14px 24px; box-shadow:0 -4px 20px rgba(0,0,0,0.15);">
     <div class="container d-flex flex-wrap align-items-center justify-content-between gap-3">
-        <div class="d-flex align-items-center gap-3 text-white" style="flex:1; min-width:280px;">
-            <i class="bi bi-cookie" style="font-size:1.5rem; color:#f59e0b;"></i>
+        <div class="d-flex align-items-center gap-3 text-white" style="flex:1; min-width:240px;">
+            <i class="bi bi-cookie" style="font-size:1.5rem; color:#f59e0b; flex-shrink:0;"></i>
             <p class="mb-0 small" style="line-height:1.5;">เว็บไซต์นี้ใช้คุกกี้ที่จำเป็นสำหรับการทำงานของระบบเท่านั้น (Session Cookie) เราไม่ใช้คุกกี้เพื่อการติดตามหรือโฆษณา
                 <a href="<?= BASE_URL ?>/privacy_policy.php" class="text-info text-decoration-none fw-semibold">อ่านนโยบาย PDPA</a>
             </p>
         </div>
-        <button onclick="acceptCookies()" class="btn btn-primary btn-sm px-4 py-2 rounded-pill fw-semibold" style="white-space:nowrap;"><i class="bi bi-check-lg me-1"></i>ยอมรับ</button>
+        <div class="d-flex align-items-center gap-2" style="flex-shrink:0;">
+            <button onclick="acceptCookies()" class="btn btn-primary btn-sm px-4 py-2 rounded-pill fw-semibold" style="white-space:nowrap;"><i class="bi bi-check-lg me-1"></i>ยอมรับ</button>
+            <button onclick="acceptCookies()" class="btn btn-outline-light btn-sm px-2 py-2 rounded-circle" style="width:34px; height:34px; line-height:1;" title="ปิด"><i class="bi bi-x-lg"></i></button>
+        </div>
     </div>
 </div>
 <script>
@@ -66,6 +69,10 @@
 })();
 function acceptCookies() {
     localStorage.setItem('cookie_consent', '1');
-    document.getElementById('cookieConsent').style.display = 'none';
+    var el = document.getElementById('cookieConsent');
+    el.style.transition = 'opacity 0.3s, transform 0.3s';
+    el.style.opacity = '0';
+    el.style.transform = 'translateY(20px)';
+    setTimeout(function() { el.style.display = 'none'; }, 300);
 }
 </script>
