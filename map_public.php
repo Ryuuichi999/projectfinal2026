@@ -123,7 +123,7 @@ $unique_roads = count(array_filter(array_unique(array_column($approved_signs, 'r
             background: white;
             padding: 12px 16px;
             border-radius: 8px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
             z-index: 1000;
             font-size: 0.85rem;
         }
@@ -144,6 +144,14 @@ $unique_roads = count(array_filter(array_unique(array_column($approved_signs, 'r
             width: 100%;
             border-radius: 12px;
             border: 1px solid #e2e8f0;
+        }
+
+        .legend-title {
+            font-weight: 700;
+            color: #1f2937;
+            margin-bottom: 8px;
+            padding-bottom: 6px;
+            border-bottom: 1px solid #e5e7eb;
         }
 
         .search-box {
@@ -327,18 +335,24 @@ $unique_roads = count(array_filter(array_unique(array_column($approved_signs, 'r
                 <div class="map-panel">
                     <div id="mapid">
                         <div class="map-legend">
+
+                            <div class="legend-title">คำอธิบายสัญลักษณ์</div>
+
                             <div class="legend-item">
                                 <div style="width:16px;height:16px;background:#16a34a;border-radius:4px;"></div>
                                 <span>ป้ายที่อนุมัติ</span>
                             </div>
-                            <div class="legend-item">
-                                <div style="width:16px;height:3px;background:#dc2626;border-radius:2%;"></div>
-                                <span>ขอบเขตเทศบาล</span>
-                            </div>
+
                             <div class="legend-item">
                                 <div style="width:16px;height:3px;background:#f59e0b;border-radius:2px;"></div>
-                                <span>เส้นทางถนน</span>
+                                <span>เส้นถนน</span>
                             </div>
+
+                            <div class="legend-item">
+                                <div style="width:16px;height:3px;background:#dc2626;border-radius:2px;"></div>
+                                <span>เส้นขอบเขต</span>
+                            </div>
+
                         </div>
                     </div>
                 </div>
