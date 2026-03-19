@@ -70,16 +70,31 @@ while ($r = $resExp->fetch_assoc()) {
 
 // 5. รอชำระเงิน
 $wpRows = [];
-$wp_sql = "SELECT id, request_no, sign_type, road_name, width, height, quantity,
-    (quantity * 200) as fee, created_at
-    FROM sign_requests
-    WHERE user_id = ? AND status = 'waiting_payment'
-    ORDER BY created_at DESC";
+$wp_sql = "SELECT sr.id, sr.request_no, sr.sign_type, sr.road_name, sr.width, sr.height, sr.quantity,
+    (sr.quantity * 200) as fee, sr.created_at,
+    COALESCE(rl.created_at, sr.created_at) as payment_started_at,
+    DATE_ADD(COALESCE(rl.created_at, sr.created_at), INTERVAL 24 HOUR) as payment_deadline
+    FROM sign_requests sr
+    LEFT JOIN (
+        SELECT request_id, MAX(created_at) AS created_at
+        FROM request_logs
+        WHERE action = 'waiting_payment'
+        GROUP BY request_id
+    ) rl ON rl.request_id = sr.id
+    WHERE sr.user_id = ? AND sr.status = 'waiting_payment'
+    ORDER BY sr.created_at DESC";
 $stmtWP = $conn->prepare($wp_sql);
 $stmtWP->bind_param("i", $user_id);
 $stmtWP->execute();
 $resWP = $stmtWP->get_result();
 while ($r = $resWP->fetch_assoc()) {
+    // คำนวณเวลาที่เหลือในการชำระเงิน (เป็นชั่วโมง) — นับจากเวลาที่เปลี่ยนเป็น waiting_payment
+    $deadline = new DateTime($r['payment_deadline']);
+    $now = new DateTime();
+    $interval = $now->diff($deadline);
+    $hours_remaining = ($interval->days * 24) + $interval->h;
+    $r['hours_remaining'] = max(0, $hours_remaining);
+    $r['days_remaining'] = max(0, ceil($hours_remaining / 24));
     $wpRows[] = $r;
 }
 
@@ -467,35 +482,37 @@ function thaiDateShort($dateStr, $months)
             </div>
         </div>
 
-        <!-- Recent Requests (paginated) -->
-        <div class="recent-section">
-            <div class="section-header">
-                <h4><i class="bi bi-file-earmark-text me-2"></i>คำร้องล่าสุด</h4>
-                <a href="my_request.php" class="view-all-link">ดูทั้งหมด <i class="bi bi-arrow-right"></i></a>
-            </div>
-
-            <div id="recentCardsList"></div>
-
-            <div class="d-flex justify-content-between align-items-center mt-3 flex-wrap gap-2">
-                <div class="d-flex align-items-center gap-2 flex-wrap">
-                    <label class="small text-muted mb-0">แสดง</label>
-                    <select id="recentPageSize" class="form-select form-select-sm" style="width:70px;">
-                        <option value="5" selected>5</option>
-                        <option value="10">10</option>
-                        <option value="15">15</option>
-                    </select>
-                    <label class="small text-muted mb-0">รายการ</label>
-                    <div id="recentPageInfo" class="small text-muted"></div>
+        <!-- Waiting Payment (paginated) -->
+        <?php if (!empty($wpRows)): ?>
+            <div class="recent-section" style="border-left: 4px solid #ffc107;">
+                <div class="section-header">
+                    <h4><i class="bi bi-credit-card text-warning me-2"></i>รอชำระเงิน</h4>
+                    <span class="badge bg-warning text-dark"><?= count($wpRows) ?> รายการ</span>
                 </div>
 
-                <div class="d-flex gap-2">
-                    <button id="recentPrev" class="btn btn-outline-secondary btn-sm"><i
-                            class="bi bi-chevron-left"></i></button>
-                    <button id="recentNext" class="btn btn-outline-secondary btn-sm"><i
-                            class="bi bi-chevron-right"></i></button>
+                <div id="wpCardsList"></div>
+
+                <div class="d-flex justify-content-between align-items-center mt-3 flex-wrap gap-2">
+                    <div class="d-flex align-items-center gap-2 flex-wrap">
+                        <label class="small text-muted mb-0">แสดง</label>
+                        <select id="wpPageSize" class="form-select form-select-sm" style="width:70px;">
+                            <option value="5" selected>5</option>
+                            <option value="10">10</option>
+                            <option value="15">15</option>
+                        </select>
+                        <label class="small text-muted mb-0">รายการ</label>
+                        <div id="wpPageInfo" class="small text-muted"></div>
+                    </div>
+
+                    <div class="d-flex gap-2">
+                        <button id="wpPrev" class="btn btn-outline-secondary btn-sm"><i
+                                class="bi bi-chevron-left"></i></button>
+                        <button id="wpNext" class="btn btn-outline-secondary btn-sm"><i
+                                class="bi bi-chevron-right"></i></button>
+                    </div>
                 </div>
             </div>
-        </div>
+        <?php endif; ?>
 
         <!-- Expiring Permits (paginated) -->
         <?php if (!empty($expiringRows)): ?>
@@ -529,37 +546,35 @@ function thaiDateShort($dateStr, $months)
             </div>
         <?php endif; ?>
 
-        <!-- Waiting Payment (paginated) -->
-        <?php if (!empty($wpRows)): ?>
-            <div class="recent-section" style="border-left: 4px solid #ffc107;">
-                <div class="section-header">
-                    <h4><i class="bi bi-credit-card text-warning me-2"></i>รอชำระเงิน</h4>
-                    <span class="badge bg-warning text-dark"><?= count($wpRows) ?> รายการ</span>
+        <!-- Recent Requests (paginated) -->
+        <div class="recent-section">
+            <div class="section-header">
+                <h4><i class="bi bi-file-earmark-text me-2"></i>คำร้องล่าสุด</h4>
+                <a href="my_request.php" class="view-all-link">ดูทั้งหมด <i class="bi bi-arrow-right"></i></a>
+            </div>
+
+            <div id="recentCardsList"></div>
+
+            <div class="d-flex justify-content-between align-items-center mt-3 flex-wrap gap-2">
+                <div class="d-flex align-items-center gap-2 flex-wrap">
+                    <label class="small text-muted mb-0">แสดง</label>
+                    <select id="recentPageSize" class="form-select form-select-sm" style="width:70px;">
+                        <option value="5" selected>5</option>
+                        <option value="10">10</option>
+                        <option value="15">15</option>
+                    </select>
+                    <label class="small text-muted mb-0">รายการ</label>
+                    <div id="recentPageInfo" class="small text-muted"></div>
                 </div>
 
-                <div id="wpCardsList"></div>
-
-                <div class="d-flex justify-content-between align-items-center mt-3 flex-wrap gap-2">
-                    <div class="d-flex align-items-center gap-2 flex-wrap">
-                        <label class="small text-muted mb-0">แสดง</label>
-                        <select id="wpPageSize" class="form-select form-select-sm" style="width:70px;">
-                            <option value="5" selected>5</option>
-                            <option value="10">10</option>
-                            <option value="15">15</option>
-                        </select>
-                        <label class="small text-muted mb-0">รายการ</label>
-                        <div id="wpPageInfo" class="small text-muted"></div>
-                    </div>
-
-                    <div class="d-flex gap-2">
-                        <button id="wpPrev" class="btn btn-outline-secondary btn-sm"><i
-                                class="bi bi-chevron-left"></i></button>
-                        <button id="wpNext" class="btn btn-outline-secondary btn-sm"><i
-                                class="bi bi-chevron-right"></i></button>
-                    </div>
+                <div class="d-flex gap-2">
+                    <button id="recentPrev" class="btn btn-outline-secondary btn-sm"><i
+                            class="bi bi-chevron-left"></i></button>
+                    <button id="recentNext" class="btn btn-outline-secondary btn-sm"><i
+                            class="bi bi-chevron-right"></i></button>
                 </div>
             </div>
-        <?php endif; ?>
+        </div>
 
         <!-- Expired Permits -->
         <?php if (!empty($expiredRows)): ?>
@@ -790,7 +805,10 @@ function thaiDateShort($dateStr, $months)
                         'road' => $r['road_name'],
                         'size' => $r['width'] . 'x' . $r['height'] . ' ม.',
                         'fee' => (int) $r['fee'],
-                        'date' => thaiDateShort($r['created_at'], $thaiMonths)
+                        'date' => thaiDateShort($r['created_at'], $thaiMonths),
+                        'hours_remaining' => (int) $r['hours_remaining'],
+                        'days_remaining' => (int) $r['days_remaining'],
+                        'deadline' => thaiDateShort($r['payment_deadline'], $thaiMonths)
                     ];
                 }, $wpRows)) ?>;
 
@@ -802,18 +820,32 @@ function thaiDateShort($dateStr, $months)
                     prevId: 'wpPrev',
                     nextId: 'wpNext',
                     renderItem: function (r) {
+                        // กำหนดสี badge ตามเวลาที่เหลือ
+                        var badgeClass = 'bg-warning text-dark';
+                        var timeText = 'รอชำระ';
+                        
+                        if (r.hours_remaining <= 24) {
+                            badgeClass = 'bg-danger';
+                            timeText = 'เหลือ ' + r.hours_remaining + ' ชม.';
+                        } else if (r.days_remaining <= 2) {
+                            badgeClass = 'bg-warning text-dark';
+                            timeText = 'เหลือ ' + r.days_remaining + ' วัน';
+                        } else {
+                            timeText = 'เหลือ ' + r.days_remaining + ' วัน';
+                        }
+                        
                         return '<a href="request_detail.php?id=' + r.id + '" class="request-item">'
                             + '<div class="request-item-icon" style="background:#fff7ed; color:#f59e0b;">'
                             + '<i class="bi bi-credit-card"></i></div>'
                             + '<div class="request-item-content">'
                             + '<div class="request-item-title">'
                             + '<span class="request-item-id">' + r.request_no + '</span>'
-                            + '<span class="badge bg-warning text-dark">รอชำระ</span>'
+                            + '<span class="badge ' + badgeClass + '">' + timeText + '</span>'
                             + '</div>'
                             + '<div class="request-item-info">' + r.sign_type + ' — ' + r.road + ' (' + r.size + ')</div>'
                             + '<div class="request-item-meta">'
                             + '<div class="meta-unit"><i class="bi bi-cash-stack"></i> ค่าธรรมเนียม: ฿' + r.fee.toLocaleString() + '</div>'
-                            + '<div class="meta-unit"><i class="bi bi-calendar3"></i> ' + r.date + '</div>'
+                            + '<div class="meta-unit"><i class="bi bi-calendar-x"></i> กำหนดชำระ: ' + r.deadline + '</div>'
                             + '</div>'
                             + '</div>'
                             + '<i class="bi bi-chevron-right text-muted"></i>'
