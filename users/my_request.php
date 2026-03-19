@@ -155,6 +155,9 @@ if (!isset($_SESSION['user_id'])) {
                                                         <li><a class='dropdown-item' href='view_sticker.php?id={$row['id']}' target='_blank'><i class='bi bi-patch-check-fill text-warning me-2'></i>สติกเกอร์</a></li>
                                                     </ul>
                                                 </div>";
+                                            } elseif ($row['status'] == 'waiting_permit' && !empty($row['receipt_no'])) {
+                                                // มีใบเสร็จแล้ว แต่ยังไม่มีใบอนุญาต → แสดงปุ่มใบเสร็จอย่างเดียว
+                                                echo "<a href='view_receipt.php?id={$row['id']}' target='_blank' class='btn btn-outline-success btn-sm px-2' data-bs-toggle='tooltip' title='ใบเสร็จรับเงิน'><i class='bi bi-receipt'></i></a>";
                                             }
                                             if ($row['status'] == 'waiting_payment') {
                                                 echo "<a href='../payment.php?id={$row['id']}' class='btn btn-primary btn-sm px-2' data-bs-toggle='tooltip' title='ชำระเงิน'><i class='bi bi-qr-code'></i></a>";

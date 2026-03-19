@@ -29,7 +29,7 @@ if (!$request || ($request['user_id'] != $user_id && !in_array($role, ['admin', 
     exit;
 }
 
-if (!in_array($request['status'], ['approved', 'expired'])) {
+if (!in_array($request['status'], ['approved', 'expired', 'waiting_permit'])) {
     $_SESSION['flash_error'] = 'ใบเสร็จยังไม่พร้อมใช้งาน';
     header('Location: my_request.php');
     exit;
