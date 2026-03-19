@@ -12,44 +12,38 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'employee') {
 $role = $_SESSION['role'] ?? 'guest';
 $userId = isset($_SESSION['user_id']) ? (int) $_SESSION['user_id'] : 0;
 
-// ดึงข้อมูลคำร้องที่มีพิกัดและสถานะ เพื่อแสดงบนแผนที่
-// แสดงเฉพาะคำร้องที่อนุมัติแล้วและยังไม่หมดอายุ
-$approved_signs = [];
+// ดึงข้อมูลคำร้องที่มีพิกัด — ทุกสถานะยกเว้นยกเลิก
+$all_signs = [];
 $result_signs = $conn->query("SELECT id, request_no, location_lat, location_lng, sign_type, road_name, status, end_date 
     FROM sign_requests 
-    WHERE status = 'approved' 
-    AND location_lat IS NOT NULL AND location_lng IS NOT NULL");
+    WHERE status != 'cancelled_payment' 
+    AND location_lat IS NOT NULL AND location_lng IS NOT NULL
+    ORDER BY id DESC");
 if ($result_signs && $result_signs->num_rows > 0) {
     while ($row = $result_signs->fetch_assoc()) {
-        // กรองป้ายที่หมดอายุแล้วออก
-        if (!empty($row['end_date']) && $row['end_date'] < date('Y-m-d'))
-            continue;
-        $approved_signs[] = [
+        $all_signs[] = [
             'id' => (int) $row['id'],
             'request_no' => htmlspecialchars($row['request_no'] ?: ('req' . $row['id'])),
             'lat' => (float) $row['location_lat'],
             'lng' => (float) $row['location_lng'],
             'type' => htmlspecialchars($row['sign_type']),
             'road' => htmlspecialchars($row['road_name'] ?? ''),
-            'status' => 'approved'
+            'status' => $row['status']
         ];
     }
 }
 
-$approved_rows = [];
-$res_rows = $conn->query("SELECT r.id, r.request_no, r.sign_type, r.road_name, r.description, r.duration_days, r.end_date, r.permit_no, u.title_name, u.first_name, u.last_name 
+$all_rows = [];
+$res_rows = $conn->query("SELECT r.id, r.request_no, r.sign_type, r.road_name, r.description, r.duration_days, r.end_date, r.permit_no, r.status, u.title_name, u.first_name, u.last_name 
                           FROM sign_requests r 
                           JOIN users u ON r.user_id = u.id 
-                          WHERE r.status = 'approved' 
+                          WHERE r.status != 'cancelled_payment' 
                           AND r.location_lat IS NOT NULL AND r.location_lng IS NOT NULL
                           ORDER BY r.id DESC LIMIT 1000");
 if ($res_rows && $res_rows->num_rows > 0) {
     while ($row = $res_rows->fetch_assoc()) {
-        // กรองป้ายที่หมดอายุแล้วออก
-        if (!empty($row['end_date']) && $row['end_date'] < date('Y-m-d'))
-            continue;
         $expire_str = !empty($row['end_date']) ? date('d/m/Y', strtotime($row['end_date'])) : '';
-        $approved_rows[] = [
+        $all_rows[] = [
             'id' => (int) $row['id'],
             'request_no' => htmlspecialchars($row['request_no'] ?: ('req' . $row['id'])),
             'type' => htmlspecialchars($row['sign_type']),
@@ -58,10 +52,12 @@ if ($res_rows && $res_rows->num_rows > 0) {
             'name' => htmlspecialchars(($row['title_name'] ?? '') . $row['first_name'] . ' ' . $row['last_name']),
             'road' => htmlspecialchars($row['road_name'] ?? ''),
             'permit_no' => htmlspecialchars($row['permit_no'] ?? '-'),
-            'expire' => $expire_str
+            'expire' => $expire_str,
+            'status' => $row['status']
         ];
     }
 }
+
 ?>
 
 <!DOCTYPE html>
@@ -164,13 +160,7 @@ if ($res_rows && $res_rows->num_rows > 0) {
         <div class="card fade-in-up full-height-card">
             <div class="map-section-header">
                 <h2 class="mb-1" style="font-size: 1.6rem;">🗺️ แผนที่ข้อมูลพื้นที่</h2>
-                <p class="text-muted mb-3">แสดงขอบเขตตำแหน่งป้ายในเขต ทม.ศิลา</p>
-
-                <div class="d-flex align-items-center gap-2 flex-wrap mb-2">
-                    <span class="badge-legend" style="background-color: #16a34a; color: white;">🪧
-                        ป้ายที่อนุมัติแล้ว</span>
-                    <small class="text-muted">แสดงเฉพาะป้ายที่อนุมัติและยังไม่หมดอายุ</small>
-                </div>
+                <p class="text-muted mb-3">แสดงตำแหน่งคำร้องทุกสถานะในเขต ทม.ศิลา (ยกเว้นยกเลิก)</p>
             </div>
 
             <div class="row g-4">
@@ -180,12 +170,26 @@ if ($res_rows && $res_rows->num_rows > 0) {
 
                 <div class="col-12 mt-5">
                     <div class="list-card overflow-hidden">
-                        <div class="p-3 border-bottom d-flex align-items-center justify-content-between bg-light">
+                        <div class="p-3 border-bottom d-flex align-items-center justify-content-between flex-wrap gap-2 bg-light">
                             <h5 class="mb-0 fw-bold">📋 รายการคำร้องบนแผนที่</h5>
-                            <div class="input-group input-group-sm" style="width: 280px;">
-                                <span class="input-group-text bg-white border-end-0"><i class="bi bi-search"></i></span>
-                                <input id="searchInput" type="text" class="form-control border-start-0"
-                                    placeholder="ค้นหา ชื่อ/ที่อยู่/ประเภท...">
+                            <div class="d-flex align-items-center gap-2">
+                                <select id="statusFilter" class="form-select form-select-sm" style="width:180px;">
+                                    <option value="">ทุกสถานะ</option>
+                                    <option value="pending">รอพิจารณา</option>
+                                    <option value="reviewing">กำลังพิจารณา</option>
+                                    <option value="need_documents">ขอเอกสารเพิ่ม</option>
+                                    <option value="waiting_payment">รอชำระเงิน</option>
+                                    <option value="waiting_permit">รอออกใบอนุญาต</option>
+                                    <option value="waiting_receipt">รอออกใบเสร็จ</option>
+                                    <option value="approved">อนุมัติแล้ว</option>
+                                    <option value="rejected">ไม่อนุมัติ</option>
+                                    <option value="expired">หมดอายุ</option>
+                                </select>
+                                <div class="input-group input-group-sm" style="width: 250px;">
+                                    <span class="input-group-text bg-white border-end-0"><i class="bi bi-search"></i></span>
+                                    <input id="searchInput" type="text" class="form-control border-start-0"
+                                        placeholder="ค้นหา ชื่อ/ที่อยู่/ประเภท...">
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -198,6 +202,7 @@ if ($res_rows && $res_rows->num_rows > 0) {
                                         <th>ประเภทป้าย</th>
                                         <th>ถนน</th>
                                         <th>ชื่อผู้ขอ</th>
+                                        <th>สถานะ</th>
                                         <th>หมดอายุ</th>
                                     </tr>
                                 </thead>
@@ -215,7 +220,6 @@ if ($res_rows && $res_rows->num_rows > 0) {
 
                             <div id="pageInfo" class="text-muted small"></div>
                         </div>
-                        <div id="pageInfo" class="text-muted small"></div>
                         <nav aria-label="Page navigation">
                             <ul class="pagination pagination-sm mb-0">
                                 <li class="page-item"><button id="prevBtn" class="page-link"><i
@@ -239,12 +243,36 @@ if ($res_rows && $res_rows->num_rows > 0) {
 
     <script>
         document.addEventListener('DOMContentLoaded', function () {
-            const initialLat = 16.485;
-            const initialLng = 102.835;
-            const initialZoom = 13;
+            var initialLat = 16.485;
+            var initialLng = 102.835;
+            var initialZoom = 13;
+
+            // สีตามสถานะ
+            var statusColors = {
+                'pending': '#1d4ed8',
+                'reviewing': '#0369a1',
+                'need_documents': '#b45309',
+                'waiting_payment': '#dc2626',
+                'waiting_permit': '#7c3aed',
+                'waiting_receipt': '#0d9488',
+                'approved': '#16a34a',
+                'rejected': '#6b7280',
+                'expired': '#374151'
+            };
+
+            var statusLabels = {
+                'pending': 'รอพิจารณา',
+                'reviewing': 'กำลังพิจารณา',
+                'need_documents': 'ขอเอกสารเพิ่ม',
+                'waiting_payment': 'รอชำระเงิน',
+                'waiting_permit': 'รอออกใบอนุญาต',
+                'waiting_receipt': 'รอออกใบเสร็จ',
+                'approved': 'อนุมัติแล้ว',
+                'rejected': 'ไม่อนุมัติ',
+                'expired': 'หมดอายุ'
+            };
 
             if (typeof L === 'undefined') {
-                console.error("Leaflet library failed to load.");
                 document.getElementById('mapid').innerHTML = '<div class="alert alert-danger m-4">ไม่สามารถโหลดแผนที่ได้</div>';
                 return;
             }
@@ -273,32 +301,62 @@ if ($res_rows && $res_rows->num_rows > 0) {
                 "แผนที่ Dataviz": datavizStyle
             };
 
-            var approvedSigns = <?php echo json_encode($approved_signs); ?>;
-            var approvedList = <?php echo json_encode($approved_rows); ?>;
-            var markerDict = {}; // Store markers by ID for interactive zooming
+            var allSigns = <?php echo json_encode($all_signs); ?>;
+            var allList = <?php echo json_encode($all_rows); ?>;
+            var markerDict = {};
 
             var markers = L.markerClusterGroup();
-            var heatLayer = L.heatLayer(approvedSigns.map(s => [s.lat, s.lng, 0.6]), { radius: 20, blur: 15 });
+            var heatLayer = L.heatLayer(allSigns.map(function(s) { return [s.lat, s.lng, 0.6]; }), { radius: 20, blur: 15 });
 
-            approvedSigns.forEach(function (sign) {
-                if (sign.lat && sign.lng) {
-                    var markerColor = '#16a34a'; // สีเขียว (อนุมัติแล้ว)
+            allSigns.forEach(function (sign) {
+                if (!sign.lat || !sign.lng) return;
+                var color = statusColors[sign.status] || '#6b7280';
+                var label = statusLabels[sign.status] || sign.status;
 
-                    var customIcon = L.divIcon({
-                        className: 'custom-marker',
-                        html: '<div style="background-color: ' + markerColor + '; width: 28px; height: 28px; border-radius: 8px; border: 3px solid white; box-shadow: 0 3px 6px rgba(0,0,0,0.3); display: flex; align-items: center; justify-content: center; color: white; font-size: 14px;">🪧</div>',
-                        iconSize: [28, 28],
-                        iconAnchor: [14, 14]
-                    });
+                var customIcon = L.divIcon({
+                    className: 'custom-marker',
+                    html: '<div style="background-color:' + color + ';width:28px;height:28px;border-radius:8px;border:3px solid white;box-shadow:0 3px 6px rgba(0,0,0,0.3);display:flex;align-items:center;justify-content:center;color:white;font-size:14px;">🪧</div>',
+                    iconSize: [28, 28],
+                    iconAnchor: [14, 14]
+                });
 
-                    var m = L.marker([sign.lat, sign.lng], { icon: customIcon })
-                        .bindPopup("<b>เลขคำร้อง " + sign.request_no + "</b><br><b>ประเภท:</b> " + sign.type + "<br><b>ถนน:</b> " + (sign.road || '-') + "<br><b>สถานะ:</b> ✅ อนุมัติแล้ว");
+                var popupHtml = '<div style="font-family:Sarabun,sans-serif;min-width:180px;">'
+                    + '<div style="font-weight:700;font-size:0.95rem;margin-bottom:6px;">เลขคำร้อง ' + sign.request_no + '</div>'
+                    + '<div style="font-size:0.85rem;display:flex;flex-direction:column;gap:3px;">'
+                    + '<div><b>ประเภท:</b> ' + sign.type + '</div>'
+                    + '<div><b>ถนน:</b> ' + (sign.road || '-') + '</div>'
+                    + '<div><b>สถานะ:</b> <span style="background:' + color + ';color:white;padding:2px 8px;border-radius:4px;font-size:0.78rem;">' + label + '</span></div>'
+                    + '</div></div>';
 
-                    markers.addLayer(m);
-                    markerDict[sign.id] = m;
-                }
+                var m = L.marker([sign.lat, sign.lng], { icon: customIcon }).bindPopup(popupHtml);
+                markers.addLayer(m);
+                markerDict[sign.id] = m;
             });
             markers.addTo(mymap);
+
+            // Legend Control (ซ้ายล่าง)
+            var legend = L.control({ position: 'bottomleft' });
+            legend.onAdd = function () {
+                var div = L.DomUtil.create('div', 'map-legend');
+                div.style.background = 'white';
+                div.style.padding = '12px 16px';
+                div.style.borderRadius = '8px';
+                div.style.boxShadow = '0 2px 8px rgba(0,0,0,0.15)';
+                div.style.fontSize = '0.8rem';
+                div.style.lineHeight = '1.8';
+                var html = '<div style="font-weight:700;margin-bottom:4px;">สัญลักษณ์สถานะ</div>';
+                for (var key in statusLabels) {
+                    html += '<div style="display:flex;align-items:center;gap:8px;">'
+                        + '<div style="width:14px;height:14px;background:' + statusColors[key] + ';border-radius:4px;flex-shrink:0;"></div>'
+                        + '<span>' + statusLabels[key] + '</span></div>';
+                }
+                html += '<hr style="margin:6px 0;">';
+                html += '<div style="display:flex;align-items:center;gap:8px;"><div style="width:14px;height:3px;background:#dc2626;border-radius:2px;"></div><span>ขอบเขตเทศบาล</span></div>';
+                html += '<div style="display:flex;align-items:center;gap:8px;"><div style="width:14px;height:3px;background:#f59e0b;border-radius:2px;"></div><span>เส้นทางถนน</span></div>';
+                div.innerHTML = html;
+                return div;
+            };
+            legend.addTo(mymap);
 
             // Overlays
             var boundaryLayer = L.layerGroup();
@@ -312,14 +370,15 @@ if ($res_rows && $res_rows->num_rows > 0) {
             };
             L.control.layers(baseLayers, overlays, { collapsed: true, position: 'topright' }).addTo(mymap);
 
-            if (approvedSigns.length > 0) {
-                mymap.setView([approvedSigns[0].lat, approvedSigns[0].lng], 14);
+            if (allSigns.length > 0) {
+                var bounds = L.latLngBounds(allSigns.map(function(s) { return [s.lat, s.lng]; }));
+                mymap.fitBounds(bounds, { padding: [30, 30], maxZoom: 14 });
             }
 
             // Load Boundaries
             fetch('../data/sila.geojson')
-                .then(res => res.json())
-                .then(data => {
+                .then(function(res) { return res.json(); })
+                .then(function(data) {
                     L.geoJSON(data, {
                         style: { weight: 3, opacity: 1, color: '#dc2626', fillOpacity: 0.05, fillColor: '#dc2626' }
                     }).addTo(boundaryLayer);
@@ -328,27 +387,30 @@ if ($res_rows && $res_rows->num_rows > 0) {
 
             // Load Roads
             fetch('../data/road_sila.geojson')
-                .then(res => res.json())
-                .then(roads => {
+                .then(function(res) { return res.json(); })
+                .then(function(roads) {
                     L.geoJSON(roads, {
                         style: { color: '#f59e0b', weight: 4, opacity: 0.6 }
                     }).addTo(roadLayer);
                 });
             roadLayer.addTo(mymap);
 
-            // Table Rendering
+            // === Table with search, status filter & pagination ===
             var pageSizeEl = document.getElementById('pageSize');
             var searchEl = document.getElementById('searchInput');
+            var statusFilterEl = document.getElementById('statusFilter');
             var tbody = document.getElementById('tableBody');
-            var pageInfo = document.getElementById('pageInfo');
+            var pageInfoEl = document.getElementById('pageInfo');
             var prevBtn = document.getElementById('prevBtn');
             var nextBtn = document.getElementById('nextBtn');
             var page = 1;
 
             function filtered() {
                 var q = (searchEl.value || '').toLowerCase();
-                if (!q) return approvedList;
-                return approvedList.filter(function (r) {
+                var sf = statusFilterEl.value;
+                return allList.filter(function (r) {
+                    if (sf && r.status !== sf) return false;
+                    if (!q) return true;
                     return (r.request_no || '').toLowerCase().includes(q)
                         || (r.type || '').toLowerCase().includes(q)
                         || (r.name || '').toLowerCase().includes(q)
@@ -357,6 +419,12 @@ if ($res_rows && $res_rows->num_rows > 0) {
                         || (r.permit_no || '').toLowerCase().includes(q)
                         || (String(r.id)).includes(q);
                 });
+            }
+
+            function getStatusBadge(status) {
+                var color = statusColors[status] || '#6b7280';
+                var label = statusLabels[status] || status;
+                return '<span style="display:inline-flex;align-items:center;gap:4px;background:' + color + '20;color:' + color + ';font-size:.78rem;font-weight:600;padding:3px 10px;border-radius:6px;white-space:nowrap;">' + label + '</span>';
             }
 
             function render() {
@@ -373,11 +441,12 @@ if ($res_rows && $res_rows->num_rows > 0) {
                         + "<td>" + r.type + "</td>"
                         + "<td>" + (r.road || '-') + "</td>"
                         + "<td>" + (r.name || '-') + "</td>"
+                        + "<td>" + getStatusBadge(r.status) + "</td>"
                         + "<td>" + (r.expire || '-') + "</td>"
                         + "</tr>";
                 }).join('');
 
-                pageInfo.textContent = "กำลังแสดง " + (start + 1) + " ถึง " + Math.min(start + size, rows.length) + " จากทั้งหมด " + rows.length + " รายการ";
+                pageInfoEl.textContent = "กำลังแสดง " + (start + 1) + " ถึง " + Math.min(start + size, rows.length) + " จากทั้งหมด " + rows.length + " รายการ";
                 prevBtn.disabled = page <= 1;
                 nextBtn.disabled = page >= totalPages;
             }
@@ -392,11 +461,11 @@ if ($res_rows && $res_rows->num_rows > 0) {
 
             pageSizeEl.addEventListener('change', function () { page = 1; render(); });
             searchEl.addEventListener('input', function () { page = 1; render(); });
+            statusFilterEl.addEventListener('change', function () { page = 1; render(); });
             prevBtn.addEventListener('click', function () { if (page > 1) { page--; render(); } });
             nextBtn.addEventListener('click', function () {
                 var size = parseInt(pageSizeEl.value, 10);
-                var rows = filtered();
-                var totalPages = Math.max(1, Math.ceil(rows.length / size));
+                var totalPages = Math.max(1, Math.ceil(filtered().length / size));
                 if (page < totalPages) { page++; render(); }
             });
             render();
