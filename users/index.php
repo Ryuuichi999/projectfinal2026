@@ -64,7 +64,9 @@ $stmtExp->bind_param("i", $user_id);
 $stmtExp->execute();
 $resExp = $stmtExp->get_result();
 $expiringRows = [];
-while ($r = $resExp->fetch_assoc()) { $expiringRows[] = $r; }
+while ($r = $resExp->fetch_assoc()) {
+    $expiringRows[] = $r;
+}
 
 // 5. รอชำระเงิน
 $wpRows = [];
@@ -77,7 +79,9 @@ $stmtWP = $conn->prepare($wp_sql);
 $stmtWP->bind_param("i", $user_id);
 $stmtWP->execute();
 $resWP = $stmtWP->get_result();
-while ($r = $resWP->fetch_assoc()) { $wpRows[] = $r; }
+while ($r = $resWP->fetch_assoc()) {
+    $wpRows[] = $r;
+}
 
 // 6. คำร้องที่หมดอายุแล้ว
 $expired_sql = "SELECT id, request_no, sign_type, road_name,
@@ -90,13 +94,16 @@ $stmtExpired->bind_param("i", $user_id);
 $stmtExpired->execute();
 $expiredPermits = $stmtExpired->get_result();
 $expiredRows = [];
-while ($r = $expiredPermits->fetch_assoc()) { $expiredRows[] = $r; }
+while ($r = $expiredPermits->fetch_assoc()) {
+    $expiredRows[] = $r;
+}
 
 // Thai short month names
 $thaiMonths = [1 => 'ม.ค.', 'ก.พ.', 'มี.ค.', 'เม.ย.', 'พ.ค.', 'มิ.ย.', 'ก.ค.', 'ส.ค.', 'ก.ย.', 'ต.ค.', 'พ.ย.', 'ธ.ค.'];
-function thaiDateShort($dateStr, $months) {
+function thaiDateShort($dateStr, $months)
+{
     $ts = strtotime($dateStr);
-    return date('j', $ts) . ' ' . $months[(int)date('n', $ts)] . ' ' . (date('Y', $ts) + 543);
+    return date('j', $ts) . ' ' . $months[(int) date('n', $ts)] . ' ' . (date('Y', $ts) + 543);
 }
 
 ?>
@@ -464,76 +471,94 @@ function thaiDateShort($dateStr, $months) {
         <div class="recent-section">
             <div class="section-header">
                 <h4><i class="bi bi-file-earmark-text me-2"></i>คำร้องล่าสุด</h4>
-                <div class="d-flex align-items-center gap-2">
+                <a href="my_request.php" class="view-all-link">ดูทั้งหมด <i class="bi bi-arrow-right"></i></a>
+            </div>
+
+            <div id="recentCardsList"></div>
+
+            <div class="d-flex justify-content-between align-items-center mt-3 flex-wrap gap-2">
+                <div class="d-flex align-items-center gap-2 flex-wrap">
                     <label class="small text-muted mb-0">แสดง</label>
                     <select id="recentPageSize" class="form-select form-select-sm" style="width:70px;">
                         <option value="5" selected>5</option>
                         <option value="10">10</option>
                         <option value="15">15</option>
                     </select>
-                    <a href="my_request.php" class="view-all-link ms-2">ดูทั้งหมด <i class="bi bi-arrow-right"></i></a>
+                    <label class="small text-muted mb-0">รายการ</label>
+                    <div id="recentPageInfo" class="small text-muted"></div>
                 </div>
-            </div>
-            <div id="recentCardsList"></div>
-            <div class="d-flex justify-content-between align-items-center mt-3">
-                <div id="recentPageInfo" class="small text-muted"></div>
+
                 <div class="d-flex gap-2">
-                    <button id="recentPrev" class="btn btn-outline-secondary btn-sm"><i class="bi bi-chevron-left"></i></button>
-                    <button id="recentNext" class="btn btn-outline-secondary btn-sm"><i class="bi bi-chevron-right"></i></button>
+                    <button id="recentPrev" class="btn btn-outline-secondary btn-sm"><i
+                            class="bi bi-chevron-left"></i></button>
+                    <button id="recentNext" class="btn btn-outline-secondary btn-sm"><i
+                            class="bi bi-chevron-right"></i></button>
                 </div>
             </div>
         </div>
 
         <!-- Expiring Permits (paginated) -->
         <?php if (!empty($expiringRows)): ?>
-        <div class="recent-section" style="border-left: 4px solid #f59e0b;">
-            <div class="section-header">
-                <h4><i class="bi bi-clock-history text-warning me-2"></i>ป้ายใกล้หมดอายุ</h4>
-                <div class="d-flex align-items-center gap-2">
+            <div class="recent-section" style="border-left: 4px solid #f59e0b;">
+                <div class="section-header">
+                    <h4><i class="bi bi-clock-history text-warning me-2"></i>ป้ายใกล้หมดอายุ</h4>
                     <span class="badge bg-warning text-dark"><?= count($expiringRows) ?> รายการ</span>
-                    <label class="small text-muted mb-0 ms-2">แสดง</label>
-                    <select id="expPageSize" class="form-select form-select-sm" style="width:70px;">
-                        <option value="5" selected>5</option>
-                        <option value="10">10</option>
-                        <option value="15">15</option>
-                    </select>
+                </div>
+
+                <div id="expCardsList"></div>
+
+                <div class="d-flex justify-content-between align-items-center mt-3 flex-wrap gap-2">
+                    <div class="d-flex align-items-center gap-2 flex-wrap">
+                        <label class="small text-muted mb-0">แสดง</label>
+                        <select id="expPageSize" class="form-select form-select-sm" style="width:70px;">
+                            <option value="5" selected>5</option>
+                            <option value="10">10</option>
+                            <option value="15">15</option>
+                        </select>
+                        <label class="small text-muted mb-0">รายการ</label>
+                        <div id="expPageInfo" class="small text-muted"></div>
+                    </div>
+
+                    <div class="d-flex gap-2">
+                        <button id="expPrev" class="btn btn-outline-secondary btn-sm"><i
+                                class="bi bi-chevron-left"></i></button>
+                        <button id="expNext" class="btn btn-outline-secondary btn-sm"><i
+                                class="bi bi-chevron-right"></i></button>
+                    </div>
                 </div>
             </div>
-            <div id="expCardsList"></div>
-            <div class="d-flex justify-content-between align-items-center mt-3">
-                <div id="expPageInfo" class="small text-muted"></div>
-                <div class="d-flex gap-2">
-                    <button id="expPrev" class="btn btn-outline-secondary btn-sm"><i class="bi bi-chevron-left"></i></button>
-                    <button id="expNext" class="btn btn-outline-secondary btn-sm"><i class="bi bi-chevron-right"></i></button>
-                </div>
-            </div>
-        </div>
         <?php endif; ?>
 
         <!-- Waiting Payment (paginated) -->
         <?php if (!empty($wpRows)): ?>
-        <div class="recent-section" style="border-left: 4px solid #ffc107;">
-            <div class="section-header">
-                <h4><i class="bi bi-credit-card text-warning me-2"></i>รอชำระเงิน</h4>
-                <div class="d-flex align-items-center gap-2">
+            <div class="recent-section" style="border-left: 4px solid #ffc107;">
+                <div class="section-header">
+                    <h4><i class="bi bi-credit-card text-warning me-2"></i>รอชำระเงิน</h4>
                     <span class="badge bg-warning text-dark"><?= count($wpRows) ?> รายการ</span>
-                    <label class="small text-muted mb-0 ms-2">แสดง</label>
-                    <select id="wpPageSize" class="form-select form-select-sm" style="width:70px;">
-                        <option value="5" selected>5</option>
-                        <option value="10">10</option>
-                        <option value="15">15</option>
-                    </select>
+                </div>
+
+                <div id="wpCardsList"></div>
+
+                <div class="d-flex justify-content-between align-items-center mt-3 flex-wrap gap-2">
+                    <div class="d-flex align-items-center gap-2 flex-wrap">
+                        <label class="small text-muted mb-0">แสดง</label>
+                        <select id="wpPageSize" class="form-select form-select-sm" style="width:70px;">
+                            <option value="5" selected>5</option>
+                            <option value="10">10</option>
+                            <option value="15">15</option>
+                        </select>
+                        <label class="small text-muted mb-0">รายการ</label>
+                        <div id="wpPageInfo" class="small text-muted"></div>
+                    </div>
+
+                    <div class="d-flex gap-2">
+                        <button id="wpPrev" class="btn btn-outline-secondary btn-sm"><i
+                                class="bi bi-chevron-left"></i></button>
+                        <button id="wpNext" class="btn btn-outline-secondary btn-sm"><i
+                                class="bi bi-chevron-right"></i></button>
+                    </div>
                 </div>
             </div>
-            <div id="wpCardsList"></div>
-            <div class="d-flex justify-content-between align-items-center mt-3">
-                <div id="wpPageInfo" class="small text-muted"></div>
-                <div class="d-flex gap-2">
-                    <button id="wpPrev" class="btn btn-outline-secondary btn-sm"><i class="bi bi-chevron-left"></i></button>
-                    <button id="wpNext" class="btn btn-outline-secondary btn-sm"><i class="bi bi-chevron-right"></i></button>
-                </div>
-            </div>
-        </div>
         <?php endif; ?>
 
         <!-- Expired Permits -->
@@ -545,16 +570,18 @@ function thaiDateShort($dateStr, $months) {
                 </div>
                 <div id="expiredList">
                     <?php foreach ($expiredRows as $idx => $exp):
-                        $days_since = (int)((time() - strtotime($exp['expire_date'])) / 86400);
+                        $days_since = (int) ((time() - strtotime($exp['expire_date'])) / 86400);
                         $collect_remain = max(0, 7 - $days_since);
-                    ?>
-                        <a href="request_detail.php?id=<?= $exp['id'] ?>" class="request-item expired-item" style="<?= $idx >= 5 ? 'display:none;' : '' ?>">
+                        ?>
+                        <a href="request_detail.php?id=<?= $exp['id'] ?>" class="request-item expired-item"
+                            style="<?= $idx >= 5 ? 'display:none;' : '' ?>">
                             <div class="request-item-icon" style="background:#fef2f2; color:#dc3545;">
                                 <i class="bi bi-exclamation-triangle-fill"></i>
                             </div>
                             <div class="request-item-content">
                                 <div class="request-item-title">
-                                    <span class="request-item-id"><?= htmlspecialchars($exp['request_no'] ?: '#' . $exp['id']) ?></span>
+                                    <span
+                                        class="request-item-id"><?= htmlspecialchars($exp['request_no'] ?: '#' . $exp['id']) ?></span>
                                     <?php if ($collect_remain > 0): ?>
                                         <span class="badge bg-danger">เก็บป้ายภายใน <?= $collect_remain ?> วัน</span>
                                     <?php else: ?>
@@ -566,7 +593,8 @@ function thaiDateShort($dateStr, $months) {
                                 </div>
                                 <div class="request-item-meta">
                                     <div class="meta-unit">
-                                        <i class="bi bi-calendar-x"></i> หมดอายุ <?= thaiDateShort($exp['expire_date'], $thaiMonths) ?>
+                                        <i class="bi bi-calendar-x"></i> หมดอายุ
+                                        <?= thaiDateShort($exp['expire_date'], $thaiMonths) ?>
                                     </div>
                                 </div>
                             </div>
@@ -577,7 +605,8 @@ function thaiDateShort($dateStr, $months) {
                 <?php if (count($expiredRows) > 5): ?>
                     <div class="text-center mt-3">
                         <button id="showMoreExpired" class="btn btn-outline-danger btn-sm" onclick="toggleExpiredItems()">
-                            <i class="bi bi-chevron-down me-1"></i> ดูเพิ่มเติม (<span id="hiddenCount"><?= count($expiredRows) - 5 ?></span> รายการ)
+                            <i class="bi bi-chevron-down me-1"></i> ดูเพิ่มเติม (<span
+                                id="hiddenCount"><?= count($expiredRows) - 5 ?></span> รายการ)
                         </button>
                     </div>
                 <?php endif; ?>
@@ -623,195 +652,194 @@ function thaiDateShort($dateStr, $months) {
     <?php include '../includes/scripts.php'; ?>
     <?php if (!empty($_SESSION['flash_success'])): ?>
         <script>
-            document.addEventListener('DOMContentLoaded', function() {
+            document.addEventListener('DOMContentLoaded', function () {
                 Toast.fire({ icon: 'success', title: <?= json_encode($_SESSION['flash_success']) ?> });
             });
         </script>
         <?php unset($_SESSION['flash_success']); ?>
     <?php endif; ?>
     <script>
-    document.addEventListener('DOMContentLoaded', function() {
+        document.addEventListener('DOMContentLoaded', function () {
 
-        // === Generic Paginator ===
-        function createPaginator(config) {
-            var data = config.data;
-            var container = document.getElementById(config.containerId);
-            var info = document.getElementById(config.infoId);
-            var sizeEl = document.getElementById(config.sizeId);
-            var prevBtn = document.getElementById(config.prevId);
-            var nextBtn = document.getElementById(config.nextId);
-            var renderItem = config.renderItem;
-            var page = 1;
+            // === Generic Paginator ===
+            function createPaginator(config) {
+                var data = config.data;
+                var container = document.getElementById(config.containerId);
+                var info = document.getElementById(config.infoId);
+                var sizeEl = document.getElementById(config.sizeId);
+                var prevBtn = document.getElementById(config.prevId);
+                var nextBtn = document.getElementById(config.nextId);
+                var renderItem = config.renderItem;
+                var page = 1;
 
-            function render() {
-                var size = parseInt(sizeEl.value, 10);
-                var total = data.length;
-                var totalPages = Math.max(1, Math.ceil(total / size));
-                if (page > totalPages) page = totalPages;
-                var start = (page - 1) * size;
-                var slice = data.slice(start, start + size);
+                function render() {
+                    var size = parseInt(sizeEl.value, 10);
+                    var total = data.length;
+                    var totalPages = Math.max(1, Math.ceil(total / size));
+                    if (page > totalPages) page = totalPages;
+                    var start = (page - 1) * size;
+                    var slice = data.slice(start, start + size);
 
-                if (total === 0) {
-                    container.innerHTML = '<div class="text-center py-4 text-muted">ไม่พบข้อมูล</div>';
-                } else {
-                    container.innerHTML = slice.map(renderItem).join('');
+                    if (total === 0) {
+                        container.innerHTML = '<div class="text-center py-4 text-muted">ไม่พบข้อมูล</div>';
+                    } else {
+                        container.innerHTML = slice.map(renderItem).join('');
+                    }
+                                        prevBtn.disabled = page <= 1;
+                    nextBtn.disabled = page >= totalPages;
                 }
-                info.textContent = total + ' รายการ • หน้า ' + page + '/' + totalPages;
-                prevBtn.disabled = page <= 1;
-                nextBtn.disabled = page >= totalPages;
+
+                sizeEl.addEventListener('change', function () { page = 1; render(); });
+                prevBtn.addEventListener('click', function () { if (page > 1) { page--; render(); } });
+                nextBtn.addEventListener('click', function () {
+                    var totalPages = Math.max(1, Math.ceil(data.length / parseInt(sizeEl.value, 10)));
+                    if (page < totalPages) { page++; render(); }
+                });
+                render();
             }
 
-            sizeEl.addEventListener('change', function() { page = 1; render(); });
-            prevBtn.addEventListener('click', function() { if (page > 1) { page--; render(); } });
-            nextBtn.addEventListener('click', function() {
-                var totalPages = Math.max(1, Math.ceil(data.length / parseInt(sizeEl.value, 10)));
-                if (page < totalPages) { page++; render(); }
+            // === Recent Requests Data ===
+            var recentData = <?= json_encode(array_map(function ($r) use ($thaiMonths) {
+                return [
+                    'id' => $r['id'],
+                    'request_no' => $r['request_no'] ?: '#' . $r['id'],
+                    'status' => $r['status'],
+                    'status_badge' => get_status_badge($r['status']),
+                    'sign_type' => $r['sign_type'],
+                    'size' => $r['width'] . 'x' . $r['height'] . ' ม.',
+                    'date' => thaiDateShort($r['created_at'], $thaiMonths),
+                    'road' => $r['road_name']
+                ];
+            }, $recentRequests)) ?>;
+
+            createPaginator({
+                data: recentData,
+                containerId: 'recentCardsList',
+                infoId: 'recentPageInfo',
+                sizeId: 'recentPageSize',
+                prevId: 'recentPrev',
+                nextId: 'recentNext',
+                renderItem: function (r) {
+                    return '<a href="request_detail.php?id=' + r.id + '" class="request-item">'
+                        + '<div class="request-item-icon"><i class="bi bi-file-earmark-text"></i></div>'
+                        + '<div class="request-item-content">'
+                        + '<div class="request-item-title">'
+                        + '<span class="request-item-id">' + r.request_no + '</span>'
+                        + r.status_badge
+                        + '</div>'
+                        + '<div class="request-item-info">' + r.sign_type + ' - ' + r.size + '</div>'
+                        + '<div class="request-item-meta">'
+                        + '<div class="meta-unit"><i class="bi bi-calendar3"></i> ' + r.date + '</div>'
+                        + '<div class="meta-unit"><i class="bi bi-geo-alt"></i> ' + r.road + '</div>'
+                        + '</div>'
+                        + '</div>'
+                        + '<i class="bi bi-chevron-right text-muted"></i>'
+                        + '</a>';
+                }
             });
-            render();
+
+            // === Expiring Permits Data ===
+            <?php if (!empty($expiringRows)): ?>
+                var expData = <?= json_encode(array_map(function ($r) use ($thaiMonths) {
+                    $days_left = max(0, (int) ((strtotime($r['expire_date']) - time()) / 86400));
+                    return [
+                        'id' => $r['id'],
+                        'request_no' => $r['request_no'] ?: '#' . $r['id'],
+                        'sign_type' => $r['sign_type'],
+                        'road' => $r['road_name'],
+                        'days_left' => $days_left,
+                        'expire_date' => thaiDateShort($r['expire_date'], $thaiMonths)
+                    ];
+                }, $expiringRows)) ?>;
+
+                createPaginator({
+                    data: expData,
+                    containerId: 'expCardsList',
+                    infoId: 'expPageInfo',
+                    sizeId: 'expPageSize',
+                    prevId: 'expPrev',
+                    nextId: 'expNext',
+                    renderItem: function (r) {
+                        var badgeClass = r.days_left <= 7 ? 'bg-danger' : 'bg-warning text-dark';
+                        return '<a href="request_detail.php?id=' + r.id + '" class="request-item">'
+                            + '<div class="request-item-icon" style="background:#fff7ed; color:#f59e0b;">'
+                            + '<i class="bi bi-exclamation-triangle"></i></div>'
+                            + '<div class="request-item-content">'
+                            + '<div class="request-item-title">'
+                            + '<span class="request-item-id">' + r.request_no + '</span>'
+                            + '<span class="badge ' + badgeClass + '">เหลือ ' + r.days_left + ' วัน</span>'
+                            + '</div>'
+                            + '<div class="request-item-info">' + r.sign_type + ' — ' + r.road + '</div>'
+                            + '<div class="request-item-meta">'
+                            + '<div class="meta-unit"><i class="bi bi-calendar-x"></i> หมดอายุ ' + r.expire_date + '</div>'
+                            + '</div>'
+                            + '</div>'
+                            + '<i class="bi bi-chevron-right text-muted"></i>'
+                            + '</a>';
+                    }
+                });
+            <?php endif; ?>
+
+            // === Waiting Payment Data ===
+            <?php if (!empty($wpRows)): ?>
+                var wpData = <?= json_encode(array_map(function ($r) use ($thaiMonths) {
+                    return [
+                        'id' => $r['id'],
+                        'request_no' => $r['request_no'] ?: '#' . $r['id'],
+                        'sign_type' => $r['sign_type'],
+                        'road' => $r['road_name'],
+                        'size' => $r['width'] . 'x' . $r['height'] . ' ม.',
+                        'fee' => (int) $r['fee'],
+                        'date' => thaiDateShort($r['created_at'], $thaiMonths)
+                    ];
+                }, $wpRows)) ?>;
+
+                createPaginator({
+                    data: wpData,
+                    containerId: 'wpCardsList',
+                    infoId: 'wpPageInfo',
+                    sizeId: 'wpPageSize',
+                    prevId: 'wpPrev',
+                    nextId: 'wpNext',
+                    renderItem: function (r) {
+                        return '<a href="request_detail.php?id=' + r.id + '" class="request-item">'
+                            + '<div class="request-item-icon" style="background:#fff7ed; color:#f59e0b;">'
+                            + '<i class="bi bi-credit-card"></i></div>'
+                            + '<div class="request-item-content">'
+                            + '<div class="request-item-title">'
+                            + '<span class="request-item-id">' + r.request_no + '</span>'
+                            + '<span class="badge bg-warning text-dark">รอชำระ</span>'
+                            + '</div>'
+                            + '<div class="request-item-info">' + r.sign_type + ' — ' + r.road + ' (' + r.size + ')</div>'
+                            + '<div class="request-item-meta">'
+                            + '<div class="meta-unit"><i class="bi bi-cash-stack"></i> ค่าธรรมเนียม: ฿' + r.fee.toLocaleString() + '</div>'
+                            + '<div class="meta-unit"><i class="bi bi-calendar3"></i> ' + r.date + '</div>'
+                            + '</div>'
+                            + '</div>'
+                            + '<i class="bi bi-chevron-right text-muted"></i>'
+                            + '</a>';
+                    }
+                });
+            <?php endif; ?>
+
+        });
+
+        // === Expired toggle ===
+        function toggleExpiredItems() {
+            var items = document.querySelectorAll('.expired-item');
+            var btn = document.getElementById('showMoreExpired');
+            var expanded = btn.getAttribute('data-expanded') === 'true';
+
+            items.forEach(function (item, idx) {
+                if (idx >= 5) {
+                    item.style.display = expanded ? 'none' : 'flex';
+                }
+            });
+            btn.setAttribute('data-expanded', !expanded);
+            btn.innerHTML = expanded
+                ? '<i class="bi bi-chevron-down me-1"></i> ดูเพิ่มเติม (<span id="hiddenCount">' + (items.length - 5) + '</span> รายการ)'
+                : '<i class="bi bi-chevron-up me-1"></i> ซ่อน';
         }
-
-        // === Recent Requests Data ===
-        var recentData = <?= json_encode(array_map(function($r) use ($thaiMonths) {
-            return [
-                'id' => $r['id'],
-                'request_no' => $r['request_no'] ?: '#' . $r['id'],
-                'status' => $r['status'],
-                'status_badge' => get_status_badge($r['status']),
-                'sign_type' => $r['sign_type'],
-                'size' => $r['width'] . 'x' . $r['height'] . ' ม.',
-                'date' => thaiDateShort($r['created_at'], $thaiMonths),
-                'road' => $r['road_name']
-            ];
-        }, $recentRequests)) ?>;
-
-        createPaginator({
-            data: recentData,
-            containerId: 'recentCardsList',
-            infoId: 'recentPageInfo',
-            sizeId: 'recentPageSize',
-            prevId: 'recentPrev',
-            nextId: 'recentNext',
-            renderItem: function(r) {
-                return '<a href="request_detail.php?id=' + r.id + '" class="request-item">'
-                    + '<div class="request-item-icon"><i class="bi bi-file-earmark-text"></i></div>'
-                    + '<div class="request-item-content">'
-                    + '<div class="request-item-title">'
-                    + '<span class="request-item-id">' + r.request_no + '</span>'
-                    + r.status_badge
-                    + '</div>'
-                    + '<div class="request-item-info">' + r.sign_type + ' - ' + r.size + '</div>'
-                    + '<div class="request-item-meta">'
-                    + '<div class="meta-unit"><i class="bi bi-calendar3"></i> ' + r.date + '</div>'
-                    + '<div class="meta-unit"><i class="bi bi-geo-alt"></i> ' + r.road + '</div>'
-                    + '</div>'
-                    + '</div>'
-                    + '<i class="bi bi-chevron-right text-muted"></i>'
-                    + '</a>';
-            }
-        });
-
-        // === Expiring Permits Data ===
-        <?php if (!empty($expiringRows)): ?>
-        var expData = <?= json_encode(array_map(function($r) use ($thaiMonths) {
-            $days_left = max(0, (int)((strtotime($r['expire_date']) - time()) / 86400));
-            return [
-                'id' => $r['id'],
-                'request_no' => $r['request_no'] ?: '#' . $r['id'],
-                'sign_type' => $r['sign_type'],
-                'road' => $r['road_name'],
-                'days_left' => $days_left,
-                'expire_date' => thaiDateShort($r['expire_date'], $thaiMonths)
-            ];
-        }, $expiringRows)) ?>;
-
-        createPaginator({
-            data: expData,
-            containerId: 'expCardsList',
-            infoId: 'expPageInfo',
-            sizeId: 'expPageSize',
-            prevId: 'expPrev',
-            nextId: 'expNext',
-            renderItem: function(r) {
-                var badgeClass = r.days_left <= 7 ? 'bg-danger' : 'bg-warning text-dark';
-                return '<a href="request_detail.php?id=' + r.id + '" class="request-item">'
-                    + '<div class="request-item-icon" style="background:#fff7ed; color:#f59e0b;">'
-                    + '<i class="bi bi-exclamation-triangle"></i></div>'
-                    + '<div class="request-item-content">'
-                    + '<div class="request-item-title">'
-                    + '<span class="request-item-id">' + r.request_no + '</span>'
-                    + '<span class="badge ' + badgeClass + '">เหลือ ' + r.days_left + ' วัน</span>'
-                    + '</div>'
-                    + '<div class="request-item-info">' + r.sign_type + ' — ' + r.road + '</div>'
-                    + '<div class="request-item-meta">'
-                    + '<div class="meta-unit"><i class="bi bi-calendar-x"></i> หมดอายุ ' + r.expire_date + '</div>'
-                    + '</div>'
-                    + '</div>'
-                    + '<i class="bi bi-chevron-right text-muted"></i>'
-                    + '</a>';
-            }
-        });
-        <?php endif; ?>
-
-        // === Waiting Payment Data ===
-        <?php if (!empty($wpRows)): ?>
-        var wpData = <?= json_encode(array_map(function($r) use ($thaiMonths) {
-            return [
-                'id' => $r['id'],
-                'request_no' => $r['request_no'] ?: '#' . $r['id'],
-                'sign_type' => $r['sign_type'],
-                'road' => $r['road_name'],
-                'size' => $r['width'] . 'x' . $r['height'] . ' ม.',
-                'fee' => (int)$r['fee'],
-                'date' => thaiDateShort($r['created_at'], $thaiMonths)
-            ];
-        }, $wpRows)) ?>;
-
-        createPaginator({
-            data: wpData,
-            containerId: 'wpCardsList',
-            infoId: 'wpPageInfo',
-            sizeId: 'wpPageSize',
-            prevId: 'wpPrev',
-            nextId: 'wpNext',
-            renderItem: function(r) {
-                return '<a href="request_detail.php?id=' + r.id + '" class="request-item">'
-                    + '<div class="request-item-icon" style="background:#fff7ed; color:#f59e0b;">'
-                    + '<i class="bi bi-credit-card"></i></div>'
-                    + '<div class="request-item-content">'
-                    + '<div class="request-item-title">'
-                    + '<span class="request-item-id">' + r.request_no + '</span>'
-                    + '<span class="badge bg-warning text-dark">รอชำระ</span>'
-                    + '</div>'
-                    + '<div class="request-item-info">' + r.sign_type + ' — ' + r.road + ' (' + r.size + ')</div>'
-                    + '<div class="request-item-meta">'
-                    + '<div class="meta-unit"><i class="bi bi-cash-stack"></i> ค่าธรรมเนียม: ฿' + r.fee.toLocaleString() + '</div>'
-                    + '<div class="meta-unit"><i class="bi bi-calendar3"></i> ' + r.date + '</div>'
-                    + '</div>'
-                    + '</div>'
-                    + '<i class="bi bi-chevron-right text-muted"></i>'
-                    + '</a>';
-            }
-        });
-        <?php endif; ?>
-
-    });
-
-    // === Expired toggle ===
-    function toggleExpiredItems() {
-        var items = document.querySelectorAll('.expired-item');
-        var btn = document.getElementById('showMoreExpired');
-        var expanded = btn.getAttribute('data-expanded') === 'true';
-
-        items.forEach(function(item, idx) {
-            if (idx >= 5) {
-                item.style.display = expanded ? 'none' : 'flex';
-            }
-        });
-        btn.setAttribute('data-expanded', !expanded);
-        btn.innerHTML = expanded
-            ? '<i class="bi bi-chevron-down me-1"></i> ดูเพิ่มเติม (<span id="hiddenCount">' + (items.length - 5) + '</span> รายการ)'
-            : '<i class="bi bi-chevron-up me-1"></i> ซ่อน';
-    }
     </script>
 </body>
 
