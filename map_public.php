@@ -7,7 +7,7 @@ $approved_signs = [];
 $approved_rows = [];
 
 // ดึงเฉพาะคำขอที่อนุมัติแล้ว + มีพิกัด
-$result_signs = $conn->query("SELECT r.id, r.location_lat, r.location_lng, r.sign_type, r.permit_no, r.road_name, r.width, r.height, r.quantity, r.duration_days, r.end_date, r.permit_date
+$result_signs = $conn->query("SELECT r.id, r.location_lat, r.location_lng, r.sign_type, r.permit_no, r.road_name, r.width, r.height, r.quantity, r.duration_days, r.end_date, r.permit_date, r.description
     FROM sign_requests r
     WHERE r.status = 'approved' AND r.location_lat IS NOT NULL AND r.location_lng IS NOT NULL
     ORDER BY r.id DESC");
@@ -29,7 +29,8 @@ if ($result_signs && $result_signs->num_rows > 0) {
             'qty' => (int) $row['quantity'],
             'duration' => (int) ($row['duration_days'] ?? 0),
             'expire' => $expire_str,
-            'permit_date' => $row['permit_date'] ? date('d/m/Y', strtotime($row['permit_date'])) : '-'
+            'permit_date' => $row['permit_date'] ? date('d/m/Y', strtotime($row['permit_date'])) : '-',
+            'description' => htmlspecialchars($row['description'] ?? '-')
         ];
         $approved_rows[] = end($approved_signs);
     }
@@ -422,7 +423,7 @@ $unique_roads = count(array_filter(array_unique(array_column($approved_signs, 'r
                 });
 
                 var popupHtml = '<div style="min-width:180px;font-family:Sarabun,sans-serif;">'
-                    + '<div style="font-weight:700;font-size:0.95rem;color:#1a202c;margin-bottom:6px;">' + sign.type + ' — ' + sign.road + '</div>'
+                    + '<div style="font-weight:700;font-size:0.95rem;color:#1a202c;margin-bottom:6px;">' + sign.description + '</div>'
                     + '<div style="display:flex;flex-direction:column;gap:3px;font-size:0.85rem;">'
                     + '<div><span style="color:#64748b;">ประเภท:</span> <b>' + sign.type + '</b></div>'
                     + '<div><span style="color:#64748b;">ขนาด:</span> ' + sign.size + '</div>'
