@@ -170,7 +170,8 @@ if ($res_rows && $res_rows->num_rows > 0) {
 
                 <div class="col-12 mt-5">
                     <div class="list-card overflow-hidden">
-                        <div class="p-3 border-bottom d-flex align-items-center justify-content-between flex-wrap gap-2 bg-light">
+                        <div
+                            class="p-3 border-bottom d-flex align-items-center justify-content-between flex-wrap gap-2 bg-light">
                             <h5 class="mb-0 fw-bold">📋 รายการคำร้องบนแผนที่</h5>
                             <div class="d-flex align-items-center gap-2">
                                 <select id="statusFilter" class="form-select form-select-sm" style="width:180px;">
@@ -186,7 +187,8 @@ if ($res_rows && $res_rows->num_rows > 0) {
                                     <option value="expired">หมดอายุ</option>
                                 </select>
                                 <div class="input-group input-group-sm" style="width: 250px;">
-                                    <span class="input-group-text bg-white border-end-0"><i class="bi bi-search"></i></span>
+                                    <span class="input-group-text bg-white border-end-0"><i
+                                            class="bi bi-search"></i></span>
                                     <input id="searchInput" type="text" class="form-control border-start-0"
                                         placeholder="ค้นหา ชื่อ/ที่อยู่/ประเภท...">
                                 </div>
@@ -306,7 +308,7 @@ if ($res_rows && $res_rows->num_rows > 0) {
             var markerDict = {};
 
             var markers = L.markerClusterGroup();
-            var heatLayer = L.heatLayer(allSigns.map(function(s) { return [s.lat, s.lng, 0.6]; }), { radius: 20, blur: 15 });
+            var heatLayer = L.heatLayer(allSigns.map(function (s) { return [s.lat, s.lng, 0.6]; }), { radius: 20, blur: 15 });
 
             allSigns.forEach(function (sign) {
                 if (!sign.lat || !sign.lng) return;
@@ -339,20 +341,43 @@ if ($res_rows && $res_rows->num_rows > 0) {
             legend.onAdd = function () {
                 var div = L.DomUtil.create('div', 'map-legend');
                 div.style.background = 'white';
-                div.style.padding = '12px 16px';
-                div.style.borderRadius = '8px';
-                div.style.boxShadow = '0 2px 8px rgba(0,0,0,0.15)';
-                div.style.fontSize = '0.8rem';
-                div.style.lineHeight = '1.8';
-                var html = '<div style="font-weight:700;margin-bottom:4px;">สัญลักษณ์สถานะ</div>';
-                for (var key in statusLabels) {
-                    html += '<div style="display:flex;align-items:center;gap:8px;">'
-                        + '<div style="width:14px;height:14px;background:' + statusColors[key] + ';border-radius:4px;flex-shrink:0;"></div>'
-                        + '<span>' + statusLabels[key] + '</span></div>';
+                div.style.padding = '8px 12px';
+                div.style.borderRadius = '6px';
+                div.style.boxShadow = '0 2px 6px rgba(0,0,0,0.15)';
+                div.style.fontSize = '0.75rem';
+                div.style.lineHeight = '1.5';
+                div.style.maxWidth = '200px';
+                var html = '<div style="font-weight:700;margin-bottom:3px;font-size:0.7rem;">สัญลักษณ์</div>';
+                
+                // แบ่งเป็น 2 คอลัมน์
+                var statusKeys = Object.keys(statusLabels);
+                var half = Math.ceil(statusKeys.length / 2);
+                html += '<div style="display:flex;gap:12px;">';
+                
+                // คอลัมน์ซ้าย
+                html += '<div>';
+                for (var i = 0; i < half; i++) {
+                    var key = statusKeys[i];
+                    html += '<div style="display:flex;align-items:center;gap:6px;margin-bottom:2px;">'
+                        + '<div style="width:10px;height:10px;background:' + statusColors[key] + ';border-radius:3px;flex-shrink:0;"></div>'
+                        + '<span style="font-size:0.7rem;">' + statusLabels[key] + '</span></div>';
                 }
-                html += '<hr style="margin:6px 0;">';
-                html += '<div style="display:flex;align-items:center;gap:8px;"><div style="width:14px;height:3px;background:#dc2626;border-radius:2px;"></div><span>ขอบเขตเทศบาล</span></div>';
-                html += '<div style="display:flex;align-items:center;gap:8px;"><div style="width:14px;height:3px;background:#f59e0b;border-radius:2px;"></div><span>เส้นทางถนน</span></div>';
+                html += '</div>';
+                
+                // คอลัมน์ขวา
+                html += '<div>';
+                for (var i = half; i < statusKeys.length; i++) {
+                    var key = statusKeys[i];
+                    html += '<div style="display:flex;align-items:center;gap:6px;margin-bottom:2px;">'
+                        + '<div style="width:10px;height:10px;background:' + statusColors[key] + ';border-radius:3px;flex-shrink:0;"></div>'
+                        + '<span style="font-size:0.7rem;">' + statusLabels[key] + '</span></div>';
+                }
+                html += '</div>';
+                html += '</div>';
+                
+                html += '<hr style="margin:4px 0;">';
+                html += '<div style="display:flex;align-items:center;gap:6px;"><div style="width:10px;height:2px;background:#dc2626;border-radius:1px;"></div><span style="font-size:0.7rem;">ขอบเขต</span></div>';
+                html += '<div style="display:flex;align-items:center;gap:6px;"><div style="width:10px;height:2px;background:#f59e0b;border-radius:1px;"></div><span style="font-size:0.7rem;">ถนน</span></div>';
                 div.innerHTML = html;
                 return div;
             };
@@ -371,14 +396,14 @@ if ($res_rows && $res_rows->num_rows > 0) {
             L.control.layers(baseLayers, overlays, { collapsed: true, position: 'topright' }).addTo(mymap);
 
             if (allSigns.length > 0) {
-                var bounds = L.latLngBounds(allSigns.map(function(s) { return [s.lat, s.lng]; }));
+                var bounds = L.latLngBounds(allSigns.map(function (s) { return [s.lat, s.lng]; }));
                 mymap.fitBounds(bounds, { padding: [30, 30], maxZoom: 14 });
             }
 
             // Load Boundaries
             fetch('../data/sila.geojson')
-                .then(function(res) { return res.json(); })
-                .then(function(data) {
+                .then(function (res) { return res.json(); })
+                .then(function (data) {
                     L.geoJSON(data, {
                         style: { weight: 3, opacity: 1, color: '#dc2626', fillOpacity: 0.05, fillColor: '#dc2626' }
                     }).addTo(boundaryLayer);
@@ -387,8 +412,8 @@ if ($res_rows && $res_rows->num_rows > 0) {
 
             // Load Roads
             fetch('../data/road_sila.geojson')
-                .then(function(res) { return res.json(); })
-                .then(function(roads) {
+                .then(function (res) { return res.json(); })
+                .then(function (roads) {
                     L.geoJSON(roads, {
                         style: { color: '#f59e0b', weight: 4, opacity: 0.6 }
                     }).addTo(roadLayer);
@@ -451,19 +476,19 @@ if ($res_rows && $res_rows->num_rows > 0) {
                 nextBtn.disabled = page >= totalPages;
             }
 
-           window.zoomToSign = function (id) {
-    if (markerDict[id]) {
-        var latlng = markerDict[id].getLatLng();
+            window.zoomToSign = function (id) {
+                if (markerDict[id]) {
+                    var latlng = markerDict[id].getLatLng();
 
-        mymap.flyTo(latlng, 16, { duration: 1.0 });
+                    mymap.flyTo(latlng, 16, { duration: 1.0 });
 
-        setTimeout(function () {
-            markers.zoomToShowLayer(markerDict[id], function () {
-                markerDict[id].openPopup();
-            });
-        }, 350);
-    }
-};
+                    setTimeout(function () {
+                        markers.zoomToShowLayer(markerDict[id], function () {
+                            markerDict[id].openPopup();
+                        });
+                    }, 350);
+                }
+            };
 
             pageSizeEl.addEventListener('change', function () { page = 1; render(); });
             searchEl.addEventListener('input', function () { page = 1; render(); });
