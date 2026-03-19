@@ -209,6 +209,38 @@ if ($res_rows && $res_rows->num_rows > 0) {
             margin-bottom: 12px;
             display: block;
         }
+
+        .map-legend {
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            background: white;
+            padding: 12px 16px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+            z-index: 1000;
+            font-size: 0.85rem;
+            min-width: 170px;
+        }
+
+        .legend-title {
+            font-weight: 700;
+            color: #1f2937;
+            margin-bottom: 8px;
+            padding-bottom: 6px;
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 6px;
+        }
+
+        .legend-item:last-child {
+            margin-bottom: 0;
+        }
     </style>
 </head>
 
@@ -224,12 +256,27 @@ if ($res_rows && $res_rows->num_rows > 0) {
             <div class="row g-3">
                 <div class="col-md-6">
                     <div class="map-container">
-                        <div class="d-flex align-items-center gap-2 mb-2">
-                            <span class="badge" style="background-color: #16a34a; color: white;">🪧
-                                ป้ายที่อนุมัติแล้ว</span>
-                            <small class="text-muted">แสดงเฉพาะคำร้องของคุณที่ได้รับอนุมัติและยังไม่หมดอายุ</small>
+
+                        <div id="mapid">
+                            <div class="map-legend">
+                                <div class="legend-title">คำอธิบายสัญลักษณ์</div>
+
+                                <div class="legend-item">
+                                    <div style="width:16px;height:16px;background:#16a34a;border-radius:4px;"></div>
+                                    <span>ป้ายที่อนุมัติ</span>
+                                </div>
+
+                                <div class="legend-item">
+                                    <div style="width:16px;height:3px;background:#f59e0b;border-radius:2px;"></div>
+                                    <span>เส้นถนน</span>
+                                </div>
+
+                                <div class="legend-item">
+                                    <div style="width:16px;height:3px;background:#dc2626;border-radius:2px;"></div>
+                                    <span>เส้นขอบเขต</span>
+                                </div>
+                            </div>
                         </div>
-                        <div id="mapid"></div>
                     </div>
                 </div>
                 <div class="col-md-6">
