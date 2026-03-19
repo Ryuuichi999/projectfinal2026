@@ -281,13 +281,13 @@ function getThaiDate($date)
 <body>
     <div class="no-print" style="text-align: center; padding: 10px; display: flex; justify-content: center; gap: 10px; align-items: center; flex-wrap: wrap;">
         <?php if ($is_original): ?>
-            <span style="background: #155724; color: white; padding: 6px 18px; border-radius: 20px; font-size: 14px; font-weight: bold;">✅ ฉบับจริง (ดาวน์โหลดครั้งแรก)</span>
+            <span style="background: #155724; color: white; padding: 6px 18px; border-radius: 20px; font-size: 14px; font-weight: bold;">ฉบับจริง</span>
         <?php else: ?>
-            <span style="background: #6c757d; color: white; padding: 6px 18px; border-radius: 20px; font-size: 14px;">📋 สำเนา (เคยดาวน์โหลดแล้วเมื่อ <?= getThaiDate($request['receipt_downloaded_at']) ?>)</span>
+            <span style="background: #6c757d; color: white; padding: 6px 18px; border-radius: 20px; font-size: 14px;">สำเนา (พิมพ์แล้วเมื่อ <?= getThaiDate($request['receipt_downloaded_at']) ?>)</span>
         <?php endif; ?>
-        <button onclick="downloadPDF()"
-            style="padding: 10px 20px; font-size: 14px; cursor: pointer; background: #28a745; color: white; border: none; border-radius: 5px;">
-            ⬇ ดาวน์โหลด PDF
+        <button onclick="printReceipt()"
+            style="padding: 10px 24px; font-size: 14px; cursor: pointer; background: #0d6efd; color: white; border: none; border-radius: 5px; font-weight: 600;">
+            <span style="margin-right:5px;">🖨</span> พิมพ์ใบเสร็จ
         </button>
     </div>
 
@@ -391,8 +391,6 @@ function getThaiDate($date)
         </div>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <script>
         var isOriginal = <?= $is_original ? 'true' : 'false' ?>;
 
@@ -407,43 +405,25 @@ function getThaiDate($date)
                 .then(function() { isOriginal = false; });
         }
 
-        function downloadPDF() {
-            var wasOriginal = isOriginal;
-            const element = document.querySelector('.page');
-            const origMargin = element.style.margin;
-            const origMinHeight = element.style.minHeight;
-            element.style.margin = '0';
-            element.style.minHeight = '297mm';
-            element.style.height = '297mm';
-            element.style.overflow = 'hidden';
-
-            var suffix = isOriginal ? '' : '_copy';
-            const opt = {
-                margin: 0,
-                filename: 'receipt_<?= $request['receipt_no'] ?>' + suffix + '.pdf',
-                image: { type: 'jpeg', quality: 0.98 },
-                html2canvas: {
-                    scale: 2,
-                    useCORS: true,
-                    scrollY: 0,
-                    width: element.scrollWidth,
-                    height: element.scrollHeight
-                },
-                jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
-            };
-
-            html2pdf().set(opt).from(element).save().then(function () {
-                element.style.margin = origMargin;
-                element.style.minHeight = origMinHeight;
-                element.style.height = '';
-                element.style.overflow = '';
-                if (wasOriginal) {
-                    markAsDownloaded().then(function() {
-                        setTimeout(function() { location.reload(); }, 500);
-                    });
-                }
-            });
+        function printReceipt() {
+            // เปิด print dialog ของ browser
+            window.print();
+            // ไม่ว่าจะพิมพ์จริงหรือกดยกเลิก → mark เป็นสำเนาทันที
+            if (isOriginal) {
+                markAsDownloaded().then(function() {
+                    setTimeout(function() { location.reload(); }, 300);
+                });
+            }
         }
+
+        // Fallback: ถ้า afterprint event ทำงาน ก็ mark ด้วย (บาง browser)
+        window.addEventListener('afterprint', function() {
+            if (isOriginal) {
+                markAsDownloaded().then(function() {
+                    setTimeout(function() { location.reload(); }, 300);
+                });
+            }
+        });
     </script>
 </body>
 
