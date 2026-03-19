@@ -55,7 +55,7 @@ $sql_expired = "SELECT sr.id, sr.email, sr.applicant_name, sr.sign_type, sr.fee,
 $result_expired = $conn->query($sql_expired);
 if (!$result_expired) {
     cronLog("SQL Error (expired): " . $conn->error, $log_file);
-    exit;
+    return;
 }
 
 while ($row = $result_expired->fetch_assoc()) {
@@ -170,6 +170,7 @@ while ($row = $result_followup->fetch_assoc()) {
 cronLog("=== เสร็จสิ้น: หมดอายุ {$expired_count}, เตือนล่วงหน้า {$warned_count}, ติดตาม {$followup_count} ===\n", $log_file);
 
 // ─── ฟังก์ชันส่ง Email ───
+if (!function_exists('sendExpiryEmail')) {
 function sendExpiryEmail($request, $expire_date, $type, $conn) {
     require_once __DIR__ . '/../includes/SMTPMailer.php';
     require_once __DIR__ . '/../includes/config.php';
@@ -184,8 +185,8 @@ function sendExpiryEmail($request, $expire_date, $type, $conn) {
     $ts = strtotime($expire_date);
     $expire_th = date('j', $ts) . ' ' . $months_th[(int)date('n', $ts)] . ' ' . (date('Y', $ts) + 543);
     
-    $base_url = defined('BASE_URL') ? BASE_URL : '/Project2026';
-    $btn_url = 'http://localhost' . $base_url . '/users/request_detail.php?id=' . $request_id;
+    $site_url = defined('SITE_URL') ? SITE_URL : 'http://localhost/Project2026';
+    $btn_url = $site_url . '/users/request_detail.php?id=' . $request_id;
     $btn_text = 'ดูรายละเอียดคำร้อง';
 
     if ($type === 'expired') {
@@ -262,4 +263,5 @@ function sendExpiryEmail($request, $expire_date, $type, $conn) {
     
     $mailer = new SMTPMailer(SMTP_USER, SMTP_PASS);
     return $mailer->send($to, $subject, $message, 'เทศบาลเมืองศิลา', true);
+}
 }

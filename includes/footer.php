@@ -15,7 +15,7 @@
                     <li><a href="index.php" class="footer-link">หน้าหลัก</a></li>
                     <li><a href="#services" class="footer-link">บริการ</a></li>
                     <li><a href="login.php" class="footer-link">เข้าสู่ระบบ</a></li>
-                    <li><a href="/Project2026/privacy_policy.php" class="footer-link"><i class="bi bi-shield-check me-1"></i>นโยบาย PDPA</a></li>
+                    <li><a href="<?= BASE_URL ?>/privacy_policy.php" class="footer-link"><i class="bi bi-shield-check me-1"></i>นโยบาย PDPA</a></li>
                 </ul>
             </div>
             <div class="col-lg-6 col-12 ms-lg-auto">
@@ -41,7 +41,7 @@
         </div>
         <div class="border-top border-secondary mt-5 pt-4 text-center small opacity-50">
             &copy; 2026 เทศบาลเมืองศิลา. All rights reserved. |
-            <a href="/Project2026/privacy_policy.php" class="footer-link">นโยบายความเป็นส่วนตัว</a>
+            <a href="<?= BASE_URL ?>/privacy_policy.php" class="footer-link">นโยบายความเป็นส่วนตัว</a>
         </div>
     </div>
 </footer>
@@ -52,7 +52,7 @@
         <div class="d-flex align-items-center gap-3 text-white" style="flex:1; min-width:280px;">
             <i class="bi bi-cookie" style="font-size:1.5rem; color:#f59e0b;"></i>
             <p class="mb-0 small" style="line-height:1.5;">เว็บไซต์นี้ใช้คุกกี้ที่จำเป็นสำหรับการทำงานของระบบเท่านั้น (Session Cookie) เราไม่ใช้คุกกี้เพื่อการติดตามหรือโฆษณา
-                <a href="/Project2026/privacy_policy.php" class="text-info text-decoration-none fw-semibold">อ่านนโยบาย PDPA</a>
+                <a href="<?= BASE_URL ?>/privacy_policy.php" class="text-info text-decoration-none fw-semibold">อ่านนโยบาย PDPA</a>
             </p>
         </div>
         <button onclick="acceptCookies()" class="btn btn-primary btn-sm px-4 py-2 rounded-pill fw-semibold" style="white-space:nowrap;"><i class="bi bi-check-lg me-1"></i>ยอมรับ</button>

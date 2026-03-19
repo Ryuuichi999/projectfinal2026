@@ -116,6 +116,7 @@ while ($row = $result->fetch_assoc()) {
 cronLog("=== เสร็จสิ้น: ยกเลิก {$cancelled_count} คำร้อง ===\n", $log_file);
 
 // ─── ฟังก์ชันส่ง Email ───
+if (!function_exists('sendPaymentEmail')) {
 function sendPaymentEmail($request, $days, $type) {
     require_once __DIR__ . '/../includes/SMTPMailer.php';
     require_once __DIR__ . '/../includes/config.php';
@@ -123,7 +124,7 @@ function sendPaymentEmail($request, $days, $type) {
     $to = $request['email'];
     $request_id = $request['id'];
     $request_display = !empty($request['request_no']) ? $request['request_no'] : "#{$request_id}";
-    $base_url = defined('BASE_URL') ? BASE_URL : '/Project2026';
+    $site_url = defined('SITE_URL') ? SITE_URL : 'http://localhost/Project2026';
 
     $subject = "[เทศบาลเมืองศิลา] คำร้อง {$request_display} ถูกยกเลิก — ไม่ชำระเงินภายใน 24 ชั่วโมง";
     $header_bg = '#dc3545';
@@ -133,7 +134,7 @@ function sendPaymentEmail($request, $days, $type) {
                   เนื่องจากไม่ได้ชำระค่าธรรมเนียมภายใน <strong>24 ชั่วโมง</strong>
                   <br><br>หากท่านยังต้องการขออนุญาต กรุณายื่นคำร้องใหม่อีกครั้ง";
     $btn_text = 'ยื่นคำร้องใหม่';
-    $btn_url = 'http://localhost' . $base_url . '/users/request_form.php';
+    $btn_url = $site_url . '/users/request_form.php';
     
     $message = "
     <html>
@@ -181,4 +182,5 @@ function sendPaymentEmail($request, $days, $type) {
     
     $mailer = new SMTPMailer(SMTP_USER, SMTP_PASS);
     return $mailer->send($to, $subject, $message, 'เทศบาลเมืองศิลา', true);
+}
 }

@@ -21,7 +21,7 @@ const Toast = Swal.mixin({
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 
 <!-- Global Main JS -->
-<script src="/Project2026/assets/js/main.js?v=<?= time() ?>"></script>
+<script src="<?= BASE_URL ?>/assets/js/main.js?v=<?= time() ?>"></script>
 
 <!-- Page Loader HTML (Embedded here for convenience) -->
 <div id="page-loader">

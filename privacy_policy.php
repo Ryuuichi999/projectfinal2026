@@ -189,7 +189,7 @@ if (session_status() === PHP_SESSION_NONE) {
                 <li><b>สิทธิ์ในการถอนความยินยอม:</b> ถอนความยินยอมที่เคยให้ไว้ได้ทุกเมื่อ</li>
             </ul>
             <div class="highlight-box">
-                <p><i class="bi bi-hand-index me-2"></i>ท่านสามารถใช้สิทธิ์ได้โดยเข้าไปที่หน้า <a href="/Project2026/users/profile.php" class="fw-bold">โปรไฟล์ของฉัน</a> หรือติดต่อเจ้าหน้าที่ตามช่องทางด้านล่าง</p>
+                <p><i class="bi bi-hand-index me-2"></i>ท่านสามารถใช้สิทธิ์ได้โดยเข้าไปที่หน้า <a href="<?= BASE_URL ?>/users/profile.php" class="fw-bold">โปรไฟล์ของฉัน</a> หรือติดต่อเจ้าหน้าที่ตามช่องทางด้านล่าง</p>
             </div>
         </div>
 

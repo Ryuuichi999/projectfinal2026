@@ -175,8 +175,8 @@ if ($userId && $role === 'user') {
 <nav class="navbar navbar-expand-lg navbar-user fixed-top">
     <div class="container-fluid px-md-5">
         <!-- Brand -->
-        <a class="navbar-brand d-flex align-items-center" href="/Project2026/index.php">
-            <img src="/Project2026/image/logosila.png" alt="Logo" style="height: 50px; width: auto;">
+        <a class="navbar-brand d-flex align-items-center" href="<?= BASE_URL ?>/index.php">
+            <img src="<?= BASE_URL ?>/image/logosila.png" alt="Logo" style="height: 50px; width: auto;">
             <span class="ms-2 d-none d-sm-inline">เทศบาลเมืองศิลา</span>
         </a>
 
@@ -191,24 +191,24 @@ if ($userId && $role === 'user') {
             <ul class="navbar-nav mx-auto mb-2 mb-lg-0 gap-1">
                 <li class="nav-item">
                     <a class="nav-link <?= strpos($_SERVER['PHP_SELF'], 'users/index.php') !== false ? 'active' : '' ?>"
-                        href="/Project2026/users/index.php">
+                        href="<?= BASE_URL ?>/users/index.php">
                         <i class="bi bi-grid-1x2 me-1"></i> ภาพรวม
                     </a>
                 </li>
                 <li class="nav-item">
                     <a class="nav-link <?= strpos($_SERVER['PHP_SELF'], 'users/request_form.php') !== false ? 'active' : '' ?>"
-                        href="/Project2026/users/request_form.php">
+                        href="<?= BASE_URL ?>/users/request_form.php">
                         <i class="bi bi-file-earmark-plus me-1"></i> ยื่นคำขอ
                     </a>
                 </li>
                 <li class="nav-item">
                     <a class="nav-link <?= strpos($_SERVER['PHP_SELF'], 'users/my_request.php') !== false ? 'active' : '' ?>"
-                        href="/Project2026/users/my_request.php">
+                        href="<?= BASE_URL ?>/users/my_request.php">
                         <i class="bi bi-clock-history me-1"></i> สถานะคำขอ
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link <?= strpos($_SERVER['PHP_SELF'], 'map.php') !== false ? 'active' : '' ?>" href="/Project2026/map.php">
+                    <a class="nav-link <?= strpos($_SERVER['PHP_SELF'], 'map.php') !== false ? 'active' : '' ?>" href="<?= BASE_URL ?>/map.php">
                         <i class="bi bi-geo-alt me-1"></i> แผนที่ GIS
                     </a>
                 </li>
@@ -238,7 +238,7 @@ if ($userId && $role === 'user') {
                             <?php foreach ($notifItems as $n): ?>
                                 <li class="mb-1">
                                     <a class="dropdown-item p-2 rounded-3"
-                                        href="/Project2026/users/request_detail.php?id=<?= $n['id'] ?>">
+                                        href="<?= BASE_URL ?>/users/request_detail.php?id=<?= $n['id'] ?>">
                                         <div class="d-flex justify-content-between align-items-center mb-1">
                                             <span class="fw-bold text-primary small"><?= htmlspecialchars($n['request_no']) ?></span>
                                             <small class="text-muted" style="font-size: 0.75rem;">
@@ -256,7 +256,7 @@ if ($userId && $role === 'user') {
                             <hr class="dropdown-divider">
                         </li>
                         <li><a class="dropdown-item text-center text-primary fw-bold small py-1"
-                                href="/Project2026/users/my_request.php">ดูคำขอทั้งหมด</a></li>
+                                href="<?= BASE_URL ?>/users/my_request.php">ดูคำขอทั้งหมด</a></li>
                     </ul>
                 </div>
 
@@ -276,14 +276,14 @@ if ($userId && $role === 'user') {
                     </div>
                     <ul class="dropdown-menu dropdown-menu-end shadow-lg border-0 p-2 mt-2"
                         style="border-radius: 12px;">
-                        <li><a class="dropdown-item rounded-3" href="/Project2026/users/index.php"><i
+                        <li><a class="dropdown-item rounded-3" href="<?= BASE_URL ?>/users/index.php"><i
                                     class="bi bi-speedometer2 me-2"></i>แดชบอร์ด</a></li>
-                        <li><a class="dropdown-item rounded-3" href="/Project2026/users/profile.php"><i
+                        <li><a class="dropdown-item rounded-3" href="<?= BASE_URL ?>/users/profile.php"><i
                                     class="bi bi-person-gear me-2"></i>แก้ไขโปรไฟล์</a></li>
                         <li>
                             <hr class="dropdown-divider">
                         </li>
-                        <li><a class="dropdown-item rounded-3 text-danger" href="/Project2026/logout.php"><i
+                        <li><a class="dropdown-item rounded-3 text-danger" href="<?= BASE_URL ?>/logout.php"><i
                                     class="bi bi-box-arrow-right me-2"></i>ออกจากระบบ</a></li>
                     </ul>
                 </div>
@@ -298,7 +298,7 @@ if ($userId && $role === 'user') {
         if (notifBtn) {
             notifBtn.addEventListener('show.bs.dropdown', function () {
                 var count = notifBtn.getAttribute('data-count') || '0';
-                fetch('/Project2026/includes/notif_seen.php', {
+                fetch('<?= BASE_URL ?>/includes/notif_seen.php', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
                     body: new URLSearchParams({ role: 'user', count: count }).toString()

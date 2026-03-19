@@ -62,14 +62,20 @@ if ($role === 'user' && $userId) {
     $lastView = $_SESSION['notif_last_view_user'] ?? 0;
     $notifBadgeCount = max(0, $currentCount - $lastView);
 } else {
-    $q = $conn->query("SELECT id, request_no, status, created_at, receipt_date FROM sign_requests WHERE status IN ('pending', 'waiting_receipt') ORDER BY id DESC LIMIT 5");
+    $q = $conn->query("SELECT id, request_no, status, created_at FROM sign_requests WHERE status IN ('pending', 'reviewing', 'waiting_payment', 'waiting_receipt', 'waiting_permit') ORDER BY id DESC LIMIT 5");
     while ($row = $q->fetch_assoc()) {
         $status = $row['status'];
         $label = $status;
         if ($status === 'pending')
             $label = 'คำขอใหม่';
+        elseif ($status === 'reviewing')
+            $label = 'กำลังพิจารณา';
+        elseif ($status === 'waiting_payment')
+            $label = 'รอชำระเงิน';
         elseif ($status === 'waiting_receipt')
             $label = 'ชำระเงินแล้ว (รอออกใบเสร็จ)';
+        elseif ($status === 'waiting_permit')
+            $label = 'รอออกใบอนุญาต';
         elseif ($status === 'approved')
             $label = 'อนุมัติแล้ว';
         
@@ -194,7 +200,7 @@ if ($role === 'user' && $userId) {
                     <?php foreach ($notifItems as $n): ?>
                         <li class="mb-1">
                             <a class="dropdown-item p-2 rounded-3"
-                                href="<?= ($role === 'user' ? '/Project2026/users/request_detail.php?id=' : '/Project2026/employee/request_detail.php?id=') . $n['id'] ?>">
+                                href="<?= ($role === 'user' ? BASE_URL . '/users/request_detail.php?id=' : BASE_URL . '/employee/request_detail.php?id=') . $n['id'] ?>">
                                 <div class="d-flex justify-content-between align-items-center mb-1">
                                     <span class="fw-bold text-primary small"><?= htmlspecialchars($n['request_no']) ?></span>
                                     <small class="text-muted" style="font-size: 0.75rem;">
@@ -212,7 +218,7 @@ if ($role === 'user' && $userId) {
                     <hr class="dropdown-divider">
                 </li>
                 <li><a class="dropdown-item text-center text-primary fw-bold small py-1"
-                        href="<?= ($role === 'user' ? '/Project2026/users/my_request.php' : '/Project2026/employee/request_list.php') ?>">ดูคำขอทั้งหมด</a>
+                        href="<?= ($role === 'user' ? BASE_URL . '/users/my_request.php' : BASE_URL . '/employee/request_list.php') ?>">ดูคำขอทั้งหมด</a>
                 </li>
             </ul>
         </div>
@@ -234,16 +240,16 @@ if ($role === 'user' && $userId) {
             </div>
             <ul class="dropdown-menu dropdown-menu-end shadow-lg border-0 p-2 mt-2" style="border-radius: 12px;">
                 <?php if ($role === 'admin'): ?>
-                    <li><a class="dropdown-item rounded-3" href="/Project2026/admin/users_list.php"><i
+                    <li><a class="dropdown-item rounded-3" href="<?= BASE_URL ?>/admin/users_list.php"><i
                                 class="bi bi-people me-2"></i>จัดการผู้ใช้งาน</a></li>
                 <?php else: ?>
-                    <li><a class="dropdown-item rounded-3" href="/Project2026/employee/dashboard.php"><i
+                    <li><a class="dropdown-item rounded-3" href="<?= BASE_URL ?>/employee/dashboard.php"><i
                                 class="bi bi-speedometer2 me-2"></i>แดชบอร์ด</a></li>
                 <?php endif; ?>
                 <li>
                     <hr class="dropdown-divider">
                 </li>
-                <li><a class="dropdown-item rounded-3 text-danger" href="/Project2026/logout.php"><i
+                <li><a class="dropdown-item rounded-3 text-danger" href="<?= BASE_URL ?>/logout.php"><i
                             class="bi bi-box-arrow-right me-2"></i>ออกจากระบบ</a></li>
             </ul>
         </div>
@@ -256,7 +262,7 @@ if ($role === 'user' && $userId) {
         btn.addEventListener('show.bs.dropdown', function () {
             var role = btn.getAttribute('data-role') || '';
             var count = btn.getAttribute('data-count') || '0';
-            fetch('/Project2026/includes/notif_seen.php', {
+            fetch('<?= BASE_URL ?>/includes/notif_seen.php', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
                 body: new URLSearchParams({ role: role, count: count }).toString()

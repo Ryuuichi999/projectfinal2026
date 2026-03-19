@@ -4,8 +4,7 @@
  * 
  * ทำงาน: ถูก include จาก db.php ทุกครั้งที่เปิดหน้าเว็บ
  *         เช็คไฟล์ lock ว่ารันชั่วโมงนี้แล้วหรือยัง
- *         ถ้ายัง → รัน cron scripts แบบ synchronous (shell_exec)
- *         รองรับ deadline ชำระเงิน 24 ชม. และตรวจใบอนุญาตหมดอายุ
+ *         ถ้ายัง → รัน cron scripts ผ่าน include (รองรับ shared hosting ที่ disable shell_exec)
  */
 
 // ป้องกันการรันซ้ำ — เช็คไฟล์ lock ที่บันทึกชั่วโมงล่าสุดที่รัน
@@ -25,23 +24,40 @@ if (file_exists($lock_file) && trim(file_get_contents($lock_file)) === $current_
 // บันทึกว่ารันชั่วโมงนี้แล้ว (ทำก่อนเพื่อป้องกัน race condition)
 file_put_contents($lock_file, $current_hour);
 
-// Spawn background process ไปรัน cron scripts
-$php = 'C:\\xampp\\php\\php.exe';
 $cron_dir = __DIR__ . '/../cron/';
-
 $scripts = [
     $cron_dir . 'check_permit_expiry.php',
     $cron_dir . 'check_payment_timeout.php',
 ];
 
+$_is_windows = (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN');
+
+// ลองใช้ shell_exec ก่อน (Windows/XAMPP) ถ้าไม่ได้ fallback เป็น include
+$_can_exec = function_exists('shell_exec') && !in_array('shell_exec', array_map('trim', explode(',', ini_get('disable_functions'))));
+
 foreach ($scripts as $script) {
     if (!file_exists($script)) continue;
     
-    // รัน cron scripts synchronously ใน isolated scope (ป้องกันตัวแปร/ฟังก์ชันชนกัน)
-    // ใช้ shell_exec เรียก PHP แยก process เพื่อให้แต่ละ script มี scope อิสระ
-    $output = shell_exec('"' . $php . '" "' . $script . '" 2>&1');
+    if ($_can_exec) {
+        $php = $_is_windows ? 'C:\\xampp\\php\\php.exe' : (PHP_BINARY ?: '/usr/bin/php');
+        $output = shell_exec('"' . $php . '" "' . $script . '" 2>&1');
+    } else {
+        // Shared hosting: include ตรง ๆ (config.php, db.php จะ require_once ไม่ซ้ำ)
+        try {
+            ob_start();
+            include $script;
+            ob_end_clean();
+        } catch (Exception $e) {
+            if (ob_get_level()) ob_end_clean();
+            @file_put_contents($lock_dir . 'cron_runner.log',
+                "[" . date('Y-m-d H:i:s') . "] Error in {$script}: " . $e->getMessage() . "\n", FILE_APPEND);
+        }
+        // คืนค่า error/exception handler เดิม (cron scripts อาจ set_error_handler ทับ)
+        @restore_error_handler();
+        @restore_exception_handler();
+    }
 }
 
 // Log ว่า auto-run สำเร็จ
-file_put_contents($lock_dir . 'cron_runner.log',
-    "[" . date('Y-m-d H:i:s') . "] Auto-run cron jobs: " . count($scripts) . " scripts\n", FILE_APPEND);
+@file_put_contents($lock_dir . 'cron_runner.log',
+    "[" . date('Y-m-d H:i:s') . "] Auto-run cron jobs: " . count($scripts) . " scripts (method: " . ($_can_exec ? 'shell_exec' : 'include') . ")\n", FILE_APPEND);

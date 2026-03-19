@@ -251,7 +251,7 @@ function getThaiDateShort($date)
     <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function () {
-            var permitUrl = window.location.origin + "/Project2026/check_permit.php?id=<?= $request['id'] ?>";
+            var permitUrl = window.location.origin + "<?= BASE_URL ?>/check_permit.php?id=<?= $request['id'] ?>";
             new QRCode(document.getElementById("qrcode"), {
                 text: permitUrl,
                 width: 90,

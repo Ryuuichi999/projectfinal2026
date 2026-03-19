@@ -154,8 +154,8 @@ if ($userId && $role === 'user') {
 
 <nav class="navbar navbar-expand-lg navbar-main fixed-top">
     <div class="container-fluid px-md-5">
-        <a class="navbar-brand d-flex align-items-center" href="/Project2026/index.php">
-            <img src="/Project2026/image/logosila.png" alt="Logo" style="height: 50px; width: auto;">
+        <a class="navbar-brand d-flex align-items-center" href="<?= BASE_URL ?>/index.php">
+            <img src="<?= BASE_URL ?>/image/logosila.png" alt="Logo" style="height: 50px; width: auto;">
             <span class="ms-2 fw-bold text-dark">เทศบาลเมืองศิลา</span>
         </a>
         <button class="navbar-toggler border-0 shadow-none" type="button" data-bs-toggle="collapse"
@@ -164,10 +164,10 @@ if ($userId && $role === 'user') {
         </button>
         <div class="collapse navbar-collapse" id="mainNavbar">
             <ul class="navbar-nav mx-auto mb-2 mb-lg-0 gap-1">
-                <li class="nav-item"><a class="nav-link" href="/Project2026/index.php#steps">ขั้นตอนการยื่น</a></li>
-                <li class="nav-item"><a class="nav-link" href="/Project2026/index.php#services">บริการ</a></li>
-                <li class="nav-item"><a class="nav-link" href="/Project2026/index.php#legal">เอกสารที่ต้องเตรียม</a></li>
-                <li class="nav-item"><a class="nav-link" href="/Project2026/map_public.php">แผนที่ GIS</a></li>
+                <li class="nav-item"><a class="nav-link" href="<?= BASE_URL ?>/index.php#steps">ขั้นตอนการยื่น</a></li>
+                <li class="nav-item"><a class="nav-link" href="<?= BASE_URL ?>/index.php#services">บริการ</a></li>
+                <li class="nav-item"><a class="nav-link" href="<?= BASE_URL ?>/index.php#legal">เอกสารที่ต้องเตรียม</a></li>
+                <li class="nav-item"><a class="nav-link" href="<?= BASE_URL ?>/map_public.php">แผนที่ GIS</a></li>
             </ul>
             <div class="d-flex align-items-center gap-3">
                 <?php if ($userId): ?>
@@ -189,7 +189,7 @@ if ($userId && $role === 'user') {
                                 <?php foreach ($notifItems as $n): ?>
                                     <li>
                                         <a class="dropdown-item p-2 rounded-3"
-                                            href="/Project2026/users/request_detail.php?id=<?= $n['id'] ?>">
+                                            href="<?= BASE_URL ?>/users/request_detail.php?id=<?= $n['id'] ?>">
                                             <div class="d-flex justify-content-between align-items-center mb-1">
                                                 <span class="fw-bold text-primary small">#<?= $n['id'] ?></span>
                                                 <small class="text-muted"
@@ -204,7 +204,7 @@ if ($userId && $role === 'user') {
                                 <hr class="dropdown-divider">
                             </li>
                             <li><a class="dropdown-item text-center text-primary small"
-                                    href="/Project2026/users/my_request.php">ดูทั้งหมด</a></li>
+                                    href="<?= BASE_URL ?>/users/my_request.php">ดูทั้งหมด</a></li>
                         </ul>
                     </div>
 
@@ -221,16 +221,16 @@ if ($userId && $role === 'user') {
                         <ul class="dropdown-menu dropdown-menu-end shadow-lg border-0 p-2 mt-2"
                             style="border-radius: 12px;">
                             <?php if ($role === 'user'): ?>
-                                <li><a class="dropdown-item rounded-3" href="/Project2026/users/index.php"><i
+                                <li><a class="dropdown-item rounded-3" href="<?= BASE_URL ?>/users/index.php"><i
                                             class="bi bi-grid-1x2 me-2"></i>หน้าจัดการ</a></li>
                             <?php else: ?>
-                                <li><a class="dropdown-item rounded-3" href="/Project2026/employee/request_list.php"><i
+                                <li><a class="dropdown-item rounded-3" href="<?= BASE_URL ?>/employee/request_list.php"><i
                                             class="bi bi-grid-1x2 me-2"></i>หน้าเจ้าหน้าที่</a></li>
                             <?php endif; ?>
                             <li>
                                 <hr class="dropdown-divider">
                             </li>
-                            <li><a class="dropdown-item rounded-3 text-danger" href="/Project2026/logout.php"><i
+                            <li><a class="dropdown-item rounded-3 text-danger" href="<?= BASE_URL ?>/logout.php"><i
                                         class="bi bi-box-arrow-right me-2"></i>ออกจากระบบ</a></li>
                         </ul>
                     </div>
@@ -249,7 +249,7 @@ if ($userId && $role === 'user') {
         if (notifBtn) {
             notifBtn.addEventListener('show.bs.dropdown', function () {
                 var count = notifBtn.getAttribute('data-count') || '0';
-                fetch('/Project2026/includes/notif_seen.php', {
+                fetch('<?= BASE_URL ?>/includes/notif_seen.php', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
                     body: new URLSearchParams({ role: 'user', count: count }).toString()

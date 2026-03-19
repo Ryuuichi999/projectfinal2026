@@ -160,7 +160,7 @@ if (!function_exists('send_status_notification')) {
                     {$payment_notice}
 
                     <p style='text-align:center; margin-top: 25px;'>
-                        <a href='" . (isset($_SERVER['HTTPS']) ? 'https' : 'http') . '://' . $_SERVER['HTTP_HOST'] . BASE_URL . "/users/my_request.php' class='btn'>ตรวจสอบรายละเอียด</a>
+                        <a href='" . SITE_URL . "/users/my_request.php' class='btn'>ตรวจสอบรายละเอียด</a>
                     </p>
                     
                     <p style='margin-top: 20px; font-size: 14px; color: #666;'>
@@ -205,31 +205,42 @@ if (!function_exists('send_status_notification')) {
 }
 
 /**
- * ส่งอีเมลแบบ Background Process — เปิด PHP process แยกส่งอีเมล
- * หน้าเว็บไม่ต้องรอเลย กดปุ่มปั๊บตอบกลับทันที
+ * ส่งอีเมลแบบ Background Process — ถ้า exec ได้จะแยก process
+ * ถ้า exec ไม่ได้ (shared hosting) จะ fallback ส่งตรงผ่าน send_status_notification()
  */
 if (!function_exists('queue_status_notification')) {
     function queue_status_notification($request_id, $conn)
     {
         $request_id = (int) $request_id;
-        $worker = __DIR__ . '/send_email_worker.php';
-        // PHP_BINARY บน Apache จะคืน httpd.exe ซึ่งใช้ไม่ได้ ต้องใช้ php.exe CLI ตรงๆ
-        $php = 'C:\\xampp\\php\\php.exe';
-
         $log_dir = __DIR__ . '/../logs/';
         if (!file_exists($log_dir)) mkdir($log_dir, 0755, true);
 
-        if (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') {
+        $_is_windows = (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN');
+
+        // ตรวจว่า exec/popen ใช้ได้ไหม
+        $_can_popen = function_exists('popen') && !in_array('popen', array_map('trim', explode(',', ini_get('disable_functions'))));
+        $_can_exec = function_exists('exec') && !in_array('exec', array_map('trim', explode(',', ini_get('disable_functions'))));
+
+        if ($_is_windows && $_can_popen) {
+            // Windows: ใช้ popen background
+            $worker = __DIR__ . '/send_email_worker.php';
+            $php = 'C:\\xampp\\php\\php.exe';
             $cmd = 'start /B "" "' . $php . '" "' . $worker . '" ' . $request_id;
             file_put_contents($log_dir . 'email_log.txt',
-                "[" . date('Y-m-d H:i:s') . "] Queue: ID={$request_id}, PHP={$php}, CMD={$cmd}\n", FILE_APPEND);
+                "[" . date('Y-m-d H:i:s') . "] Queue: ID={$request_id}, CMD={$cmd}\n", FILE_APPEND);
             $handle = popen($cmd, 'r');
-            if ($handle) {
-                pclose($handle);
-            }
-        } else {
+            if ($handle) pclose($handle);
+        } elseif (!$_is_windows && $_can_exec) {
+            // Linux: ใช้ exec background
+            $worker = __DIR__ . '/send_email_worker.php';
+            $php = PHP_BINARY ?: '/usr/bin/php';
             $cmd = '"' . $php . '" "' . $worker . '" ' . $request_id . ' > /dev/null 2>&1 &';
             exec($cmd);
+        } else {
+            // Shared hosting: exec/popen ถูก disable → ส่งตรงเลย
+            file_put_contents($log_dir . 'email_log.txt',
+                "[" . date('Y-m-d H:i:s') . "] Direct send (no exec): ID={$request_id}\n", FILE_APPEND);
+            send_status_notification($request_id, $conn);
         }
     }
 }

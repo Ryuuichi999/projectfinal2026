@@ -429,7 +429,7 @@ $urgent_count = count($urgent_requests);
                     <table class="table table-sm table-hover align-middle mb-0">
                         <thead class="table-light">
                             <tr>
-                                <th>ID</th>
+                                <th>เลขที่คำร้อง</th>
                                 <th>ผู้ขอ</th>
                                 <th>ประเภท</th>
                                 <th>เลขที่ใบอนุญาต</th>
@@ -445,7 +445,7 @@ $urgent_count = count($urgent_requests);
                                 $exp_ts = strtotime($exp['expire_date']);
                                 ?>
                                 <tr>
-                                    <td>#<?= $exp['id'] ?></td>
+                                    <td><strong><?= htmlspecialchars($exp['request_no'] ?? '#' . $exp['id']) ?></strong></td>
                                     <td><?= htmlspecialchars($exp['first_name'] . ' ' . $exp['last_name']) ?></td>
                                     <td><?= htmlspecialchars($exp['sign_type']) ?></td>
                                     <td><?= htmlspecialchars($exp['permit_no'] ?? '-') ?></td>

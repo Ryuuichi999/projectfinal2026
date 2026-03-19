@@ -75,7 +75,7 @@ $plain_subject = "[เทศบาลเมืองศิลา] แจ้ง�
 $status_text = worker_status_label($request['status']);
 $status_color = worker_status_color($request['status']);
 
-$base_url = defined('BASE_URL') ? BASE_URL : '/Project2026';
+$site_url = defined('SITE_URL') ? SITE_URL : 'http://localhost/Project2026';
 
 // ข้อความเพิ่มเติมสำหรับสถานะรอชำระเงิน — แจ้ง deadline 24 ชม.
 $payment_notice = '';
@@ -151,7 +151,7 @@ $message = "
             {$payment_notice}
 
             <p style='text-align:center; margin-top: 25px;'>
-                <a href='http://localhost{$base_url}/users/my_request.php' class='btn'>ตรวจสอบรายละเอียด</a>
+                <a href='{$site_url}/users/my_request.php' class='btn'>ตรวจสอบรายละเอียด</a>
             </p>
             
             <p style='margin-top: 20px; font-size: 14px; color: #666;'>

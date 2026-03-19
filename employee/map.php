@@ -347,7 +347,7 @@ if ($res_rows && $res_rows->num_rows > 0) {
                 div.style.fontSize = '0.75rem';
                 div.style.lineHeight = '1.5';
                 div.style.maxWidth = '200px';
-                var html = '<div style="font-weight:700;margin-bottom:3px;font-size:0.7rem;">สัญลักษณ์</div>';
+                var html = '<div style="font-weight:700;margin-bottom:3px;font-size:0.7rem;">คำอธิบายสัญลักษณ์</div>';
                 
                 // แบ่งเป็น 2 คอลัมน์
                 var statusKeys = Object.keys(statusLabels);
