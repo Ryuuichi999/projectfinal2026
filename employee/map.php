@@ -79,7 +79,7 @@ if ($res_rows && $res_rows->num_rows > 0) {
         }
 
         #mapid {
-            height: 600px;
+            height: 450px;
             width: 100%;
             border-radius: 12px;
             border: 1px solid #e5e7eb;
@@ -451,13 +451,19 @@ if ($res_rows && $res_rows->num_rows > 0) {
                 nextBtn.disabled = page >= totalPages;
             }
 
-            window.zoomToSign = function (id) {
-                if (markerDict[id]) {
-                    markers.zoomToShowLayer(markerDict[id], function () {
-                        markerDict[id].openPopup();
-                    });
-                }
-            };
+           window.zoomToSign = function (id) {
+    if (markerDict[id]) {
+        var latlng = markerDict[id].getLatLng();
+
+        mymap.flyTo(latlng, 16, { duration: 1.0 });
+
+        setTimeout(function () {
+            markers.zoomToShowLayer(markerDict[id], function () {
+                markerDict[id].openPopup();
+            });
+        }, 350);
+    }
+};
 
             pageSizeEl.addEventListener('change', function () { page = 1; render(); });
             searchEl.addEventListener('input', function () { page = 1; render(); });
