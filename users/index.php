@@ -306,38 +306,45 @@ function thaiDateShort($dateStr, $months)
         /* Recent Requests Section */
         .recent-section {
             background: white;
-            border: 1px solid #e2e8f0;
-            border-radius: 16px;
-            padding: 1.5rem;
-            margin-bottom: 2rem;
+            border: 1px solid #f1f5f9;
+            border-radius: 8px;
+            padding: 1rem;
+            margin-bottom: 1.5rem;
         }
 
         .section-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 1.5rem;
+            margin-bottom: 1rem;
+            padding-bottom: 0.75rem;
+            border-bottom: 1px solid #f1f5f9;
         }
 
         .section-header h4 {
-            font-weight: 700;
+            font-weight: 600;
             margin: 0;
+            font-size: 0.95rem;
+            color: #374151;
         }
 
         .view-all-link {
-            font-size: 0.9rem;
-            color: var(--sila-primary);
+            font-size: 0.85rem;
+            color: #6b7280;
             text-decoration: none;
-            font-weight: 600;
+            font-weight: 500;
+        }
+
+        .view-all-link:hover {
+            color: #374151;
         }
 
         .request-item {
             display: flex;
             align-items: center;
-            padding: 1rem;
-            border-radius: 12px;
-            transition: 0.2s;
-            border-bottom: 1px solid #f1f5f9;
+            padding: 0.75rem;
+            transition: 0.15s;
+            border-bottom: 1px solid #f9fafb;
             text-decoration: none;
             color: inherit;
         }
@@ -347,20 +354,20 @@ function thaiDateShort($dateStr, $months)
         }
 
         .request-item:hover {
-            background: #f8fafc;
+            background: #fafbfc;
         }
 
         .request-item-icon {
-            width: 48px;
-            height: 48px;
-            background: #f1f5f9;
-            border-radius: 8px;
+            width: 40px;
+            height: 40px;
+            background: #f8fafc;
+            border-radius: 6px;
             display: flex;
             align-items: center;
             justify-content: center;
-            margin-right: 1.25rem;
-            color: #64748b;
-            font-size: 1.25rem;
+            margin-right: 0.75rem;
+            color: #6b7280;
+            font-size: 1.1rem;
         }
 
         .request-item-content {
@@ -484,10 +491,10 @@ function thaiDateShort($dateStr, $months)
 
         <!-- Waiting Payment (paginated) -->
         <?php if (!empty($wpRows)): ?>
-            <div class="recent-section" style="border-left: 4px solid #ffc107;">
+            <div class="recent-section" style="border-left: 4px solid #ef4444;">
                 <div class="section-header">
-                    <h4><i class="bi bi-credit-card text-warning me-2"></i>รอชำระเงิน</h4>
-                    <span class="badge bg-warning text-dark"><?= count($wpRows) ?> รายการ</span>
+                    <h4><i class="bi bi-credit-card text-danger me-2"></i>รอชำระเงิน</h4>
+                    <span class="badge bg-danger"><?= count($wpRows) ?> รายการ</span>
                 </div>
 
                 <div id="wpCardsList"></div>
@@ -835,7 +842,7 @@ function thaiDateShort($dateStr, $months)
                         }
                         
                         return '<a href="request_detail.php?id=' + r.id + '" class="request-item">'
-                            + '<div class="request-item-icon" style="background:#fff7ed; color:#f59e0b;">'
+                            + '<div class="request-item-icon" style="background:#fef2f2; color:#ef4444;">'
                             + '<i class="bi bi-credit-card"></i></div>'
                             + '<div class="request-item-content">'
                             + '<div class="request-item-title">'
