@@ -455,13 +455,12 @@ if ($res_rows && $res_rows->num_rows > 0) {
                     var slice = rows.slice(start, start + size);
                     tbody.innerHTML = slice.map(function (r) {
                         var d = (r.duration || 0) + " วัน";
-                        return "<tr>"
+                        return '<tr onclick="flyTo(' + r.id + ')">'
                             + "<td>" + (r.request_no || ('req' + r.id)) + "</td>"
-                            + "<td class='table-type'>" + r.type + "</td>"
-                            + "<td class='table-desc'>" + (r.road || '-') + "</td>"
+                            + "<td>" + r.type + "</td>"
+                            + "<td>" + (r.road || '-') + "</td>"
                             + "<td>" + d + "</td>"
                             + "<td>" + (r.expire || '-') + "</td>"
-
                             + "</tr>";
                     }).join('');
                     pageInfo.textContent = "หน้า " + page + " / " + totalPages + " • ทั้งหมด " + rows.length + " รายการ";
@@ -478,6 +477,19 @@ if ($res_rows && $res_rows->num_rows > 0) {
                     if (page < totalPages) { page++; render(); }
                 });
                 render();
+
+                // Click row to fly to marker
+                window.flyTo = function (id) {
+                    var sign = approvedSigns.find(function (s) { return s.id === id; });
+                    if (sign && sign.lat && sign.lng) {
+                        mymap.flyTo([sign.lat, sign.lng], 16, { duration: 0.8 });
+                        markers.eachLayer(function (layer) {
+                            if (layer.getLatLng().lat === sign.lat && layer.getLatLng().lng === sign.lng) {
+                                layer.openPopup();
+                            }
+                        });
+                    }
+                };
             });
         </script>
 
