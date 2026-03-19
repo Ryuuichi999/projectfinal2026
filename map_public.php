@@ -116,6 +116,29 @@ $unique_roads = count(array_filter(array_unique(array_column($approved_signs, 'r
             max-width: none;
         }
 
+        .map-legend {
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            background: white;
+            padding: 12px 16px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+            z-index: 1000;
+            font-size: 0.85rem;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 6px;
+        }
+
+        .legend-item:last-child {
+            margin-bottom: 0;
+        }
+
         #mapid {
             height: 520px;
             width: 100%;
@@ -302,14 +325,21 @@ $unique_roads = count(array_filter(array_unique(array_column($approved_signs, 'r
         <div class="row g-4">
             <div class="col-lg-6">
                 <div class="map-panel">
-                    <div id="mapid"></div>
-                    <div class="d-flex align-items-center gap-2 mt-2 flex-wrap">
-                        <span class="small text-muted me-1"><i class="bi bi-circle-fill"
-                                style="color:#16a34a; font-size:8px;"></i> ป้ายที่อนุมัติ</span>
-                        <span class="small text-muted me-1"><i class="bi bi-circle-fill"
-                                style="color:#dc2626; font-size:8px;"></i> ขอบเขตเทศบาล</span>
-                        <span class="small text-muted"><i class="bi bi-circle-fill"
-                                style="color:#f59e0b; font-size:8px;"></i> เส้นทางถนน</span>
+                    <div id="mapid">
+                        <div class="map-legend">
+                            <div class="legend-item">
+                                <div style="width:16px;height:16px;background:#16a34a;border-radius:4px;"></div>
+                                <span>ป้ายที่อนุมัติ</span>
+                            </div>
+                            <div class="legend-item">
+                                <div style="width:16px;height:3px;background:#dc2626;border-radius:2%;"></div>
+                                <span>ขอบเขตเทศบาล</span>
+                            </div>
+                            <div class="legend-item">
+                                <div style="width:16px;height:3px;background:#f59e0b;border-radius:2px;"></div>
+                                <span>เส้นทางถนน</span>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -377,15 +407,6 @@ $unique_roads = count(array_filter(array_unique(array_column($approved_signs, 'r
                 </div>
             </div>
         </div>
-    </div>
-
-    <!-- PDPA Notice -->
-    <div class="text-center mt-4">
-        <p class="text-muted small mb-0">
-            <i class="bi bi-shield-check me-1"></i>
-            ข้อมูลที่แสดงบนหน้านี้ไม่มีข้อมูลส่วนบุคคลตาม พ.ร.บ. คุ้มครองข้อมูลส่วนบุคคล พ.ศ. 2562 |
-            <a href="/Project2026/privacy_policy.php" class="text-decoration-none">นโยบายความเป็นส่วนตัว</a>
-        </p>
     </div>
 
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
