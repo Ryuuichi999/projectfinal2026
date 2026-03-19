@@ -96,65 +96,109 @@ if ($res_rows && $res_rows->num_rows > 0) {
             border: 1px solid #e5e7eb;
         }
 
-        .fixed-card {
+        .map-container {
+            position: relative;
+        }
+
+        .full-height-card {
+            min-height: calc(100vh - 140px);
+        }
+
+        /* Styles from map_public.php */
+        .search-box {
+            background: white;
+            border-radius: 12px;
+            padding: 16px 20px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+            border: 1px solid #f1f5f9;
+            margin-bottom: 16px;
+        }
+
+        .search-box .form-control {
+            border-radius: 8px;
+            border: 1px solid #e2e8f0;
+            padding: 10px 14px 10px 40px;
+            font-size: 0.95rem;
+        }
+
+        .search-box .form-control:focus {
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+            border-color: #2563eb;
+        }
+
+        .search-icon {
+            position: absolute;
+            left: 14px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #94a3b8;
+        }
+
+        .list-card {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+            border: 1px solid #f1f5f9;
+            overflow: hidden;
             height: 480px;
             display: flex;
             flex-direction: column;
         }
 
-        .fixed-card-body {
+        .list-card-header {
+            padding: 14px 20px;
+            border-bottom: 1px solid #f1f5f9;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .list-card-header h6 {
+            margin: 0;
+            font-weight: 700;
+            color: #1a202c;
+        }
+
+        .table-container {
             flex: 1 1 auto;
             overflow: hidden;
         }
 
-        .table-wrap {
-            height: 400px;
-            overflow: auto;
-            margin-top: 6px;
+        .table-container .table {
+            margin-bottom: 0;
+            font-size: 0.85rem;
         }
 
-        .table-page {
-            height: 100%;
-            overflow-y: auto;
+        .table-container .table th,
+        .table-container .table td {
+            padding: 0.5rem 0.75rem;
+            vertical-align: middle;
         }
 
-        .map-container {
-            position: relative;
+        .table-container .table th {
+            font-weight: 600;
+            color: #374151;
+            border-bottom: 2px solid #e5e7eb;
         }
 
-        .table {
-            min-width: 540px;
-            font-size: 11px;
+        .table-footer {
+            padding: 12px 20px;
+            border-top: 1px solid #f1f5f9;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
         }
 
-        .table th,
-        .table td {
-            padding: .2rem .45rem;
+        .no-results {
+            text-align: center;
+            padding: 40px 20px;
+            color: #64748b;
         }
 
-        .table-type {
-            max-width: 80px;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
-
-        .table-desc {
-            max-width: 160px;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
-
-        .table-name {
-            max-width: 120px;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
-
-        .full-height-card {
-            min-height: calc(100vh - 140px);
+        .no-results i {
+            font-size: 2rem;
+            margin-bottom: 12px;
+            display: block;
         }
     </style>
 </head>
@@ -180,47 +224,53 @@ if ($res_rows && $res_rows->num_rows > 0) {
                     </div>
                 </div>
                 <div class="col-md-6">
-                    <div class="card fixed-card">
-                        <div class="p-2 border-bottom">
-                            <h6 class="mb-0">รายการคำร้องบนแผนที่</h6>
-                            <div class="d-flex align-items-center gap-2">
-                                <div class="ms-auto d-flex align-items-center gap-2">
-                                    <label class="text-muted">ค้นหา</label>
-                                    <input id="searchInput" type="text" class="form-control form-control-sm"
-                                        placeholder="ประเภท/ถนน">
-                                </div>
+                    <!-- Search -->
+                    <div class="search-box">
+                        <div class="position-relative">
+                            <i class="bi bi-search search-icon"></i>
+                            <input id="searchInput" type="text" class="form-control"
+                                placeholder="ค้นหาเลขคำขอ, ประเภทป้าย, ถนน...">
+                        </div>
+                    </div>
+
+                    <!-- List -->
+                    <div class="list-card">
+                        <div class="list-card-header">
+                            <h6><i class="bi bi-list-ul me-2"></i>รายการคำร้องบนแผนที่</h6>
+                        </div>
+                        <div class="table-container">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>เลขคำร้อง</th>
+                                        <th>ประเภท</th>
+                                        <th>ถนน</th>
+                                        <th>ระยะเวลา</th>
+                                        <th>หมดอายุ</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="tableBody"></tbody>
+                            </table>
+                            <div id="noResults" class="no-results d-none">
+                                <i class="bi bi-search"></i>
+                                <div class="fw-semibold">ไม่พบข้อมูลที่ค้นหา</div>
+                                <div class="small">ลองค้นหาด้วยคำอื่น</div>
                             </div>
                         </div>
-                        <div class="fixed-card-body p-0">
-                            <div class="table-wrap">
-                                <table class="table table-sm mb-0">
-                                    <thead>
-                                        <tr>
-                                            <th>เลขคำร้อง</th>
-                                            <th>ประเภท</th>
-                                            <th>ถนน</th>
-                                            <th>ระยะเวลา</th>
-                                            <th>หมดอายุ</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody id="tableBody" class="table-page"></tbody>
-                                </table>
-                            </div>
-                        </div>
-                        <div class="p-2 border-top d-flex align-items-center">
-                            <div class="d-flex align-items-center gap-2">
+                        <div class="table-footer">
+                            <div class="d-flex align-items-center gap-2" style="margin-left:-6px;">
                                 <select id="pageSize" class="form-select form-select-sm" style="width:70px;">
                                     <option value="5">5</option>
                                     <option value="10" selected>10</option>
                                     <option value="20">20</option>
                                 </select>
                                 <div id="pageInfo" class="small text-muted"></div>
-                                <div class="btn-group">
-                                    <button id="prevBtn" class="btn btn-outline-secondary btn-sm"><i
-                                            class="bi bi-chevron-left"></i></button>
-                                    <button id="nextBtn" class="btn btn-outline-secondary btn-sm"><i
-                                            class="bi bi-chevron-right"></i></button>
-                                </div>
+                            </div>
+                            <div class="btn-group">
+                                <button id="prevBtn" class="btn btn-outline-secondary btn-sm"><i
+                                        class="bi bi-chevron-left"></i></button>
+                                <button id="nextBtn" class="btn btn-outline-secondary btn-sm"><i
+                                        class="bi bi-chevron-right"></i></button>
                             </div>
                         </div>
                     </div>
