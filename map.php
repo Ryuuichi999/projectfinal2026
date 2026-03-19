@@ -90,7 +90,7 @@ if ($res_rows && $res_rows->num_rows > 0) {
 
     <style>
         #mapid {
-            height: 480px;
+            height: 570px;
             width: 100%;
             border-radius: 14px;
             border: 1px solid #e5e7eb;
@@ -292,7 +292,7 @@ if ($res_rows && $res_rows->num_rows > 0) {
                     <!-- List -->
                     <div class="list-card">
                         <div class="list-card-header">
-                            <h6><i class="bi bi-list-ul me-2"></i>รายการคำร้องบนแผนที่</h6>
+                            <h6><i class="bi bi-list-ul me-2"></i>รายการคำร้อง</h6>
                         </div>
                         <div class="table-container">
                             <table class="table table-hover">
