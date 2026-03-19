@@ -691,6 +691,16 @@ if ($result_signs && $result_signs->num_rows > 0) {
                         }
                     }).addTo(map);
                     layerControl.addOverlay(boundaryLayer, "ขอบเขตเทศบาล");
+                    
+                    // Add map click handler for outside boundary
+                    map.on('click', function(e) {
+                        var latlng = e.latlng;
+                        if (!checkBoundary(latlng.lat, latlng.lng)) {
+                            Toast.fire({ icon: 'warning', title: 'พิกัดอยู่นอกเขตเทศบาล' });
+                            var hint = document.getElementById('roadHint');
+                            if (hint) { hint.textContent = "อยู่นอกเขตเทศบาล"; hint.className = "badge bg-danger"; }
+                        }
+                    });
                 });
 
             // === Approved Signs Layer ===
