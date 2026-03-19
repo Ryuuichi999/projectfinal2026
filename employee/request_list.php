@@ -70,7 +70,7 @@ if (isset($_POST['action']) && isset($_POST['request_id'])) {
 $sql = "SELECT r.*, u.title_name, u.first_name, u.last_name
         FROM sign_requests r
         JOIN users u ON r.user_id = u.id
-        ORDER BY r.id ASC";
+        ORDER BY r.id DESC";
 
 $result = $conn->query($sql);
 ?>
