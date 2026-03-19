@@ -181,6 +181,15 @@ if ($res_rows && $res_rows->num_rows > 0) {
             border-bottom: 2px solid #e5e7eb;
         }
 
+        .table-container .table tbody tr {
+            cursor: pointer;
+            transition: background-color 0.15s ease;
+        }
+
+        .table-container .table tbody tr:hover {
+            background-color: #f8fafc;
+        }
+
         .table-footer {
             padding: 12px 20px;
             border-top: 1px solid #f1f5f9;
