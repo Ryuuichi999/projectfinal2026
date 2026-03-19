@@ -39,7 +39,8 @@ if ($result_signs && $result_signs->num_rows > 0) {
 $total_signs = count($approved_signs);
 $unique_types = count(array_unique(array_column($approved_signs, 'type')));
 $unique_roads = count(array_filter(array_unique(array_column($approved_signs, 'road')), function ($r) {
-    return $r !== '-'; }));
+    return $r !== '-';
+}));
 
 ?>
 
@@ -111,16 +112,16 @@ $unique_roads = count(array_filter(array_unique(array_column($approved_signs, 'r
         }
 
         .map-panel {
-    width: 86%;
-    max-width: 820px;
-}
+            width: 100%;
+            max-width: none;
+        }
 
-#mapid {
-    height: 520px;
-    width: 100%;
-    border-radius: 12px;
-    border: 1px solid #e2e8f0;
-}
+        #mapid {
+            height: 520px;
+            width: 100%;
+            border-radius: 12px;
+            border: 1px solid #e2e8f0;
+        }
 
         .search-box {
             background: white;
@@ -299,22 +300,22 @@ $unique_roads = count(array_filter(array_unique(array_column($approved_signs, 'r
 
         <!-- Map -->
         <div class="row g-4">
-            <div class="col-lg-7">
-    <div class="map-panel">
-        <div id="mapid"></div>
-        <div class="d-flex align-items-center gap-2 mt-2 flex-wrap">
-            <span class="small text-muted me-1"><i class="bi bi-circle-fill"
-                    style="color:#16a34a; font-size:8px;"></i> ป้ายที่อนุมัติ</span>
-            <span class="small text-muted me-1"><i class="bi bi-circle-fill"
-                    style="color:#dc2626; font-size:8px;"></i> ขอบเขตเทศบาล</span>
-            <span class="small text-muted"><i class="bi bi-circle-fill"
-                    style="color:#f59e0b; font-size:8px;"></i> เส้นทางถนน</span>
-        </div>
-    </div>
-</div>
+            <div class="col-lg-6">
+                <div class="map-panel">
+                    <div id="mapid"></div>
+                    <div class="d-flex align-items-center gap-2 mt-2 flex-wrap">
+                        <span class="small text-muted me-1"><i class="bi bi-circle-fill"
+                                style="color:#16a34a; font-size:8px;"></i> ป้ายที่อนุมัติ</span>
+                        <span class="small text-muted me-1"><i class="bi bi-circle-fill"
+                                style="color:#dc2626; font-size:8px;"></i> ขอบเขตเทศบาล</span>
+                        <span class="small text-muted"><i class="bi bi-circle-fill"
+                                style="color:#f59e0b; font-size:8px;"></i> เส้นทางถนน</span>
+                    </div>
+                </div>
+            </div>
 
             <!-- Table Panel -->
-            <div class="col-lg-5">
+            <div class="col-lg-6">
                 <!-- Search -->
                 <div class="search-box">
                     <div class="position-relative">
