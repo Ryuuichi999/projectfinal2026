@@ -52,6 +52,7 @@ if ($month == 0) {
         MONTH(r.created_at) as m,
         COUNT(*) as total,
         SUM(CASE WHEN r.status = 'approved' THEN 1 ELSE 0 END) as approved_count,
+        SUM(CASE WHEN r.status IN ('rejected', 'cancelled_payment') THEN 1 ELSE 0 END) as cancelled_count,
         SUM(CASE WHEN r.status = 'approved' THEN r.fee ELSE 0 END) as fee_collected
     FROM sign_requests r WHERE YEAR(r.created_at) = ? GROUP BY MONTH(r.created_at) ORDER BY m";
     $monthly_stmt = $conn->prepare($monthly_sql);
@@ -126,18 +127,18 @@ if (isset($_GET['export'])) {
 
     if ($export_tab === 'revenue') {
         header('Content-Disposition: attachment; filename="revenue_' . $suffix . '.csv"');
-        fputcsv($out, ['เดือน', 'คำร้องทั้งหมด', 'อนุมัติ', 'ค่าธรรมเนียม (บาท)']);
+        fputcsv($out, ['เดือน', 'คำร้องทั้งหมด', 'อนุมัติ', 'ยกเลิก', 'ค่าธรรมเนียม (บาท)']);
         $year_total_fee = 0;
         for ($mi = 1; $mi <= 12; $mi++) {
-            $d = $monthly_data[$mi] ?? ['total' => 0, 'approved_count' => 0, 'fee_collected' => 0];
+            $d = $monthly_data[$mi] ?? ['total' => 0, 'approved_count' => 0, 'cancelled_count' => 0, 'fee_collected' => 0];
             $year_total_fee += $d['fee_collected'];
-            fputcsv($out, [$thai_months_full[$mi], $d['total'], $d['approved_count'], number_format($d['fee_collected'])]);
+            fputcsv($out, [$thai_months_full[$mi], $d['total'], $d['approved_count'], $d['cancelled_count'], number_format($d['fee_collected'])]);
         }
-        fputcsv($out, ['รวมทั้งปี', '', '', number_format($year_total_fee)]);
+        fputcsv($out, ['รวมทั้งปี', '', '', '', number_format($year_total_fee)]);
 
     } elseif ($export_tab === 'receipts') {
         header('Content-Disposition: attachment; filename="receipts_' . $suffix . '.csv"');
-        fputcsv($out, ['#', 'เลขที่ใบเสร็จ', 'วันที่ออก', 'ชื่อ-นามสกุล', 'ประเภทป้าย', 'ค่าธรรมเนียม (บาท)']);
+        fputcsv($out, ['#', 'เลขที่ใบเสร็จ', 'วันที่ออก', 'ชื่อ-นามสกุล', 'ประเภทป้าย', 'ขนาด', 'ค่าธรรมเนียม (บาท)']);
         $ex_sql = "SELECT r.*, u.title_name, u.first_name, u.last_name FROM sign_requests r JOIN users u ON r.user_id = u.id WHERE r.receipt_no IS NOT NULL AND r.receipt_no != '' AND $where_clause ORDER BY r.id";
         $ex_stmt = $conn->prepare($ex_sql);
         $ex_stmt->bind_param($params_types, ...$params_values);
@@ -145,7 +146,7 @@ if (isset($_GET['export'])) {
         $ex_res = $ex_stmt->get_result();
         $n = 1;
         while ($row = $ex_res->fetch_assoc()) {
-            fputcsv($out, [$n++, $csv_safe($row['receipt_no']), $csv_safe($row['receipt_date'] ? date('d/m/Y', strtotime($row['receipt_date'])) : '-'), $csv_safe($row['title_name'] . $row['first_name'] . ' ' . $row['last_name']), $csv_safe($row['sign_type']), number_format($row['fee'])]);
+            fputcsv($out, [$n++, $csv_safe($row['receipt_no']), $csv_safe($row['receipt_date'] ? date('d/m/Y', strtotime($row['receipt_date'])) : '-'), $csv_safe($row['title_name'] . $row['first_name'] . ' ' . $row['last_name']), $csv_safe($row['sign_type']), $csv_safe($row['width'] . 'x' . $row['height'] . ' ม.'), number_format($row['fee'])]);
         }
 
     } elseif ($export_tab === 'permits') {
@@ -316,6 +317,42 @@ if (isset($_GET['export'])) {
             <?php if ($month == 0): ?>
                  <div class="col-md-12">
                 <div class="card p-4">
+                    <h5 class="mb-3">📅 คำร้องรายเดือน ปี <?= $year + 543 ?></h5>
+                    <div class="table-responsive">
+                        <table class="table table-sm table-bordered table-hover align-middle mb-0 pg-table">
+                            <thead class="table-light">
+                                <tr><th>เดือน</th><th class="text-center">คำร้อง</th><th class="text-center">อนุมัติ</th><th class="text-center">ยกเลิก</th><th class="text-end">ค่าธรรมเนียม (บาท)</th></tr>
+                            </thead>
+                            <tbody>
+                                <?php $sum_total = 0; $sum_approved = 0; $sum_cancelled = 0; $sum_fee = 0;
+                                for ($mi = 1; $mi <= 12; $mi++):
+                                    $d = $monthly_data[$mi] ?? ['total' => 0, 'approved_count' => 0, 'cancelled_count' => 0, 'fee_collected' => 0];
+                                    $sum_total += $d['total']; $sum_approved += $d['approved_count']; $sum_cancelled += $d['cancelled_count']; $sum_fee += $d['fee_collected'];
+                                ?>
+                                <tr>
+                                    <td><?= $thai_months_full[$mi] ?></td>
+                                    <td class="text-center"><?= $d['total'] ?></td>
+                                    <td class="text-center"><?= $d['approved_count'] ?></td>
+                                    <td class="text-center"><?= $d['cancelled_count'] ?></td>
+                                    <td class="text-end"><?= number_format($d['fee_collected'], 2) ?></td>
+                                </tr>
+                                <?php endfor; ?>
+                            </tbody>
+                            <tfoot>
+                                <tr class="table-secondary fw-bold">
+                                    <td>รวม</td>
+                                    <td class="text-center"><?= number_format($sum_total) ?></td>
+                                    <td class="text-center"><?= number_format($sum_approved) ?></td>
+                                    <td class="text-center"><?= number_format($sum_cancelled) ?></td>
+                                    <td class="text-end"><?= number_format($sum_fee, 2) ?></td>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-12">
+                <div class="card p-4">
                     <h5 class="mb-3">📋 สรุปตามประเภทป้าย</h5>
                     <div class="table-responsive">
                         <table class="table table-sm table-bordered table-hover align-middle mb-0 pg-table">
@@ -331,40 +368,6 @@ if (isset($_GET['export'])) {
                                 </tr>
                                 <?php endwhile; ?>
                             </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-12">
-                <div class="card p-4">
-                    <h5 class="mb-3">📅 คำร้องรายเดือน ปี <?= $year + 543 ?></h5>
-                    <div class="table-responsive">
-                        <table class="table table-sm table-bordered table-hover align-middle mb-0 pg-table">
-                            <thead class="table-light">
-                                <tr><th>เดือน</th><th class="text-center">คำร้อง</th><th class="text-center">อนุมัติ</th><th class="text-end">ค่าธรรมเนียม (บาท)</th></tr>
-                            </thead>
-                            <tbody>
-                                <?php $sum_total = 0; $sum_approved = 0; $sum_fee = 0;
-                                for ($mi = 1; $mi <= 12; $mi++):
-                                    $d = $monthly_data[$mi] ?? ['total' => 0, 'approved_count' => 0, 'fee_collected' => 0];
-                                    $sum_total += $d['total']; $sum_approved += $d['approved_count']; $sum_fee += $d['fee_collected'];
-                                ?>
-                                <tr>
-                                    <td><?= $thai_months_full[$mi] ?></td>
-                                    <td class="text-center"><?= $d['total'] ?></td>
-                                    <td class="text-center"><?= $d['approved_count'] ?></td>
-                                    <td class="text-end"><?= number_format($d['fee_collected'], 2) ?></td>
-                                </tr>
-                                <?php endfor; ?>
-                            </tbody>
-                            <tfoot>
-                                <tr class="table-secondary fw-bold">
-                                    <td>รวม</td>
-                                    <td class="text-center"><?= number_format($sum_total) ?></td>
-                                    <td class="text-center"><?= number_format($sum_approved) ?></td>
-                                    <td class="text-end"><?= number_format($sum_fee, 2) ?></td>
-                                </tr>
-                            </tfoot>
                         </table>
                     </div>
                 </div>
@@ -385,23 +388,24 @@ if (isset($_GET['export'])) {
             <div class="table-responsive">
                 <table class="table table-bordered table-hover align-middle revenue-table">
                     <thead class="table-light">
-                        <tr><th>เดือน</th><th>คำร้องทั้งหมด</th><th>อนุมัติ</th><th>ค่าธรรมเนียม (บาท)</th></tr>
+                        <tr><th>เดือน</th><th>คำร้องทั้งหมด</th><th>อนุมัติ</th><th>ยกเลิก</th><th>ค่าธรรมเนียม (บาท)</th></tr>
                     </thead>
                     <tbody>
                         <?php $year_total = 0; for ($mi = 1; $mi <= 12; $mi++):
-                            $d = $monthly_data[$mi] ?? ['total' => 0, 'approved_count' => 0, 'fee_collected' => 0];
+                            $d = $monthly_data[$mi] ?? ['total' => 0, 'approved_count' => 0, 'cancelled_count' => 0, 'fee_collected' => 0];
                             $year_total += $d['fee_collected'];
                         ?>
                         <tr>
                             <td><?= $thai_months_full[$mi] ?></td>
                             <td><?= number_format($d['total']) ?></td>
                             <td><?= number_format($d['approved_count']) ?></td>
+                            <td><?= number_format($d['cancelled_count']) ?></td>
                             <td><?= number_format($d['fee_collected'], 2) ?></td>
                         </tr>
                         <?php endfor; ?>
                     </tbody>
                     <tfoot>
-                        <tr class="revenue-total"><td>รวมทั้งปี <?= $year + 543 ?></td><td></td><td></td><td><?= number_format($year_total, 2) ?></td></tr>
+                        <tr class="revenue-total"><td>รวมทั้งปี <?= $year + 543 ?></td><td></td><td></td><td></td><td><?= number_format($year_total, 2) ?></td></tr>
                     </tfoot>
                 </table>
             </div>
@@ -573,6 +577,10 @@ if (isset($_GET['export'])) {
                     label: 'อนุมัติ',
                     data: [<?php for ($m = 1; $m <= 12; $m++) echo ($monthly_data[$m]['approved_count'] ?? 0) . ','; ?>],
                     backgroundColor: 'rgba(75,192,192,0.7)', borderRadius: 6
+                },{
+                    label: 'ยกเลิก',
+                    data: [<?php for ($m = 1; $m <= 12; $m++) echo ($monthly_data[$m]['cancelled_count'] ?? 0) . ','; ?>],
+                    backgroundColor: 'rgba(255,99,132,0.7)', borderRadius: 6
                 }]
             },
             options: { responsive:true, maintainAspectRatio:false, plugins:{legend:{position:'top'}}, scales:{y:{beginAtZero:true, ticks:{stepSize:1}}} }
