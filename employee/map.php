@@ -12,11 +12,14 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'employee') {
 $role = $_SESSION['role'] ?? 'guest';
 $userId = isset($_SESSION['user_id']) ? (int) $_SESSION['user_id'] : 0;
 
-// ดึงข้อมูลคำร้องที่มีพิกัด — ทุกสถานะยกเว้นยกเลิก
+// ดึงข้อมูลคำร้องที่มีพิกัด — เฉพาะสถานะที่ต้องการแสดง
+$allowed_statuses = ['pending', 'reviewing', 'waiting_payment', 'waiting_permit', 'approved'];
+$status_filter = "'" . implode("','", $allowed_statuses) . "'";
+
 $all_signs = [];
 $result_signs = $conn->query("SELECT id, request_no, location_lat, location_lng, sign_type, road_name, status, end_date 
     FROM sign_requests 
-    WHERE status != 'cancelled_payment' 
+    WHERE status IN ($status_filter)
     AND location_lat IS NOT NULL AND location_lng IS NOT NULL
     ORDER BY id DESC");
 if ($result_signs && $result_signs->num_rows > 0) {
@@ -37,7 +40,7 @@ $all_rows = [];
 $res_rows = $conn->query("SELECT r.id, r.request_no, r.sign_type, r.road_name, r.description, r.duration_days, r.end_date, r.permit_no, r.status, u.title_name, u.first_name, u.last_name 
                           FROM sign_requests r 
                           JOIN users u ON r.user_id = u.id 
-                          WHERE r.status != 'cancelled_payment' 
+                          WHERE r.status IN ($status_filter)
                           AND r.location_lat IS NOT NULL AND r.location_lng IS NOT NULL
                           ORDER BY r.id DESC LIMIT 1000");
 if ($res_rows && $res_rows->num_rows > 0) {
@@ -160,7 +163,7 @@ if ($res_rows && $res_rows->num_rows > 0) {
         <div class="card fade-in-up full-height-card">
             <div class="map-section-header">
                 <h2 class="mb-1" style="font-size: 1.6rem;">🗺️ แผนที่ข้อมูลพื้นที่</h2>
-                <p class="text-muted mb-3">แสดงตำแหน่งคำร้องทุกสถานะในเขต ทม.ศิลา (ยกเว้นยกเลิก)</p>
+                <p class="text-muted mb-3">แสดงตำแหน่งคำร้องที่กำลังดำเนินการในเขต ทม.ศิลา</p>
             </div>
 
             <div class="row g-4">
@@ -178,13 +181,9 @@ if ($res_rows && $res_rows->num_rows > 0) {
                                     <option value="">ทุกสถานะ</option>
                                     <option value="pending">รอพิจารณา</option>
                                     <option value="reviewing">กำลังพิจารณา</option>
-                                    <option value="need_documents">ขอเอกสารเพิ่ม</option>
                                     <option value="waiting_payment">รอชำระเงิน</option>
                                     <option value="waiting_permit">รอออกใบอนุญาต</option>
-                                    <option value="waiting_receipt">รอออกใบเสร็จ</option>
                                     <option value="approved">อนุมัติแล้ว</option>
-                                    <option value="rejected">ไม่อนุมัติ</option>
-                                    <option value="expired">หมดอายุ</option>
                                 </select>
                                 <div class="input-group input-group-sm" style="width: 250px;">
                                     <span class="input-group-text bg-white border-end-0"><i
@@ -249,29 +248,21 @@ if ($res_rows && $res_rows->num_rows > 0) {
             var initialLng = 102.835;
             var initialZoom = 13;
 
-            // สีตามสถานะ
+            // สีตามสถานะ (เฉพาะที่แสดง)
             var statusColors = {
                 'pending': '#1d4ed8',
                 'reviewing': '#0369a1',
-                'need_documents': '#b45309',
                 'waiting_payment': '#dc2626',
                 'waiting_permit': '#7c3aed',
-                'waiting_receipt': '#0d9488',
-                'approved': '#16a34a',
-                'rejected': '#6b7280',
-                'expired': '#374151'
+                'approved': '#16a34a'
             };
 
             var statusLabels = {
                 'pending': 'รอพิจารณา',
                 'reviewing': 'กำลังพิจารณา',
-                'need_documents': 'ขอเอกสารเพิ่ม',
                 'waiting_payment': 'รอชำระเงิน',
                 'waiting_permit': 'รอออกใบอนุญาต',
-                'waiting_receipt': 'รอออกใบเสร็จ',
-                'approved': 'อนุมัติแล้ว',
-                'rejected': 'ไม่อนุมัติ',
-                'expired': 'หมดอายุ'
+                'approved': 'อนุมัติแล้ว'
             };
 
             if (typeof L === 'undefined') {
@@ -346,7 +337,7 @@ if ($res_rows && $res_rows->num_rows > 0) {
                 div.style.boxShadow = '0 2px 6px rgba(0,0,0,0.15)';
                 div.style.fontSize = '0.75rem';
                 div.style.lineHeight = '1.5';
-                div.style.maxWidth = '200px';
+                div.style.maxWidth = '280px';
                 var html = '<div style="font-weight:700;margin-bottom:3px;font-size:0.7rem;">คำอธิบายสัญลักษณ์</div>';
                 
                 // แบ่งเป็น 2 คอลัมน์
