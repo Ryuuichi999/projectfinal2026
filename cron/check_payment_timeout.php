@@ -47,75 +47,7 @@ require_once __DIR__ . '/../includes/db.php';
 require_once __DIR__ . '/../includes/email_helper.php';
 require_once __DIR__ . '/../includes/log_helper.php';
 
-cronLog("=== เริ่มตรวจสอบคำร้องรอชำระเงินเกินกำหนด ({$PAYMENT_DEADLINE_HOURS} ชั่วโมง) ===", $log_file);
-
-$cancelled_count = 0;
-$warned_count = 0;
-
-// ═══════════════════════════════════════════════
-// ยกเลิกอัตโนมัติ — เกินกำหนดชำระเงิน 24 ชั่วโมง
-// นับจากเวลาที่เปลี่ยนเป็น waiting_payment ใน request_logs
-// ═══════════════════════════════════════════════
-$sql_cancel = "SELECT sr.id, sr.email, sr.applicant_name, sr.sign_type, sr.fee, sr.request_no,
-                      rl.created_at AS status_changed_at
-               FROM sign_requests sr
-               INNER JOIN (
-                   SELECT request_id, MAX(created_at) AS created_at
-                   FROM request_logs
-                   WHERE action = 'waiting_payment'
-                   GROUP BY request_id
-               ) rl ON rl.request_id = sr.id
-               WHERE sr.status = 'waiting_payment'
-               AND rl.created_at < DATE_SUB(NOW(), INTERVAL ? HOUR)";
-
-$stmt = $conn->prepare($sql_cancel);
-if (!$stmt) {
-    cronLog("Fallback: ใช้ created_at แทน request_logs", $log_file);
-    $sql_cancel = "SELECT sr.id, sr.email, sr.applicant_name, sr.sign_type, sr.fee, sr.request_no,
-                          sr.created_at AS status_changed_at
-                   FROM sign_requests sr
-                   WHERE sr.status = 'waiting_payment'
-                   AND sr.created_at < DATE_SUB(NOW(), INTERVAL ? HOUR)";
-    $stmt = $conn->prepare($sql_cancel);
-}
-$stmt->bind_param("i", $PAYMENT_DEADLINE_HOURS);
-$stmt->execute();
-$result = $stmt->get_result();
-
-while ($row = $result->fetch_assoc()) {
-    $request_id = $row['id'];
-    $request_display = !empty($row['request_no']) ? $row['request_no'] : "#{$request_id}";
-    
-    $deadline_time = date('H:i น.', strtotime($row['status_changed_at'] . " +{$PAYMENT_DEADLINE_HOURS} hours"));
-    cronLog("คำร้อง {$request_display} — รอชำระเงินเกิน {$PAYMENT_DEADLINE_HOURS} ชม. (ตั้งแต่ {$row['status_changed_at']}) → ยกเลิก", $log_file);
-    
-    // 1. เปลี่ยนสถานะเป็น cancelled_payment
-    $update = $conn->prepare("UPDATE sign_requests SET status = 'cancelled_payment' WHERE id = ? AND status = 'waiting_payment'");
-    $update->bind_param("i", $request_id);
-    
-    if ($update->execute() && $update->affected_rows > 0) {
-        // 2. บันทึก Log
-        logRequestAction($conn, $request_id, 'cancelled_payment', 
-            'ยกเลิกอัตโนมัติ — ไม่ชำระเงินภายใน 24 ชั่วโมง', 
-            null, 
-            "เกินกำหนด {$PAYMENT_DEADLINE_HOURS} ชั่วโมง (ตั้งแต่ {$row['status_changed_at']})"
-        );
-        
-        // 3. ส่ง Email แจ้งยกเลิก
-        if (!empty($row['email'])) {
-            sendPaymentEmail($row, $PAYMENT_DEADLINE_HOURS, 'cancelled');
-            cronLog("  → ส่ง Email แจ้งยกเลิก {$row['email']}", $log_file);
-        }
-        
-        $cancelled_count++;
-    }
-}
-
-// ไม่มีส่วนเตือนล่วงหน้า (เพราะ deadline แค่ 24 ชม. การแจ้งเตือนจะทำตอนอนุมัติผ่าน Email แทน)
-
-cronLog("=== เสร็จสิ้น: ยกเลิก {$cancelled_count} คำร้อง ===\n", $log_file);
-
-// ─── ฟังก์ชันส่ง Email ───
+// ─── ฟังก์ชันส่ง Email (ต้องประกาศก่อนเรียกใช้) ───
 if (!function_exists('sendPaymentEmail')) {
 function sendPaymentEmail($request, $days, $type) {
     require_once __DIR__ . '/../includes/SMTPMailer.php';
@@ -184,3 +116,73 @@ function sendPaymentEmail($request, $days, $type) {
     return $mailer->send($to, $subject, $message, 'เทศบาลเมืองศิลา', true);
 }
 }
+
+cronLog("=== เริ่มตรวจสอบคำร้องรอชำระเงินเกินกำหนด ({$PAYMENT_DEADLINE_HOURS} ชั่วโมง) ===", $log_file);
+
+$cancelled_count = 0;
+$warned_count = 0;
+
+// ═══════════════════════════════════════════════
+// ยกเลิกอัตโนมัติ — เกินกำหนดชำระเงิน 24 ชั่วโมง
+// นับจากเวลาที่เปลี่ยนเป็น waiting_payment ใน request_logs
+// ═══════════════════════════════════════════════
+$sql_cancel = "SELECT sr.id, sr.email, sr.applicant_name, sr.sign_type, sr.fee, sr.request_no,
+                      rl.created_at AS status_changed_at
+               FROM sign_requests sr
+               INNER JOIN (
+                   SELECT request_id, MAX(created_at) AS created_at
+                   FROM request_logs
+                   WHERE action = 'waiting_payment'
+                   GROUP BY request_id
+               ) rl ON rl.request_id = sr.id
+               WHERE sr.status = 'waiting_payment'
+               AND rl.created_at < DATE_SUB(NOW(), INTERVAL ? HOUR)";
+
+$stmt = $conn->prepare($sql_cancel);
+if (!$stmt) {
+    cronLog("Fallback: ใช้ created_at แทน request_logs", $log_file);
+    $sql_cancel = "SELECT sr.id, sr.email, sr.applicant_name, sr.sign_type, sr.fee, sr.request_no,
+                          sr.created_at AS status_changed_at
+                   FROM sign_requests sr
+                   WHERE sr.status = 'waiting_payment'
+                   AND sr.created_at < DATE_SUB(NOW(), INTERVAL ? HOUR)";
+    $stmt = $conn->prepare($sql_cancel);
+}
+$stmt->bind_param("i", $PAYMENT_DEADLINE_HOURS);
+$stmt->execute();
+$result = $stmt->get_result();
+
+while ($row = $result->fetch_assoc()) {
+    $request_id = $row['id'];
+    $request_display = !empty($row['request_no']) ? $row['request_no'] : "#{$request_id}";
+    
+    $deadline_time = date('H:i น.', strtotime($row['status_changed_at'] . " +{$PAYMENT_DEADLINE_HOURS} hours"));
+    cronLog("คำร้อง {$request_display} — รอชำระเงินเกิน {$PAYMENT_DEADLINE_HOURS} ชม. (ตั้งแต่ {$row['status_changed_at']}) → ยกเลิก", $log_file);
+    
+    // 1. เปลี่ยนสถานะเป็น cancelled_payment
+    $update = $conn->prepare("UPDATE sign_requests SET status = 'cancelled_payment' WHERE id = ? AND status = 'waiting_payment'");
+    $update->bind_param("i", $request_id);
+    
+    if ($update->execute() && $update->affected_rows > 0) {
+        // 2. บันทึก Log
+        logRequestAction($conn, $request_id, 'cancelled_payment', 
+            'ยกเลิกอัตโนมัติ — ไม่ชำระเงินภายใน 24 ชั่วโมง', 
+            null, 
+            "เกินกำหนด {$PAYMENT_DEADLINE_HOURS} ชั่วโมง (ตั้งแต่ {$row['status_changed_at']})"
+        );
+        
+        // 3. ส่ง Email แจ้งยกเลิก
+        if (!empty($row['email'])) {
+            sendPaymentEmail($row, $PAYMENT_DEADLINE_HOURS, 'cancelled');
+            cronLog("  → ส่ง Email แจ้งยกเลิก {$row['email']}", $log_file);
+        }
+        
+        $cancelled_count++;
+    }
+}
+
+// ไม่มีส่วนเตือนล่วงหน้า (เพราะ deadline แค่ 24 ชม. การแจ้งเตือนจะทำตอนอนุมัติผ่าน Email แทน)
+
+cronLog("=== เสร็จสิ้น: ยกเลิก {$cancelled_count} คำร้อง ===\n", $log_file);
+
+// (sendPaymentEmail ถูกย้ายไปประกาศก่อน cronLog ด้านบนแล้ว)

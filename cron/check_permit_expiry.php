@@ -35,6 +35,103 @@ if (!function_exists('cronLog')) {
     }
 }
 
+// ─── ฟังก์ชันส่ง Email (ต้องประกาศก่อนเรียกใช้) ───
+if (!function_exists('sendExpiryEmail')) {
+function sendExpiryEmail($request, $expire_date, $type, $conn) {
+    require_once __DIR__ . '/../includes/SMTPMailer.php';
+    require_once __DIR__ . '/../includes/config.php';
+    
+    $to = $request['email'];
+    $request_id = $request['id'];
+    $request_display = !empty($request['request_no']) ? $request['request_no'] : "#{$request_id}";
+    
+    // แปลงวันที่เป็นไทย
+    $months_th = [1=>'ม.ค.',2=>'ก.พ.',3=>'มี.ค.',4=>'เม.ย.',5=>'พ.ค.',6=>'มิ.ย.',
+                  7=>'ก.ค.',8=>'ส.ค.',9=>'ก.ย.',10=>'ต.ค.',11=>'พ.ย.',12=>'ธ.ค.'];
+    $ts = strtotime($expire_date);
+    $expire_th = date('j', $ts) . ' ' . $months_th[(int)date('n', $ts)] . ' ' . (date('Y', $ts) + 543);
+    
+    $site_url = defined('SITE_URL') ? SITE_URL : 'http://localhost/Project2026';
+    $btn_url = $site_url . '/users/request_detail.php?id=' . $request_id;
+    $btn_text = 'ดูรายละเอียดคำร้อง';
+
+    if ($type === 'expired') {
+        $subject = "[เทศบาลเมืองศิลา] ใบอนุญาตป้าย {$request_display} หมดอายุแล้ว — กรุณาเก็บป้าย";
+        $header_bg = '#dc3545';
+        $header_text = 'ใบอนุญาตหมดอายุ';
+        $body_text = "ใบอนุญาตติดตั้งป้ายของท่าน <strong>เลขที่ {$request_display}</strong> 
+                      ได้<span style='color:#dc3545;font-weight:bold;'>หมดอายุ</span>แล้ว 
+                      เมื่อวันที่ <strong>{$expire_th}</strong>
+                      <br><br><strong>กรุณาดำเนินการเก็บป้ายออกภายใน 7 วัน</strong> นับจากวันหมดอายุ มิฉะนั้นอาจถูกดำเนินการตามกฎหมาย";
+    } elseif ($type === 'followup_7days') {
+        $subject = "[เทศบาลเมืองศิลา] เกินกำหนดเก็บป้าย {$request_display} — กรุณาเก็บป้ายทันที";
+        $header_bg = '#1f2937';
+        $header_text = 'เกินกำหนดเก็บป้าย';
+        $body_text = "ใบอนุญาตติดตั้งป้ายของท่าน <strong>เลขที่ {$request_display}</strong> 
+                      ได้หมดอายุเมื่อวันที่ <strong>{$expire_th}</strong> 
+                      ซึ่ง<span style='color:#dc3545;font-weight:bold;'>เกินระยะเวลาเก็บป้าย 7 วันแล้ว</span>
+                      <br><br><strong>กรุณาดำเนินการเก็บป้ายออกทันที</strong> มิฉะนั้นเทศบาลจะดำเนินการตามกฎหมายต่อไป";
+    } else {
+        $subject = "[เทศบาลเมืองศิลา] ใบอนุญาตป้าย {$request_display} จะหมดอายุเร็วๆ นี้ — เตรียมเก็บป้าย";
+        $header_bg = '#f59e0b';
+        $header_text = 'แจ้งเตือนใบอนุญาตใกล้หมดอายุ';
+        $body_text = "ใบอนุญาตติดตั้งป้ายของท่าน <strong>เลขที่ {$request_display}</strong> 
+                      จะ<span style='color:#f59e0b;font-weight:bold;'>หมดอายุ</span>ในวันที่ 
+                      <strong>{$expire_th}</strong>
+                      <br><br>เมื่อหมดอายุแล้ว <strong>กรุณาดำเนินการเก็บป้ายออกภายใน 7 วัน</strong> มิฉะนั้นอาจถูกดำเนินการตามกฎหมาย";
+    }
+    
+    $message = "
+    <html>
+    <head>
+        <style>
+            body { font-family: 'Sarabun', sans-serif; line-height: 1.6; color: #333; }
+            .container { max-width: 600px; margin: 0 auto; border: 1px solid #ddd; border-radius: 8px; overflow: hidden; }
+            .header { background-color: {$header_bg}; color: white; padding: 20px; text-align: center; }
+            .content { padding: 20px; }
+            .footer { background-color: #f8f9fa; padding: 15px; text-align: center; font-size: 12px; color: #666; }
+            .btn { display: inline-block; padding: 10px 20px; background-color: #0d6efd; color: white !important; text-decoration: none; border-radius: 5px; }
+        </style>
+    </head>
+    <body>
+        <div class='container'>
+            <div class='header'>
+                <h2 style='margin:0;'>{$header_text}</h2>
+            </div>
+            <div class='content'>
+                <p>เรียน คุณ {$request['applicant_name']},</p>
+                <p>{$body_text}</p>
+                
+                <table style='width:100%;border-collapse:collapse;margin:15px 0;'>
+                    <tr><td style='padding:8px;border-bottom:1px solid #eee;color:#666;'>ประเภทป้าย:</td>
+                        <td style='padding:8px;border-bottom:1px solid #eee;font-weight:bold;'>{$request['sign_type']}</td></tr>
+                    <tr><td style='padding:8px;border-bottom:1px solid #eee;color:#666;'>สถานที่ติดตั้ง:</td>
+                        <td style='padding:8px;border-bottom:1px solid #eee;font-weight:bold;'>{$request['road_name']}</td></tr>
+                    <tr><td style='padding:8px;border-bottom:1px solid #eee;color:#666;'>วันหมดอายุ:</td>
+                        <td style='padding:8px;border-bottom:1px solid #eee;font-weight:bold;color:#dc3545;'>{$expire_th}</td></tr>
+                </table>
+                
+                <p style='text-align:center; margin-top: 25px;'>
+                    <a href='{$btn_url}' class='btn'>{$btn_text}</a>
+                </p>
+                
+                <p style='margin-top:20px;font-size:14px;color:#666;'>
+                    หากมีข้อสงสัย กรุณาติดต่อ เทศบาลเมืองศิลา โทร 043-246-505-6
+                </p>
+            </div>
+            <div class='footer'>
+                อีเมลฉบับนี้เป็นการแจ้งเตือนอัตโนมัติ กรุณาอย่าตอบกลับ<br>
+                &copy; " . date('Y') . " เทศบาลเมืองศิลา
+            </div>
+        </div>
+    </body>
+    </html>";
+    
+    $mailer = new SMTPMailer(SMTP_USER, SMTP_PASS);
+    return $mailer->send($to, $subject, $message, 'เทศบาลเมืองศิลา', true);
+}
+}
+
 cronLog("=== เริ่มตรวจสอบใบอนุญาตหมดอายุ ===", $log_file);
 
 $today = date('Y-m-d');
@@ -169,99 +266,4 @@ while ($row = $result_followup->fetch_assoc()) {
 
 cronLog("=== เสร็จสิ้น: หมดอายุ {$expired_count}, เตือนล่วงหน้า {$warned_count}, ติดตาม {$followup_count} ===\n", $log_file);
 
-// ─── ฟังก์ชันส่ง Email ───
-if (!function_exists('sendExpiryEmail')) {
-function sendExpiryEmail($request, $expire_date, $type, $conn) {
-    require_once __DIR__ . '/../includes/SMTPMailer.php';
-    require_once __DIR__ . '/../includes/config.php';
-    
-    $to = $request['email'];
-    $request_id = $request['id'];
-    $request_display = !empty($request['request_no']) ? $request['request_no'] : "#{$request_id}";
-    
-    // แปลงวันที่เป็นไทย
-    $months_th = [1=>'ม.ค.',2=>'ก.พ.',3=>'มี.ค.',4=>'เม.ย.',5=>'พ.ค.',6=>'มิ.ย.',
-                  7=>'ก.ค.',8=>'ส.ค.',9=>'ก.ย.',10=>'ต.ค.',11=>'พ.ย.',12=>'ธ.ค.'];
-    $ts = strtotime($expire_date);
-    $expire_th = date('j', $ts) . ' ' . $months_th[(int)date('n', $ts)] . ' ' . (date('Y', $ts) + 543);
-    
-    $site_url = defined('SITE_URL') ? SITE_URL : 'http://localhost/Project2026';
-    $btn_url = $site_url . '/users/request_detail.php?id=' . $request_id;
-    $btn_text = 'ดูรายละเอียดคำร้อง';
-
-    if ($type === 'expired') {
-        $subject = "[เทศบาลเมืองศิลา] ใบอนุญาตป้าย {$request_display} หมดอายุแล้ว — กรุณาเก็บป้าย";
-        $header_bg = '#dc3545';
-        $header_text = 'ใบอนุญาตหมดอายุ';
-        $body_text = "ใบอนุญาตติดตั้งป้ายของท่าน <strong>เลขที่ {$request_display}</strong> 
-                      ได้<span style='color:#dc3545;font-weight:bold;'>หมดอายุ</span>แล้ว 
-                      เมื่อวันที่ <strong>{$expire_th}</strong>
-                      <br><br><strong>กรุณาดำเนินการเก็บป้ายออกภายใน 7 วัน</strong> นับจากวันหมดอายุ มิฉะนั้นอาจถูกดำเนินการตามกฎหมาย";
-    } elseif ($type === 'followup_7days') {
-        $subject = "[เทศบาลเมืองศิลา] เกินกำหนดเก็บป้าย {$request_display} — กรุณาเก็บป้ายทันที";
-        $header_bg = '#1f2937';
-        $header_text = 'เกินกำหนดเก็บป้าย';
-        $body_text = "ใบอนุญาตติดตั้งป้ายของท่าน <strong>เลขที่ {$request_display}</strong> 
-                      ได้หมดอายุเมื่อวันที่ <strong>{$expire_th}</strong> 
-                      ซึ่ง<span style='color:#dc3545;font-weight:bold;'>เกินระยะเวลาเก็บป้าย 7 วันแล้ว</span>
-                      <br><br><strong>กรุณาดำเนินการเก็บป้ายออกทันที</strong> มิฉะนั้นเทศบาลจะดำเนินการตามกฎหมายต่อไป";
-    } else {
-        $subject = "[เทศบาลเมืองศิลา] ใบอนุญาตป้าย {$request_display} จะหมดอายุเร็วๆ นี้ — เตรียมเก็บป้าย";
-        $header_bg = '#f59e0b';
-        $header_text = 'แจ้งเตือนใบอนุญาตใกล้หมดอายุ';
-        $body_text = "ใบอนุญาตติดตั้งป้ายของท่าน <strong>เลขที่ {$request_display}</strong> 
-                      จะ<span style='color:#f59e0b;font-weight:bold;'>หมดอายุ</span>ในวันที่ 
-                      <strong>{$expire_th}</strong>
-                      <br><br>เมื่อหมดอายุแล้ว <strong>กรุณาดำเนินการเก็บป้ายออกภายใน 7 วัน</strong> มิฉะนั้นอาจถูกดำเนินการตามกฎหมาย";
-    }
-    
-    $message = "
-    <html>
-    <head>
-        <style>
-            body { font-family: 'Sarabun', sans-serif; line-height: 1.6; color: #333; }
-            .container { max-width: 600px; margin: 0 auto; border: 1px solid #ddd; border-radius: 8px; overflow: hidden; }
-            .header { background-color: {$header_bg}; color: white; padding: 20px; text-align: center; }
-            .content { padding: 20px; }
-            .footer { background-color: #f8f9fa; padding: 15px; text-align: center; font-size: 12px; color: #666; }
-            .btn { display: inline-block; padding: 10px 20px; background-color: #0d6efd; color: white !important; text-decoration: none; border-radius: 5px; }
-        </style>
-    </head>
-    <body>
-        <div class='container'>
-            <div class='header'>
-                <h2 style='margin:0;'>{$header_text}</h2>
-            </div>
-            <div class='content'>
-                <p>เรียน คุณ {$request['applicant_name']},</p>
-                <p>{$body_text}</p>
-                
-                <table style='width:100%;border-collapse:collapse;margin:15px 0;'>
-                    <tr><td style='padding:8px;border-bottom:1px solid #eee;color:#666;'>ประเภทป้าย:</td>
-                        <td style='padding:8px;border-bottom:1px solid #eee;font-weight:bold;'>{$request['sign_type']}</td></tr>
-                    <tr><td style='padding:8px;border-bottom:1px solid #eee;color:#666;'>สถานที่ติดตั้ง:</td>
-                        <td style='padding:8px;border-bottom:1px solid #eee;font-weight:bold;'>{$request['road_name']}</td></tr>
-                    <tr><td style='padding:8px;border-bottom:1px solid #eee;color:#666;'>วันหมดอายุ:</td>
-                        <td style='padding:8px;border-bottom:1px solid #eee;font-weight:bold;color:#dc3545;'>{$expire_th}</td></tr>
-                </table>
-                
-                <p style='text-align:center; margin-top: 25px;'>
-                    <a href='{$btn_url}' class='btn'>{$btn_text}</a>
-                </p>
-                
-                <p style='margin-top:20px;font-size:14px;color:#666;'>
-                    หากมีข้อสงสัย กรุณาติดต่อ เทศบาลเมืองศิลา โทร 043-246-505-6
-                </p>
-            </div>
-            <div class='footer'>
-                อีเมลฉบับนี้เป็นการแจ้งเตือนอัตโนมัติ กรุณาอย่าตอบกลับ<br>
-                &copy; " . date('Y') . " เทศบาลเมืองศิลา
-            </div>
-        </div>
-    </body>
-    </html>";
-    
-    $mailer = new SMTPMailer(SMTP_USER, SMTP_PASS);
-    return $mailer->send($to, $subject, $message, 'เทศบาลเมืองศิลา', true);
-}
-}
+// (sendExpiryEmail ถูกย้ายไปประกาศก่อน cronLog ด้านบนแล้ว)
